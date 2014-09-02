@@ -1,0 +1,17 @@
+doctype html
+html
+  meta(name=name + ':version', content=version)
+  title=name
+  link(rel='stylesheet', href='bundle.css')
+body
+  #layout
+    #charts
+    #controls
+  script(src='vendor.js')
+  script(src='bundle.js')
+  script.
+    try{require('playfair').main();} catch(e) {
+    var d = document.createElement('pre');
+    var s = d.style;
+    s.position = 'fixed', s.zIndex = 2, s.width = '100%'; 
+    d.innerHTML = e.stack, document.body.appendChild(d); throw e;}

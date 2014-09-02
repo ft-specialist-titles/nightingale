@@ -1,0 +1,1 @@
+rsync -rtvu --delete dist/ $1@ftweb115-lvpr-uk-ci:/opt/customer/apps/editorial/playfair/

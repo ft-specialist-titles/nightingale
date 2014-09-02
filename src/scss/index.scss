@@ -1,0 +1,327 @@
+$popover-max-width: 360px;
+
+@import "bootstrap-sass/lib/bootstrap";
+@import "modest-charts/style/index";
+
+@font-face{
+    font-family: "BentonSans";
+    src: url("http://s1.ft-static.com/m/font/ft-velcro/bentonsans-regular.eot");
+    src: url("http://s1.ft-static.com/m/font/ft-velcro/bentonsans-regular.eot?#iefix") format("embedded-opentype"), 
+    url("http://interactivegraphics.ft-static.com/inc/fonts/BentonSansRegular.woff") format("woff"),
+    url("http://interactivegraphics.ft-static.com/inc/fonts/BentonSansRegular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+}
+
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body{
+  font-size: 18px;
+}
+
+// svg{
+//   position: relative;
+//   float: none;
+//   clear: both;
+// }
+// svg, svg text, svg tspan{
+//   font-family: 'BentonSans', sans-serif;
+// }
+
+// svg, svg * {
+//   box-sizing: content-box;
+//   line-height: 1;
+//   font-size: 14px;
+// }
+
+
+
+.dropdown-menu > li.dropdown-free{
+  padding: 3px 20px;
+  position: relative;
+  cursor: default;
+  & .btn{
+    padding: 2px 8px;
+    cursor: pointer;
+  }
+  & .pos-right{
+    position: absolute;
+    top: 0px;
+    right: 10px;
+  }
+}
+
+$neutral-grey: rgb(50%, 50%, 50%); // good background for colour refernce.
+$ui-grey: rgb(30%, 30%, 30%);
+$ui-grey-highlight: rgb(60%, 60%, 60%);
+
+#layout {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+
+#charts {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  right: 45%;
+  //background-color: $neutral-grey;
+  background-color: #fff1e0;
+  overflow-x: hidden;
+}
+
+#controls {
+  position: absolute;
+  top: 0;
+  left: 55%;
+  bottom: 0;
+  width: 45%;
+  right: 0;
+  border-left: 3px solid rgba(0,0,0,.1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px;
+  & > * {
+    margin-bottom: 10px;
+  }
+}
+
+.view-graphic-type{
+  padding: 10px;
+}
+
+.graphic-instance{
+  display: inline-block;
+  margin: 15px 30px 15px 0;
+  background-color: #fff1e0;
+  //box-shadow: 0 1px 8px $ui-grey;
+  //border:1px solid darken($ui-grey, 0%);
+  vertical-align: top;
+  position: relative;
+  .graphic{
+    display: block;
+  }
+  .overlay{
+    align-items:center;
+    justify-content: center;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,.35);
+    border: 1px solid rgba(0,0,0,.1);
+    &__content{
+      height: auto;
+    }
+  }
+  &:hover{
+    .graphic{
+      -webkit-filter: saturate(.5);
+    }
+    .overlay{
+      display: flex;
+    }
+  }
+}
+
+
+.chart-name{
+  //box-shadow: 0 1px 0 $ui-grey-highlight;
+  border-bottom: 1px solid $ui-grey;
+  //text-shadow: 0 1px 2px $ui-grey-highlight;
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+}
+
+.view-imported-data{
+  .alert-success{
+    position: fixed;
+    margin: 5px auto;
+    max-width: 400px;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+
+.config-dimensions{
+  table{
+    width: 100%;
+    margin-top: -40px;
+  }
+  tbody{
+    tr:first-child > td{
+      border-top: 0 none;
+    }
+    tr td{
+      line-height: 23px;
+    }
+  }
+  thead tr th{
+    border-top: 0 none;
+    border-bottom: 0 none;
+    font-weight: normal;
+    font-size: 13px;
+  }
+  thead tr.group-header-row{
+    th{
+      text-align: center;
+      border-top: 0 none;
+      padding-bottom: 0;
+    }
+  }
+  .property-col{
+    font-family: monospace;
+  }
+  .radio-col{
+    width: 63px;
+    text-align: center;
+    padding-top: 3px;
+    input[type="radio"] {
+      margin-top: 0;
+    }
+  }
+}
+
+$series-line-1: #af516c;
+$series-line-2: #ecafaf;
+$series-line-3: #d7706c;
+$series-line-4: #76acb8;
+$series-line-5: #81d0e6;
+$series-line-6: #4e86b6;
+$series-line-7: #b8b1a9;
+
+.view-series-list-item, .sortablelist-placeholder{
+  margin: 2px 0;
+  border-width: 1px 1px 1px 13px;
+  padding: 4px;
+  border-color: #ccc;
+  border-style: solid;
+  .series-num{
+    width:20px;
+    display: inline-block;
+  }
+  .series-name{
+    cursor: pointer;
+    display: inline-block;
+    min-width: 90px;
+    max-width: 310px;
+    &:hover{
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    &:focus{
+      outline: 1px solid $input-border;
+      text-decoration: none;
+      cursor: text;
+    }
+  }
+  .is-primary{
+    float:right;
+    color: $series-line-1;
+    font-size: 14px;
+    vertical-align: middle;
+    line-height: 25px;
+  }
+  .is-last{
+    float:right;
+    margin: 0;
+    vertical-align: middle;
+    padding-left: 16px;
+    label {
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    input[type="checkbox"]{
+      margin-top: 8px;
+      margin-left: -16px;
+    }
+  }
+  &.series-1{
+    border-color: $series-line-1;
+  }
+  &.series-2{
+    border-color: $series-line-2;
+  }
+  &.series-3{
+    border-color: $series-line-3;
+  }
+  &.series-4{
+    border-color: $series-line-4;
+  }
+  &.series-5{
+    border-color: $series-line-5;
+  }
+  &.series-6{
+    border-color: $series-line-6;
+  }
+  &.series-7, .series-other{
+    border-color: $series-line-7;
+  }
+}
+
+.sortablelist-placeholder{
+  border-style: dashed;
+  border-left-style: solid;
+  height: 35px;
+  position: relative;
+  //border-color: yellow;
+  opacity: .5;
+}
+
+.view-importdata{
+  background-color: $body-bg;
+  border: 9px dashed transparent;
+  margin: 0px !important;
+  padding: 10px;
+  display: flex;
+  //-webkit-box-align: center;
+  //-webkit-box-pack: center;
+  align-items:center;
+  justify-content: center;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing:border-box;
+
+  &.dropzone{
+    border-color: black;
+  }
+  .alert{
+  }
+  &__content{
+    height: auto;
+    width: 100%;
+    max-width: 660px;
+  }
+}
+
+
+.pilcrow:before{
+  content:"¶";
+  position: block;
+  width: 2px;
+  height: 2px;
+  margin-top: -2px;
+  font-family: sans-serif;
+}
+.tsv-tab{
+  background-color: rgba(0,0,0,.1);
+}

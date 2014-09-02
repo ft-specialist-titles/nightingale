@@ -1,0 +1,28 @@
+<div class="graphic"></div>
+<div class="overlay">
+  <div class="overlay__content">
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary selected-format" data-save-format="png">Save as PNG</button>
+      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu" role="menu">
+        <li role="presentation" class="dropdown-header">Save image</li>
+        <li><a href="#" data-save-format="png">PNG</a></li>
+        <!--<li class="dropdown-free">
+          Thing
+          <div class="btn-group pos-right">
+  <button type="button" class="btn btn-default">A</button>
+  <button type="button" class="btn btn-default">B</button>
+  <button type="button" class="btn btn-default">C</button>
+</div></li>-->
+        {{! <li><a href="#" data-save-format="jpg">JPEG</a></li> }}
+        <li><a href="#" data-save-format="svg">SVG</a></li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Save data</li>
+        <li><a href="#" data-save-format="pipeline">Pipeline TSV</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
