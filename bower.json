@@ -1,6 +1,5 @@
 {
   "name": "playfair",
-  "version": "0.0.0",
   "description": "Chart making tool for journalists",
   "main": "src/index.js",
   "authors": [
