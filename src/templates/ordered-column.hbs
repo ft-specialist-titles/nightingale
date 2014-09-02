@@ -1,0 +1,13 @@
+<span class="series-num">{{index}}.</span>
+<span title="click to edit the series label" name="property" class="series-name" placeholder="none" draggable="false" contenteditable></span>
+{{#if primary}}
+<span class="is-primary">primary series</span>
+{{/if}}
+{{#if isLast}}
+<div class="is-last checkbox" draggable="false">
+  <label>
+  <input type="checkbox" name="isOthers" /> style as "Others"
+  </label>
+</div>
+{{/if}}
+

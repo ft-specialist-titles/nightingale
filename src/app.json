@@ -1,0 +1,7 @@
+{
+  "app": {
+    "name": "playfair",
+    "js": "bundle.js",
+    "css": "bundle.css"
+  }
+}
