@@ -3,7 +3,7 @@ var Backbone = require('./core/backbone.js');
 
 var ViewColumns = CollectionView.extend({
 
-  className: 'config-dimensions',
+  className: 'config-axes',
 
   template: require('./templates/imported-columns.hbs'),
 
@@ -18,7 +18,7 @@ var ViewColumns = CollectionView.extend({
     template: require('./templates/column.hbs'),
 
     bindings: {
-      '[name^="dimension-"]': 'dimension'
+      '[name^="axis-"]': 'axis'
     }
 
   }

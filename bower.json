@@ -1,12 +1,12 @@
 {
-  "name": "playfair",
+  "name": "nightingale",
   "description": "Chart making tool for journalists",
   "main": "src/index.js",
   "authors": [
     "Luke.Kavanagh@ft.com"
   ],
   "license": "MIT",
-  "homepage": "http://editorial.ft.com/playfair",
+  "homepage": "http://editorial.ft.com/nightingale",
   "private": true,
   "ignore": [
     "**/.*",
@@ -16,10 +16,10 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap-sass": "~3.0.2",
+    "bootstrap-sass-official": "~3.2.0",
     "d3": "~3.4.8",
     "backbone": "~1.1.2",
     "backbone.stickit": "~0.8.0",
-    "modest-charts": "http://git.svc.ft.com/scm/iglt/d3-chart-bits.git"
+    "o-charts": "^1.0.0"
   }
 }

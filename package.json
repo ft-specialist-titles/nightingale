@@ -1,5 +1,5 @@
 {
-  "name": "playfair",
+  "name": "nightingale",
   "version": "0.0.0",
   "description": "Chart making tool for journalists",
   "main": "src/index.js",
@@ -11,12 +11,13 @@
     "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/scss/index.scss dist/bundle.css",
     "watch-html": "mkdir -p .tmp && jade src --watch --pretty -p .tmp -o .tmp -O \"$(<package.json)\"",
     "watch": "./bin/watch .tmp",
+    "tmp-vendor": "./bin/build-vendor .tmp",
     "build": "rm -rf dist && npm run build-css && ./bin/build-vendor dist && npm run build-js && ./bin/build-html dist",
     "start": "npm run build && srvlr dist -R -l tiny"
   },
   "repository": {
     "type": "git",
-    "url": "http://git.svc.ft.com:8080/scm/igct/playfair.git"
+    "url": "http://git.svc.ft.com:8080/scm/igct/nightingale.git"
   },
   "author": "luke.kavanagh@ft.com",
   "license": "MIT",
@@ -50,7 +51,7 @@
     "underscore": "./bower_components/underscore/underscore.js",
     "backbone": "./bower_components/backbone/backbone.js",
     "d3": "./bower_components/d3/d3.js",
-    "bootstrap-sass": "./bower_components/bootstrap-sass/dist/js/bootstrap.js"
+    "bootstrap-sass-official": "./bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js"
   },
   "browserify-shim": {
     "jquery": "global:jQuery"

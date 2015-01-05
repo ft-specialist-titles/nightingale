@@ -1,6 +1,16 @@
 var utils = require('./utils.js');
+var fs = require('fs');
 
+var bentonFontDataURI = fs.readFileSync(__dirname + '/BentonSans.txt', 'utf8').trim();
 var svgSchema = 'http://www.w3.org/2000/svg';
+
+function svgStyleElement(stylesheet) {
+  return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
+}
+
+function fontFace(name, fontDataURI) {
+  return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
+}
 
 var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
 
@@ -10,6 +20,13 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
   // we're about to modify the SVG with export hacks 
   // and background color etc so we need to make a copy
   svg = svg.cloneNode(true);
+
+  svg.setAttribute('version', '1.1');
+
+  var fontface = fontFace('BentonSans', bentonFontDataURI);
+  var style = svgStyleElement(fontface);
+
+  svg.insertAdjacentHTML('afterbegin', '<defs>'+ style +'</defs>');
 
   var transparent = !opts.bgColor || opts.bgColor === 'transparent';
 
@@ -68,18 +85,17 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
   var context = canvas.getContext('2d');
   var image = new Image();
 
-  image.onload = function() {
-
+  function drawIntoContext(element, width, height) {
     // TODO: understand more about canvas dimensions. read this.
     //        - http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5
 
-    var w = canvas.width = image.width;
-    var h = canvas.height = image.height;
+    var w = canvas.width = width;
+    var h = canvas.height = height;
     var s = canvas.style;
     s.width = w + 'px';
     s.height = h + 'px';
 
-    context.drawImage(image, 0, 0);
+    context.drawImage(element, 0, 0);
     var datauri = canvas.toDataURL(opts.type, opts.quality);
     
     // TODO: Research use of canvas.toDataURLHD.
@@ -88,11 +104,29 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
     //       - https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement
 
     callback(null, datauri);
+    document.body.removeChild(image);
+  } 
+
+  image.onload = function() {
+    drawIntoContext(image, image.width, image.height);
   };
 
   image.onerror = function() {
     callback(new Error('Error creating image'));
   };
 
-  image.src = elementToDataURI(svg, {bgColor: opts.bgColor});
+  image.style.display = 'none';
+  document.body.appendChild(image);
+
+  var src = elementToDataURI(svg, {bgColor: opts.bgColor});
+  image.src = src;
+
+  // var o = document.createElement('object');
+  // o.setAttribute('type', 'image/svg+xml');
+  // o.setAttribute('data', src);
+  // o.style.position = 'fixed';
+  // o.style.zIndex = 5;
+  // document.body.appendChild(o);
+  // drawIntoContext(o, 200, 200);
+
 };

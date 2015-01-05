@@ -1,18 +1,18 @@
-<div class="radio">
-  <label>
-    <input type="radio" name="datatype" value="categorical">
-    Category
-  </label>
-</div>
-<div class="radio">
-  <label>
-    <input type="radio" name="datatype" value="numeric">
-    Value <span class="text-muted">numbers, currency, percentages</span>
-  </label>
-</div>
-<div class="radio">
-  <label>
-    <input type="radio" name="datatype" value="time">
-    Time <span class="text-muted">continuous time, years, months, days.</span>
-  </label>
+<label>Data type</label>
+<div class="btn-group btn-group-justified btn-group-radio" name="datatype">
+  {{#if show.numeric}}
+  <div class="btn-group">
+    <button type="button" class="btn btn-default" value="numeric">Value</button>
+  </div>
+  {{/if}}
+  {{#if show.time}}
+  <div class="btn-group">
+    <button type="button" class="btn btn-default" value="time">Time</button>
+  </div>
+  {{/if}}
+  {{#if show.categorical}}
+  <div class="btn-group">
+    <button type="button" class="btn btn-default" value="categorical">Category</button>
+  </div>
+  {{/if}}
 </div>

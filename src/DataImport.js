@@ -3,17 +3,25 @@ var Column = require('./Column.js');
 var d3 = require('d3');
 var _ = require('underscore');
 var Datatypes = require('./Datatypes.js');
+var Axis = require('./Axis.js');
 
-var partDateExp = /^(\d{2}am|\d{2}pm|mon|tues|wed|thurs|fri|sat|sun|jan|feb|march|apr|jun|jul|aug|sept|oct|nov|dec)/i;
+var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+var aYearALongWayInTheFuture = 3000;
 
 var isPartDate = function(value) {
-  return /^\d{2,4}$/.test(value) || partDateExp.test(value);
+  var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
+  if (isLikelyNumber) {return true;}
+  var isPartDate = partDateExp.test(value);
+  if (isPartDate) {return true;}
+  return false;
 };
 
 var isDateString = function(value) {
+  if (!value) return false;
   var result = true;
-  var s = value.split(/[\:\/\-\ ]/);
+  var s = value.split(/[\:\/\-\ ]+/);
   var i = s.length;
+  if (!s.length) return false;
   while (result && i--) {
     result = isPartDate(s[i]);
   }
@@ -22,17 +30,13 @@ var isDateString = function(value) {
 
 var toNumber = function(value) {
 
-  //FIXME: this function is not very good a predicting a numeric values
-  //       mainly cos regexs are not great... they were good enough for prototyping however.
-  var m = value.match(/[\d\,\.]+/) 
-
-  if (!m || m.length !== 1) {
-    return NaN;
-  }
-
-  return Number(m[0].replace(/\,(?=\d)/g, ''));
+  var s = value.trim()
+                .replace(/\,(?=\d{2,3})/g, '')
+                .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
+                .replace(/\ *%$/, '');
+  var m = s.match(/^\-?[\d\.Ee]+$/);
+  return !m || m.length !== 1 ? NaN : Number(m[0]);
 };
-
 
 var sniffDatatype = function(value, colNum) {
   // this is set as the context when the forEach invokes .
@@ -45,24 +49,350 @@ var sniffDatatype = function(value, colNum) {
     return;
   }
 
+  value = value.trim();
+
   var parsedNum = toNumber(value);
 
   if (!isNaN(parsedNum)) {
     isNumber = true;
     o.numbers++;
+    o.numberValues.push(value);
   }
 
   if (isDateString(value)) {
     isDate = true;
     o.dates++;
+    o.dateValues.push(value)
   }
 
-  var hasNonNumberChars = value.search(/[^\d\,\.]/) !== -1;
+  var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
 
   if ((!isDate && !isNumber) || (isNumber && hasNonNumberChars)) {
     o.strings++;
+    o.stringValues.push(value);
   }
 };
+
+
+function normalise(value) {
+  if (!value) return null;
+
+  return value.toString()
+              .trim()
+              // make all regexp quicker and simpler by removing case
+              .toLowerCase()
+              // normalise separtators
+              .replace(/[\/\ ]/g, '-');
+}
+
+var predictedDateFormat = (function(){
+
+  var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
+  var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
+  var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
+  var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
+  var digit = /\d/;
+  var separator = /\/\-\ /;
+  // first letters of all months and days. ordered by amount of occurrences and then by months, days
+  var firstletters = /[jmsfatondw]/;
+  var typeNames = ['month', 'year', 'day', 'ampm', 'weekday'];
+  var types = {};
+  var abbreviatedFormats = {
+    '%m/%d/%Y': '%x',
+    '%H:%M:%S': '%X'
+  };
+
+  function attachTypes(obj) {
+    typeNames.forEach(function (name) {
+      obj[name] = name;
+    });
+  }
+
+  attachTypes(types);
+
+  function Part(d) {
+
+    var len = d.length;
+    var zeroPadded = len === 2;
+    this.num = NaN;
+    this.type = null;
+    this.format = null;
+    this.guessYear = false;
+    this.guessMonth = false;
+    this.guessDay = false;
+    this.twoDigit = false;
+
+    this.guess = function() {
+      return this.guessYear || this.guessMonth || this.guessDay;
+    }.bind(this);
+
+    if (/^\d{3,4}$/.test(d))  {
+      this.type = types.year;
+      this.format = '%Y';
+    } else if (/^\d{1,2}$/.test(d)) {
+
+      this.twoDigit = zeroPadded;
+      this.num = parseInt(d);
+
+      if (zeroPadded && this.num > 31) {
+        this.type = types.year;
+        this.format = '%y';
+      } else if (this.num > 12 && this.num <= 31) {
+        this.guessYear = true;
+        this.guessDay = true;
+      } else if(this.num <= 12) {
+        this.guessYear = true;
+        this.guessMonth = true;
+        this.guessDay = true;
+      }
+
+    } else if (len >= 3 && len <= 9 && firstletters.test(d.charAt(0))) {
+
+      if (shortMonths.test(d)) {
+        this.format = '%b';
+        this.type = types.month;
+      } else if (longMonths.test(d)) {
+        this.format = '%B';
+        this.type = types.month;
+        } else if (shortDays.test(d)) {
+        this.format = '%a';
+        this.type = types.weekday;
+      } else if (longDays.test(d)) {
+        this.format = '%A';
+        this.type = types.weekday;
+      } else {
+        // could be GMT+0100 or T13:00:00
+        console.log('el', d)
+      }
+
+    } else if (/^(am|pm)$/.test(d)) {
+      this.format = '%p';
+      this.type = types.ampm;
+
+    // TODO: time format
+    // eg 13:00 | 09:00 | 09:00:00 | 09:00:00
+    //} else if () {
+
+    // TODO: timezone eg GMT+0100 (BST)
+    //} else if () {
+
+    } else if (/^\([a-z]+\)$/.test(d)) {
+      console.log('this is part of the time zone info');
+    }
+  }
+
+  return function (value) {
+
+    // only use only kind of token separator
+    value = normalise(value);
+
+    if (!value) return null;
+
+    // resolve quickly for simple year values
+    if (/^\d{1,4}$/.test(value)) {
+      return '%Y';
+
+    // resolve quickly for strings that
+    // look like numbers but definitely not years
+    // eg 12345 or 1.1 or 1,000
+    } else if (/^[\d\.\,]+$/.test(value)) {
+      return null;
+    }
+
+    var tokens = value.split(/\-/g);
+    var numTokens = tokens.length;
+
+    // resolve quickly with values like 00/00
+    if (numTokens === 2 && /^\d{2}-\d{2}$/.test(value)) {
+      // assume something like 12-12 means December 2012.
+      if (parseInt(tokens[0]) <= 12) {
+        return '%m/%y';
+      } else {
+        // this would mean we have a value like 14-14
+        // which we can never safely make a date from.
+        return null;
+      }
+    } else if (numTokens === 2) {
+      if (shortMonths.test(tokens[0])) {
+        if (/^\d{4}$/.test(tokens[1])) {
+          return '%b/%Y';
+        } else if (/^\d{2}$/.test(tokens[1])) {
+          return '%b/%y';
+        }
+      } else if (/^\d{4}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+        return '%Y/%b';
+      } else if (/^\d{2}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+        return '%y/%b';
+      }
+    }
+
+    // trick the parser into thinking the last
+    // token is a year if it matches the pattern 00-00-00
+    if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+      tokens[2] = '99';
+    }
+
+    var parts = [];
+    var token;
+    var part;
+
+    for(var i = 0; i < numTokens; i++) {
+      token = tokens[i];
+      part = new Part(token);
+      parts.push(part);
+    }
+
+    var hasYear = false;
+    var hasMonth = false;
+    var hasDay = false;
+    var numParts = parts.length;
+
+    for(var i = 0; i < numParts; i++) {
+      part = parts[i];
+      if (part.type === types.year) {
+        if (hasYear) {
+          return null;
+        }
+        hasYear = true;
+      }
+      if (part.type === types.month) {
+        if (hasMonth) {
+          return null;
+        }
+        hasMonth = true;
+      }
+      if (part.type === types.day) {
+        if (hasDay) {
+          return null;
+        }
+        hasDay = true;
+      }
+    }
+
+    var partsWithGuesses = [];
+
+    for(var i = 0; i < numParts; i++) {
+      part = parts[i];
+      if (part.guess()) {
+        partsWithGuesses.push(part);
+      }
+    }
+
+    var numGuesses = partsWithGuesses.length;
+
+    for(var i = 0; i < numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (hasYear && part.guessYear) {
+        part.guessYear = false;
+      }
+      if (hasMonth && part.guessMonth) {
+        part.guessMonth = false;
+      }
+      if (hasDay && part.guessDay) {
+        part.guessDay = false;
+      }
+    }
+
+    for(var i = 0; i < numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+        part.guessDay = false;
+        part.type === types.day;
+        hasDay = true;
+        part.format = part.twoDigit ? '%d' : '%e';
+      }
+      if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+        part.guessMonth = false;
+        part.type === types.month;
+        hasMonth = true;
+        part.format = '%m';
+      }
+      if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+        part.guessYear = false;
+        part.type === types.year;
+        hasYear = true;
+        part.format = '%y';
+      }
+    }
+
+    for(var i = 0; i < numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (hasYear && part.guessYear) {
+        part.guessYear = false;
+      }
+      if (hasMonth && part.guessMonth) {
+        part.guessMonth = false;
+      }
+      if (hasDay && part.guessDay) {
+        part.guessDay = false;
+      }
+    }
+
+//// 2
+
+
+
+    for(var i = 0; i < numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+        part.guessDay = false;
+        part.type === types.day;
+        hasDay = true;
+        part.format = part.twoDigit ? '%d' : '%e';
+      }
+      if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+        part.guessMonth = false;
+        part.type === types.month;
+        hasMonth = true;
+        part.format = '%m';
+      }
+      if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+        part.guessYear = false;
+        part.type === types.year;
+        hasYear = true;
+        part.format = '%y';
+      }
+    }
+
+
+    for(var i = 0; i < numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (hasYear && part.guessYear) {
+        part.guessYear = false;
+      }
+      if (hasMonth && part.guessMonth) {
+        part.guessMonth = false;
+      }
+      if (hasDay && part.guessDay) {
+        part.guessDay = false;
+      }
+    }
+
+
+//////////////////////////////
+
+    var format = [];
+
+    for(var i = 0 ; i < numParts; i++) {
+      part = parts[i];
+      if (part.guess()) {
+        return null;
+      }
+      if (part.format) {
+        format.push(part.format);
+      }
+    }
+
+    format = format.length ? format.join('/') : null;
+
+    if (format in abbreviatedFormats) {
+      return abbreviatedFormats[format];
+    }
+
+    return format;
+  }
+
+})();
 
 var Threshold = function(numRows) {
   var percent = 95;
@@ -193,9 +523,12 @@ var DataImport = Backbone.Model.extend({
           dataTypeCounters.push({
             colName: n,
             strings: 0,
+            stringValues: [],
             nulls: 0,
             numbers: 0,
-            dates: 0
+            numberValues: [],
+            dates: 0,
+            dateValues: []
           });
         }
         return;
@@ -256,6 +589,8 @@ var DataImport = Backbone.Model.extend({
     dataTypeCounters.forEach(function (typeCounter) {
       if (threshold.isAbove(typeCounter.nulls)) {
         typeCounter.datatype = Datatypes.NONE;
+      } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
+        typeCounter.datatype = Datatypes.NUMERIC;
       } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
         typeCounter.datatype = Datatypes.TIME;
       } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
@@ -270,48 +605,160 @@ var DataImport = Backbone.Model.extend({
     console.log('sniffing the datatypes');
     console.table(dataTypeCounters);
 
-    var newColumns = [];
-    var predictedDimensions = [];
+    var xAxis;
 
-    if (numCols === 2) {
-      predictedDimensions = ['A', 'B'];
-    } else {
-      var hasCategorical = false;
-      var hasTime = false;
-      var numericDimension;
-      var availableDimensions = ['A', 'B'/*, 'C' --- dimension C not available yet */];
-      var predictedDatatypes = _.pluck(dataTypeCounters, 'datatype');
-      predictedDatatypes.forEach(function (datatype) {
-        if (!hasCategorical && datatype === Datatypes.CATEGORICAL) {
-          // TODO:
-          // perhaps we should go one step further and assume that
-          // the categorical values should be unique before they can
-          // be eligible for being a category axis?
-          hasCategorical = true;
-          predictedDimensions.push(availableDimensions.shift());
-        } else if (!hasTime && datatype === Datatypes.TIME) {
-          hasTime = true;
-          predictedDimensions.push(availableDimensions.shift());
-        } else if (datatype == Datatypes.NUMERIC) {
-          // TODO:
-          // At the moment we just assume all numeric
-          // columns are on the same axis. need a clever way
-          // of telling difference between numeric colmns that
-          // are not grouped together.
-          if (!numericDimension) {
-            numericDimension = availableDimensions.shift();
-          }
-          predictedDimensions.push(numericDimension);
+    dataTypeCounters.forEach(function (counter) {
+      var type = counter.datatype;
+      if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {
+        if (!xAxis) {
+          xAxis = counter;
+          counter.predictedAxis = Axis.X;
         } else {
-          predictedDimensions.push(null);
+          counter.predictedAxis = Axis.NONE;
         }
+      } else if (Datatypes.isNumeric(type)) {
+        counter.predictedAxis = Axis.Y;
+      } else {
+        counter.predictedAxis = Axis.NONE;
+      }
+    });
+
+    // second pass in case we predict wrongly the first time
+    // if !axes.y.length && !axes.x then error
+    // if !axes.y.length then look at axes.none and try to add some of them to axes.y
+
+    var newColumns = dataTypeCounters.map(function (counter, index) {
+      return new Column({
+        property: counter.colName,
+        label: counter.colName,
+        axis: counter.predictedAxis,
+        typeInfo: counter
       });
+    });
+
+    var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
+    var unsafeDateString = true;
+    var timeCols = []
+    var typeInfo;
+    var colName
+    var attemptedDate;
+    var val;
+    var dateFormat;
+    var countDateFormats;
+    var totalNonDateStrings;
+    var mostPopularDateFormatCount;
+    var mostPopularDateFormat;
+
+    for (var i = 0, x = newColumns.length; i < x; i++) {
+
+      typeInfo = newColumns[i].get('typeInfo');
+      colName = typeInfo.colName;
+      
+      if (typeInfo.datatype === Datatypes.TIME) {
+        typeInfo.dateFormats = [];
+        countDateFormats = {};
+        totalNonDateStrings = 0;
+
+        for (var j = 0; j < numRows; j++) {
+          val = data[j][colName];
+
+          if (!val) continue;
+
+          attemptedDate = NaN;
+          unsafeDateString = true;//isUnsafeDateString.test(val);
+
+          // Don't attempt to make a date object from an unsafe string. Javascript's date 
+          // constructor (esp in Chrome/V8) will happily parse ambiguous strings without understanding
+          // the difference between day and month when they appear first.
+          // Any will fill in the year if one isn't provied
+          if(typeof val === 'string' && !unsafeDateString) {
+            attemptedDate = new Date(val);
+          }
+          
+          if (isNaN(+attemptedDate)) {
+            dateFormat = predictedDateFormat(val);
+            totalNonDateStrings++;
+            if (dateFormat) {
+              typeInfo.dateFormats.push(dateFormat);
+              if (dateFormat in countDateFormats) {
+                countDateFormats[dateFormat]++;
+              } else {
+                countDateFormats[dateFormat] = 1;
+              }
+            }
+          } else {
+            data[j][colName] = attemptedDate;
+          }
+        }
+
+        mostPopularDateFormat = null;
+        mostPopularDateFormatCount = 0;
+
+        var formatKeys = Object.keys(countDateFormats);
+        var numKeys = formatKeys.length;
+
+        if (numKeys === 1) {
+          typeInfo.mostPopularDateFormat = formatKeys[0];
+        } else if (numKeys > 1) {
+
+          formatKeys.forEach(function (key) {
+            var count = countDateFormats[key];
+            if (count >= mostPopularDateFormatCount) {
+              // it's not good enough for the current format is be joint most-popular
+              mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;
+              mostPopularDateFormatCount = count;
+            }
+          });
+
+          if (mostPopularDateFormatCount &&
+                totalNonDateStrings &&
+                // the most popular date format found is more than 85%
+                // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
+                (mostPopularDateFormatCount * (100 / totalNonDateStrings) > 95)) {
+            typeInfo.mostPopularDateFormat = mostPopularDateFormat;
+          } else {
+            typeInfo.mostPopularDateFormat = null;
+          }
+
+        }
+
+        if (typeInfo.mostPopularDateFormat) {
+          var columnFormatter = d3.time.format(typeInfo.mostPopularDateFormat).parse;
+          var parseValue;
+          for (var j = 0; j < numRows; j++) {
+            val = data[j][colName];
+
+            if (!val || val instanceof Date) continue;
+
+            parseValue = columnFormatter(val.toString().trim().replace(/[\-\ ]/g, '/'));
+            if (parseValue && parseValue instanceof Date) {
+              data[j][colName] = parseValue;
+            }
+
+          }
+        }
+      }
     }
 
-    newColumns = colNames.map(function (key, index) {
-      var predictedDimension = predictedDimensions.shift() || null;
-      return new Column({property: key, dimension: predictedDimension, typeInfo: dataTypeCounters[index]});
-    });
+    for (var i = 0, x = newColumns.length; i < x; i++) {
+
+      typeInfo = newColumns[i].get('typeInfo');
+      colName = typeInfo.colName;
+      var parseValue;
+      if (Datatypes.isNumeric(typeInfo.datatype)) {
+        for (var j = 0; j < numRows; j++) {
+          val = data[j][colName];
+
+          if (!val) continue;
+
+          parseValue = Number(val.trim().replace(/\,/g).replace(/^(\$|€|¥|£)/).replace(/(\%)$/, ''));
+
+          data[j][colName] = isNaN(parseValue) ? val : parseValue;
+
+        }
+      }
+    }
+
 
     this.set({
       numCols: numCols,
@@ -391,6 +838,52 @@ var DataImport = Backbone.Model.extend({
     return null;
   } 
 
+});
+
+var tests = {
+  '1.101': null,
+  '1,000': null,
+  '1,000,000': null,
+  '1': '%Y',
+  '11': '%Y',
+  '111': '%Y',
+  '1999': '%Y',
+  '11111': null,
+  '01-1999': '%m/%Y',
+  '12-1999': '%m/%Y',
+  '13-1999': null,
+  '32-1999': null,
+  'Jan 1999': '%b/%Y',
+  '31/01/2014': '%d/%m/%Y',
+  '31/01/14': '%d/%m/%y',
+  '01/31/2014': '%x',
+  '01/31/14': '%m/%d/%y',
+  '01 January 2014': '%d/%B/%Y',
+  '13/01/13': '%d/%m/%y',
+  '01/13/13': '%m/%d/%y',
+  '13/01/01': '%d/%m/%y',
+  '01/13/01': '%m/%d/%y',
+  '12/01/12': null,
+  '01/12/12': null,
+  '1/1/14': null,
+  '01-01-01': null,
+  '14/14': null,
+  '11/14': '%m/%y',
+  '01/13/2013': '%x',
+  '01/13/13': '%m/%d/%y',
+  '01 Jan 2014': '%d/%b/%Y',
+  '32 Jan 2014': null,
+  'Jan 01 2014': '%b/%d/%Y',
+  'Jan 32 2014': null,
+  'January 01 2014': '%B/%d/%Y',
+  '2014 January 01': '%Y/%B/%d',
+};
+
+Object.keys(tests).forEach(function (key) {
+  var date = key;
+  var format = tests[key];
+  var result = predictedDateFormat(date);
+  console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
 });
 
 module.exports = DataImport;
