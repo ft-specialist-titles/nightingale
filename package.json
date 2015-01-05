@@ -6,7 +6,7 @@
   "scripts": {
     "test": "browserify test/**/*.test.js | testling",
     "watch-js": "./bin/build-js watchify .tmp",
-    "build-js": "./bin/build-js browserify dist && uglifyjs dist/bundle.js -c -o dist/bundle.js",
+    "build-js": "./bin/build-js browserify dist && node ./node_modules/uglifyjs/index.js dist/bundle.js -c -o dist/bundle.js",
     "watch-css": "mkdir -p .tmp && sass --style expanded --load-path=bower_components --watch src/scss/index.scss:.tmp/bundle.css",
     "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/scss/index.scss dist/bundle.css",
     "watch-html": "mkdir -p .tmp && jade src --watch --pretty -p .tmp -o .tmp -O \"$(<package.json)\"",
