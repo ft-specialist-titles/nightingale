@@ -7,13 +7,13 @@ browserify \
   -r backbone \
   -r hbsfy/runtime \
   -r d3 \
-  -r bootstrap-sass \
+  -r bootstrap-sass-official \
   -r jquery \
   -r handlebars/runtime \
   --noparse=./bower_components/jquery/dist/jquery.js \
   --noparse=./bower_components/underscore/underscore.js \
   --noparse=./bower_components/backbone/backbone.js \
   --noparse=./bower_components/d3/d3.js \
-  --noparse=./bower_components/bootstrap-sass/dist/js/bootstrap.js \
+  --noparse=./bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js \
   --detect-globals false \
   -o $dir/vendor.js

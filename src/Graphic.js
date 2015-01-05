@@ -13,6 +13,21 @@ var Graphic = Backbone.Model.extend({
     subtitle: '',
     source: '',
     footnote: ''
+  },
+
+  subtitleSuggestion: function(save) {
+    var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
+    var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
+    var result;
+
+    if (label) {
+      result = !units ? label : label + ' (' + units + ')';
+      if (save) {
+        this.set('subtitle', result);
+      }
+    }
+
+    return result;
   }
 });
 

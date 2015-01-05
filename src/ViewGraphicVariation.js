@@ -1,160 +1,97 @@
 var Backbone = require('./core/backbone.js');
 var $ = require('jquery');
-var download = require('./export/download.js');
-var linechart = require('modest-charts/src/ft-line-chart.js');
+var linechart = require('o-charts').chart.line;
 var d3 = require('d3');
-
-console.log('LINECHART', linechart);
-
-
-
-var availableFormats = {
-  png: 'PNG',
-  jpg: 'JPEG',
-  svg: 'SVG'
-};
-
-var currentlySelectedFormat = 'png';
-
-var dropdown = (function(){
-
-  var initd = 0;
-
-  function closeDropdown(event) {
-    $('[data-toggle="dropdown"]').parent().removeClass('open');
-  }
-
-  return {
-    setup: function() {
-      initd++;
-      if (initd > 1) return;
-      document.addEventListener('click', closeDropdown, true);
-    },
-    teardown: function() {
-      initd--;
-      if (initd) return;
-      document.removeEventListener('click', closeDropdown, true);
-    }
-  };
-}());
-
-function createFilename(svg, model) {
-  // TODO: get the chart title from the model
-  // TODO: what about when the Height is set as 'auto' , we want to get the height of the graphic instead
-  return 'ChartTitle' + '-' + parseInt(svg.getAttribute('width')) + 'x' + parseInt(svg.getAttribute('height')) + '-' + model.name + '-' + model.graphicType;
-}
+var _ = require('underscore');
 
 var ViewGraphicVariation = Backbone.View.extend({
 
   initialize: function(options) {
-    this.width = options.width;
-    this.height = options.height;
     this.chart = linechart();
+    var debounced = _.bind(_.debounce(this.render, 50), this);
+    this.listenTo(this.model.graphic, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
   },
 
-  className: 'view-graphic-variation graphic-instance chart-type-line',
+  className: 'view-graphic-variation',
 
   template: require('./templates/graphic.hbs'),
 
   events: {
-    'click [data-save-format]': 'save'
+    'click .graphic>svg': 'select'
   },
 
-  save: function(event) {
-    if (!event.target.dataset.saveFormat) return;
-
-    var changeType = currentlySelectedFormat !== event.target.dataset.saveFormat;
-
-    currentlySelectedFormat = event.target.dataset.saveFormat;
-
-    if (event.target.nodeName === 'A') {
-      event.preventDefault();
-    }
-
-    event.stopPropagation();
-    var self = this;
- 
-    if (changeType) {
-      window.requestAnimationFrame(function(){
-        self.$('.selected-format')
-            .attr('data-save-format', currentlySelectedFormat)
-            .text('Save as ' + availableFormats[currentlySelectedFormat]);
-      });
-    }
-
-    var svg = this.$('svg')[0];
-    var el = event.target;
-
-
-    el.setAttribute('disabled', 'disabled');
-
-    function removeDisabledState() {
-      el.removeAttribute('disabled');
-    }
-
-    // TODO: check it's possible to make the image.
-    //         - dont allow the user to download a chart with validation errors
-    //         - dont allow a user to download an empty image
-
-    var filename = createFilename(svg, this.model);
-
-    // TODO: allow transparent and specified colour backgrounds
-    // set this to null for transparent backgrounds
-    var bgColor = '#fff1e0';
-
-    download(filename, svg, currentlySelectedFormat, bgColor, function(){
-      //TODO: alert the user when there's an error creating the image
-
-      // prevent doubleclick
-      setTimeout(removeDisabledState, 200);
-    });
+  select: function(event) {
+    Backbone.trigger('selectVariation', this.model, event.currentTarget);
   },
 
-  delgateEvents: function() {
-    Backbone.View.prototype.remove.apply(this, arguments);
-    dropdown.teardown();
+  empty: function() {
+    this.el.innerHTML = '';
+    this.el.style.display = 'none';
   },
 
   render: function(){
-    var msg = 'I am a ' + this.model.name + ' Line chart. Dimensions: ' + this.model.width + ' x ' + this.model.height;
-    this.el.innerHTML = this.template({
-      message: msg,
-      chartClass: 'line-chart',
-      width: this.width,
-      height: this.height
+    var rows = this.model.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d)});
+    var x = {};
+    x.label = x.key = this.model.graphic.chart.xAxis.get('property');
+    var y = this.model.graphic.chart.yAxis.columns.map(function (d) {
+      var property = d.get('property');
+      var label = d.get('label') || property;
+      return {key: property, label: label};
     });
+    var dateFormat = this.model.graphic.chart.xAxis.get('dateFormat');
 
-    var dp = d3.time.format('%Y').parse
+    if (!x.key || !y.length || !rows.length) {
+      this.empty();
+      return;
+    }
 
+    this.el.innerHTML = this.template();
+
+    var d = this.model.toJSON();
     var svg = this.el.querySelector('.graphic');
+    var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
+    var w = d.variation.width;
+
+    this.el.style.width = (w + selectionBorderWidth) + 'px';
+    this.el.style.display = 'block';
+    svg.style.width = w + 'px';
+    svg.style.borderColor = 'transparent';
 
     d3.select(svg).data([{
+
       // accumulate: "false",
-      comment: "Line chart",
-      // doublescale: "0",
-      footnote: "A real footnote",
-      source: "Macquarie.com",
-      subtitle: "%",
-      title: "China share of global demand",
-      indexProperty: 'date',
-      dateParser: dp,
-      width: this.width,
-      height: this.height,
-      plotWidth: 200,
-      plotHeight: 200,
-      headings: [
-        'date',
-        'value',
-        'value2'
-      ],
-      data: [
-        {date: '2000', value: '10', value2: '40'},
-        {date: '2001', value: '20', value2: '30'},
-        {date: '2002', value: '30', value2: '20'},
-        {date: '2003', value: '40', value2: '10'}
-      ]
+
+      // if falseorigin is a function then we could do it based on the data ... function could be passed the scale etc.
+      falseorigin: true,
+
+      title: d.graphic.title,
+      subtitle: d.graphic.subtitle,
+      numberAxisOrient: 'right',
+      source:  d.graphic.source,
+      footnote:  d.graphic.footnote,
+      dateParser: dateFormat,
+      // chartWidth: w,
+      chartHeight: w * (3/4),
+      width: w,
+      height: d.variation.height,
+      error: function(errr) {
+        console.log('Error', errr);
+        svg.style.borderColor = '#f00';
+      },
+      x: {
+        series: x
+      },
+      y: {
+        series: y,
+        flip: false,
+        noLabels: false,
+        zeroOrigin: false // could be boolean or function
+      },
+      data: rows
     }]).call(this.chart);
-    dropdown.setup();
     return this;
   }
 
