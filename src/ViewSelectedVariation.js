@@ -1,4 +1,6 @@
 var RegionView = require('./core/RegionView.js');
+var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
+var ViewLineControls = require('./ViewLineControls.js');
 var download = require('./export/download.js');
 var util = require('util');
 var attributeStyler = require('o-charts').util.attributeStyler;
@@ -16,6 +18,15 @@ var ViewSelectedVariation = RegionView.extend({
 
   events: {
     'click [name="save"]': 'save',
+  },
+
+  regions: {
+    '[data-region="graphic-type-controls"]': function() {
+      return new ViewLineControls({model: this.model.graphicType});
+      // TODO: once we have more chart types then we'll
+      // need to be able to switch between different views here
+      // return new ViewGraphicTypeControls({model: this.model.graphicType});
+    }
   },
 
   save: function(event) {
@@ -51,7 +62,7 @@ var ViewSelectedVariation = RegionView.extend({
     attributeStyler();
 
     download(filename, svg, format, bgColor, function(){
-      //TODO: alert the user when there's an error creating the image
+      // TODO: alert the user when there's an error creating the image
 
       // prevent doubleclick
       setTimeout(removeDisabledState, 200);

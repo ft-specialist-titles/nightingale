@@ -9,6 +9,7 @@ var Graphic = require('./Graphic.js');
 var ViewGraphicControls = require('./ViewGraphicControls.js');
 var ViewSelectedVariation = require('./ViewSelectedVariation.js');
 var Variations = require('./Variations.js');
+var LineControls = require('./LineControls.js');
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -23,8 +24,12 @@ exports.main = function(){
 
   var types = new Backbone.Collection([
     new GraphicType({
-      typeName: 'Line Chart'
-    }, {graphic: graphic, variations: Variations})
+      typeName: 'Line'
+    }, {
+      graphic: graphic,
+      controls: new LineControls(),
+      variations: Variations
+    })
   ]);
 
   var charts = new ViewGraphicTypes({collection: types});
