@@ -168,6 +168,13 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
   }
 }
 
+.has-error{
+  select{
+    color: $state-danger-text;
+    background-color: transparentize($state-danger-bg, .5);
+  }
+}
+
 
 .config-axes{
   table{
