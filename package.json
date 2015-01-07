@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://git.svc.ft.com:8080/scm/igct/nightingale.git"
+    "url": "http://git.svc.ft.com/scm/igct/nightingale.git"
   },
   "author": "luke.kavanagh@ft.com",
   "license": "MIT",
