@@ -19,6 +19,8 @@ var formats = new Backbone.Collection([
 
 var ViewDateFormat = Backbone.View.extend({
 
+  className: 'view-dateformat',
+
   initialize: function() {
     this.formats = formats;
   },
@@ -28,6 +30,16 @@ var ViewDateFormat = Backbone.View.extend({
   },
 
   bindings: {
+    ':el': {
+      observe: 'dateFormat',
+      update: function($el, val, model, options){
+        if (val) {
+          $el.removeClass('has-error');
+        } else {
+          $el.addClass('has-error');
+        }
+      }
+    },
     '[name="dateFormat"]': {
       observe: 'dateFormat',
       selectOptions: {
