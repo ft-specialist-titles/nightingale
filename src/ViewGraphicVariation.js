@@ -13,6 +13,9 @@ var ViewGraphicVariation = Backbone.View.extend({
     this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
     this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
     this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
+    this.listenTo(this.model.graphicType.controls, 'change', debounced);
+    this.listenTo(this.model.errors, 'reset', this.renderErrors);
+    _.bindAll(this, 'reportErrors');
   },
 
   className: 'view-graphic-variation',
@@ -32,66 +35,41 @@ var ViewGraphicVariation = Backbone.View.extend({
     this.el.style.display = 'none';
   },
 
-  render: function(){
-    var rows = this.model.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d)});
-    var x = {};
-    x.label = x.key = this.model.graphic.chart.xAxis.get('property');
-    var y = this.model.graphic.chart.yAxis.columns.map(function (d) {
-      var property = d.get('property');
-      var label = d.get('label') || property;
-      return {key: property, label: label};
-    });
-    var dateFormat = this.model.graphic.chart.xAxis.get('dateFormat');
+  renderErrors: function(errors) {
+    if (!this.svg) return;
+    if (!errors || !errors.length) {
+      this.svg.classList.remove('error');
+    } else {
+      this.svg.classList.add('error');
+    }
+  },
 
-    if (!x.key || !y.length || !rows.length) {
+  reportErrors: function(errors) {
+    this.model.errors.reset(Array.isArray(errors) ? errors : [errors]);
+  },
+
+  render: function(){
+
+    var config = this.model.createConfig();
+
+    if (!config) {
       this.empty();
       return;
     }
 
     this.el.innerHTML = this.template();
-
-    var d = this.model.toJSON();
-    var svg = this.el.querySelector('.graphic');
+    this.svg = this.el.querySelector('.graphic');
     var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
-    var w = d.variation.width;
 
-    this.el.style.width = (w + selectionBorderWidth) + 'px';
+    this.el.style.width = (config.width + selectionBorderWidth) + 'px';
     this.el.style.display = 'block';
-    svg.style.width = w + 'px';
-    svg.style.borderColor = 'transparent';
+    this.svg.style.width = config.width + 'px';
+    this.svg.style.borderColor = 'transparent';
 
-    d3.select(svg).data([{
+    config.error = this.reportErrors;
 
-      // accumulate: "false",
+    d3.select(this.svg).data([config]).call(this.chart);
 
-      // if falseorigin is a function then we could do it based on the data ... function could be passed the scale etc.
-      falseorigin: true,
-
-      title: d.graphic.title,
-      subtitle: d.graphic.subtitle,
-      numberAxisOrient: 'right',
-      source:  d.graphic.source,
-      footnote:  d.graphic.footnote,
-      dateParser: dateFormat,
-      // chartWidth: w,
-      chartHeight: w * (3/4),
-      width: w,
-      height: d.variation.height,
-      error: function(errr) {
-        console.log('Error', errr);
-        svg.style.borderColor = '#f00';
-      },
-      x: {
-        series: x
-      },
-      y: {
-        series: y,
-        flip: false,
-        noLabels: false,
-        zeroOrigin: false // could be boolean or function
-      },
-      data: rows
-    }]).call(this.chart);
     return this;
   }
 
