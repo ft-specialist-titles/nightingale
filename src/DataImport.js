@@ -183,7 +183,7 @@ var predictedDateFormat = (function(){
 
   return function (value) {
 
-    // only use only kind of token separator
+    // only use one kind of token separator
     value = normalise(value);
 
     if (!value) return null;
@@ -418,11 +418,11 @@ var DataImport = Backbone.Model.extend({
       message: null,
       rows: []
     },
-    data: []
+    data: [],
+    originalData: []
   },
 
   columns: null,
-
 
   initialize: function() {
     this.columns = new Backbone.Collection();
@@ -636,6 +636,7 @@ var DataImport = Backbone.Model.extend({
       });
     });
 
+    var originalData = data.map(function(o){return Object.create(o)});
     var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
     var unsafeDateString = true;
     var timeCols = []
@@ -655,6 +656,7 @@ var DataImport = Backbone.Model.extend({
       colName = typeInfo.colName;
       
       if (typeInfo.datatype === Datatypes.TIME) {
+
         typeInfo.dateFormats = [];
         countDateFormats = {};
         totalNonDateStrings = 0;
@@ -769,6 +771,7 @@ var DataImport = Backbone.Model.extend({
     this.set({
       numCols: numCols,
       data: data,
+      originalData: originalData,
       colNames: colNames,
       numRows: numRows,
       pipelineOptions: pipelineOptions,
