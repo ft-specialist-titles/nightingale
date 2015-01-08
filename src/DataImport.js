@@ -751,6 +751,12 @@ var DataImport = Backbone.Model.extend({
 
           if (!val) continue;
 
+          if (val === '*') {
+            data[j][colName] = null;
+            typeInfo.nulls++;
+            typeInfo.strings--;
+            continue;
+          }
           parseValue = Number(val.trim().replace(/\,/g).replace(/^(\$|€|¥|£)/).replace(/(\%)$/, ''));
 
           data[j][colName] = isNaN(parseValue) ? val : parseValue;
