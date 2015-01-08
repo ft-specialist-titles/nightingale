@@ -602,9 +602,6 @@ var DataImport = Backbone.Model.extend({
       }
     });
 
-    console.log('sniffing the datatypes');
-    console.table(dataTypeCounters);
-
     var xAxis;
 
     dataTypeCounters.forEach(function (counter) {
@@ -724,7 +721,7 @@ var DataImport = Backbone.Model.extend({
 
         }
 
-        if (typeInfo.mostPopularDateFormat) {
+        if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
           var columnFormatter = d3.time.format(typeInfo.mostPopularDateFormat).parse;
           var parseValue;
           for (var j = 0; j < numRows; j++) {
@@ -738,6 +735,9 @@ var DataImport = Backbone.Model.extend({
             }
 
           }
+        } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
+          typeInfo.datatype = Datatypes.NUMERIC;
+          newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
         }
       }
     }
@@ -767,6 +767,7 @@ var DataImport = Backbone.Model.extend({
       }
     }
 
+    console.table(dataTypeCounters);
 
     this.set({
       numCols: numCols,
