@@ -7,6 +7,7 @@ var Axis = require('./Axis.js');
 
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
 var aYearALongWayInTheFuture = 3000;
+var transform = require('./transform/index.js')
 
 var isPartDate = function(value) {
   var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
@@ -633,7 +634,7 @@ var DataImport = Backbone.Model.extend({
       });
     });
 
-    var originalData = data.map(function(o){return Object.create(o)});
+    var originalData = JSON.parse(JSON.stringify(data));
     var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
     var unsafeDateString = true;
     var timeCols = []
@@ -722,19 +723,7 @@ var DataImport = Backbone.Model.extend({
         }
 
         if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
-          var columnFormatter = d3.time.format(typeInfo.mostPopularDateFormat).parse;
-          var parseValue;
-          for (var j = 0; j < numRows; j++) {
-            val = data[j][colName];
-
-            if (!val || val instanceof Date) continue;
-
-            parseValue = columnFormatter(val.toString().trim().replace(/[\-\ ]/g, '/'));
-            if (parseValue && parseValue instanceof Date) {
-              data[j][colName] = parseValue;
-            }
-
-          }
+          transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));
         } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
           typeInfo.datatype = Datatypes.NUMERIC;
           newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
@@ -742,30 +731,12 @@ var DataImport = Backbone.Model.extend({
       }
     }
 
-    for (var i = 0, x = newColumns.length; i < x; i++) {
-
-      typeInfo = newColumns[i].get('typeInfo');
-      colName = typeInfo.colName;
-      var parseValue;
-      if (Datatypes.isNumeric(typeInfo.datatype)) {
-        for (var j = 0; j < numRows; j++) {
-          val = data[j][colName];
-
-          if (!val) continue;
-
-          if (val === '*') {
-            data[j][colName] = null;
-            typeInfo.nulls++;
-            typeInfo.strings--;
-            continue;
-          }
-          parseValue = Number(val.trim().replace(/\,/g).replace(/^(\$|€|¥|£)/).replace(/(\%)$/, ''));
-
-          data[j][colName] = isNaN(parseValue) ? val : parseValue;
-
-        }
+    transform.table(data, newColumns, transform.number, Datatypes.NUMERIC, function (oldV) {
+      if (oldV === '*') {
+        typeInfo.nulls++;
+        typeInfo.strings--;
       }
-    }
+    });
 
     console.table(dataTypeCounters);
 

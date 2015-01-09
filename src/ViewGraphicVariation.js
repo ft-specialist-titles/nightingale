@@ -14,6 +14,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
     this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
     this.listenTo(this.model.graphicType.controls, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
     this.listenTo(this.model.errors, 'reset', this.renderErrors);
     _.bindAll(this, 'reportErrors');
   },
