@@ -10,6 +10,8 @@ var ViewGraphicControls = require('./ViewGraphicControls.js');
 var ViewSelectedVariation = require('./ViewSelectedVariation.js');
 var Variations = require('./Variations.js');
 var LineControls = require('./LineControls.js');
+var transform = require('./transform/index.js');
+var Datatypes = require('./Datatypes.js');
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -118,16 +120,46 @@ exports.main = function(){
     }
     graphic.chart.yAxis.columns.reset(dims.Y||[]);
     graphic.chart.zAxis.columns.reset(dims.Z||[]);
+
   });
 
+  // REFACTOR: isOther modelling is rubbish, doesn't really work.
   graphic.chart.yAxis.columns.on('change:isOther', function (model) {
     console.log('IS OTHERS', this.findWhere({isOther: true}));
+  });
+
+  function revertColumn(array, property) {
+    var originalData = importdata.get('originalData');
+    return array.map(function (d, i) {
+      d[property] = originalData[i][property];
+      return d;
+    });
+  }
+
+  // REFACTOR: this logic should be in a model somewhere.
+  graphic.chart.xAxis.on('change:datatype', function(model) {
+
+    var property = model.get('property');
+    var datatype = model.get('datatype');
+    var currentDataset = importdata.get('data');
+    var dateFormat = model.get('dateFormat');
+    var revertedDataset = revertColumn(currentDataset, property);
+
+    // transform the data
+    if (Datatypes.isNumeric(datatype)) {
+      transform.series(revertedDataset, property, transform.number());
+    } else if (Datatypes.isTime(datatype) && dateFormat) {
+      transform.series(revertedDataset, property, transform.time(dateFormat));
+    }
+
+    graphic.chart.dataset.set('rows', revertedDataset);
   });
 
   importdata.columns.each(setColumnAxis);
 
   ViewInlineHelp.init();
 
+  // REFACTOR: move this into a separate application
   if (document.location.hash === '#test') {
     var fs = require('fs');
     var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
