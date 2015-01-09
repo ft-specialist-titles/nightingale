@@ -23,6 +23,7 @@ var ViewSelectedVariation = RegionView.extend({
   regions: {
     '[data-region="graphic-type-controls"]': function() {
       return new ViewLineControls({model: this.model.graphicType});
+
       // TODO: once we have more chart types then we'll
       // need to be able to switch between different views here
       // return new ViewGraphicTypeControls({model: this.model.graphicType});
@@ -70,7 +71,14 @@ var ViewSelectedVariation = RegionView.extend({
   },
 
   render: function() {
-    RegionView.prototype.render.apply(this, arguments);
+    var data = this.model.toJSON();
+    var svgRect = this.svg.getBoundingClientRect();
+    data.svg = {
+      width: svgRect.width,
+      height: svgRect.height
+    };
+    this.el.innerHTML = this.template(data);
+    this.renderRegions();
     return this;
   },
 
