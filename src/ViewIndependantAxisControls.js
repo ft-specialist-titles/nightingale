@@ -14,7 +14,7 @@ var ViewIndependantAxisControls = RegionView.extend({
   initialize: function(options) {
     RegionView.prototype.initialize.apply(this, arguments);
     this.dataImport = options.dataImport;
-    this.listenTo(this.dataImport.columns, 'change:axis', function(column, axis){
+    this.listenTo(this.dataImport.columns, 'change:axis', function(column, axis) {
       if (axis === 'X') {
         this.render();
       }
@@ -51,7 +51,10 @@ var ViewIndependantAxisControls = RegionView.extend({
         collection: 'this.dataImport.columns',
         labelPath: 'property',
         valuePath: 'property',
-        defaultOption: {label: '-- Pick a column for the X axis --', value: null}
+        defaultOption: {
+          label: '-- Pick a column for the X axis --',
+          value: null
+        }
       },
       updateModel: function(value) {
         var column = this.dataImport.columns.findWhere({property: value});

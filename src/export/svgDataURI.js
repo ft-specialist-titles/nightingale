@@ -74,8 +74,8 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
   }
 
   // NOTE: this technique of using Canvas to save an image of an SVG
-  //       is know to not work in some cases: mostly when the some
-  //       of the funkier SVG features are being used.
+  //       is known to not work in some cases: mostly when some
+  //       of the funkier SVG features are in use.
   //       If this becomes a problem look into using CanVG
   //            - https://code.google.com/p/canvg/
   //       Here's an example of it being used
