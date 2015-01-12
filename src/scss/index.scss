@@ -182,9 +182,9 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
 
 .view-graphic-variation{
   margin: 15px auto 15px auto;
-  .graphic{
+  .graphic-container{
     border: 3px solid transparent;
-    background-color: #fff1e0;
+    background-color: transparent;
     display: block;
     box-sizing: content-box;
     &:hover{
@@ -193,6 +193,9 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     }
     &.error {
       border-color: red;
+    }
+    .graphic{
+      background-color: #fff1e0;
     }
   }
 }
