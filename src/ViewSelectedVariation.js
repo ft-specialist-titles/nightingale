@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var RegionView = require('./core/RegionView.js');
 var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
 var ViewLineControls = require('./ViewLineControls.js');
@@ -9,7 +10,14 @@ var ViewSelectedVariation = RegionView.extend({
 
   initialize: function(options) {
     RegionView.prototype.initialize.apply(this, arguments);
-    this.svg = options.svg;
+    var debounced = _.bind(_.debounce(this.render, 50), this);
+    this.listenTo(this.model.graphic, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
+    this.listenTo(this.model.graphicType.controls, 'change', debounced);
+    this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
+    this.listenTo(this.model.errors, 'reset', this.renderErrors);
   },
 
   className: 'view-selected-variation',
@@ -35,7 +43,7 @@ var ViewSelectedVariation = RegionView.extend({
     event.preventDefault();
     event.stopPropagation();
 
-    var svg = this.svg;
+    var svg = this.model.get('svg');
     var el = event.target;
     var format = event.altKey ? 'svg' : 'png';
 
@@ -44,22 +52,26 @@ var ViewSelectedVariation = RegionView.extend({
     function removeDisabledState() {
       el.removeAttribute('disabled');
     }
+
+    var d = this.model.toJSON();
+
     // TODO: check it's possible to make the image.
     //         - dont allow the user to download a chart with validation errors
     //         - dont allow a user to download an empty image
 
     var filename = util.format('%s-%s-%s-%sx%s',
-                            this.model.graphic.get('title').replace(/\s/g, '_'),
-                            this.model.graphicType.get('typeName'),
-                            this.model.variation.get('variationName'),
-                            svg.getAttribute('width'),
-                            svg.getAttribute('height')
+                            (d.graphic.title ? d.graphic.title.replace(/\s/g, '_') : 'Untitled'),
+                            d.graphicType.typeName.toLowerCase() + '_chart',
+                            d.variation.variationName,
+                            d.svg.width,
+                            d.svg.height
                             ).replace(/\s/g, '');
 
     // TODO: allow transparent and specified colour backgrounds
     // set this to null for transparent backgrounds
     var bgColor = '#fff1e0';
 
+    // FIXME: this is a hack, we shouldn't need this.
     attributeStyler();
 
     download(filename, svg, format, bgColor, function(){
@@ -71,15 +83,17 @@ var ViewSelectedVariation = RegionView.extend({
   },
 
   render: function() {
+
+    if (!this.model.get('svg')) {
+      this.el.innerHTML = '';
+      return this;
+    }
+
     var data = this.model.toJSON();
-    var svgRect = this.svg.getBoundingClientRect();
-    data.svg = {
-      width: svgRect.width,
-      height: svgRect.height
-    };
     this.el.innerHTML = this.template(data);
     this.renderRegions();
     return this;
+
   },
 
 });
