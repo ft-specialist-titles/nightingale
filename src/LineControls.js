@@ -18,6 +18,7 @@ var LineControls = Backbone.Model.extend({
     config.chartHeight = config.width * (3/4);
     if (config.width < 280) {
       config.logoSpace = false;
+      config.chartHeight = config.width * (4/3);
     }
     config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
     config.y.zeroOrigin = config.falseorigin = !this.attributes.startFromZero;
