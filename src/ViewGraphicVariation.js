@@ -24,7 +24,7 @@ var ViewGraphicVariation = Backbone.View.extend({
   template: require('./templates/graphic.hbs'),
 
   events: {
-    'click .graphic>svg': 'select'
+    'click .graphic-container>svg.graphic': 'select'
   },
 
   select: function(event) {
@@ -59,7 +59,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     }
 
     this.el.innerHTML = this.template();
-    this.svg = this.el.querySelector('.graphic');
+    this.svg = this.el.querySelector('.graphic-container');
     var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
 
     this.el.style.width = (config.width + selectionBorderWidth) + 'px';
