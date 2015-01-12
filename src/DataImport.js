@@ -463,7 +463,7 @@ var DataImport = Backbone.Model.extend({
       return error;
     }
 
-    if (attributes.type === 'text/tsv') {
+    if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values' ) {
       method = 'TSV';
     } else if (attributes.type === 'text/csv') {
       method = 'CSV';
@@ -768,7 +768,7 @@ var DataImport = Backbone.Model.extend({
 },{
 
   isValidType: function(type) {
-    return /text\/(c|t)sv/.test(type) || type === 'text/plain';
+    return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
   },
 
   isPipelineFormat: function(str) {
