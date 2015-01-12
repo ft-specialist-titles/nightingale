@@ -65,7 +65,6 @@ var ViewGraphicVariation = Backbone.View.extend({
     this.el.style.width = (config.width + selectionBorderWidth) + 'px';
     this.el.style.display = 'block';
     this.svg.style.width = config.width + 'px';
-    this.svg.style.borderColor = 'transparent';
 
     config.error = this.reportErrors;
 

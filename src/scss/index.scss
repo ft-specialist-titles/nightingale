@@ -200,12 +200,13 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     background-color: transparent;
     display: block;
     box-sizing: content-box;
+    line-height: 0;
     &:hover{
       border-color: rgba(0,0,0,.7);
       cursor: pointer;
     }
     &.error {
-      border-color: red;
+      border-color: $btn-danger-border;
     }
     .graphic{
       background-color: #fff1e0;
