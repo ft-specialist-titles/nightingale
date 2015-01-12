@@ -12,6 +12,7 @@ var Variations = require('./Variations.js');
 var LineControls = require('./LineControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./Datatypes.js');
+var fontFix = require('./export/svgDataURI.js').fontFix;
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -158,6 +159,8 @@ exports.main = function(){
   importdata.columns.each(setColumnAxis);
 
   ViewInlineHelp.init();
+
+  document.body.appendChild(fontFix());
 
   // REFACTOR: move this into a separate application
   if (document.location.hash === '#test') {

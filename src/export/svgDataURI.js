@@ -12,6 +12,20 @@ function fontFace(name, fontDataURI) {
   return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
 }
 
+
+exports.fontFix = function() {
+  var svg = document.createElement('svg');
+
+  svg.setAttribute('version', '1.1');
+
+  var fontface = fontFace('BentonSans', bentonFontDataURI);
+  var style = svgStyleElement(fontface);
+
+  svg.insertAdjacentHTML('afterbegin', '<defs>'+ style +'</defs>');
+
+  return svg;
+}
+
 var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
 
   opts = opts || {};
