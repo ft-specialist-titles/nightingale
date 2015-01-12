@@ -8,6 +8,10 @@ function getKeyLabel(d) {
 
 var GraphicVariation = Backbone.Model.extend({
 
+  defaults: {
+    svg: null
+  },
+
   initialize: function(attributes, options) {
     this.variation = options.variation;
     this.graphic = options.graphic;
@@ -61,10 +65,25 @@ var GraphicVariation = Backbone.Model.extend({
   },
 
   toJSON: function() {
+
     var d = Backbone.Model.prototype.toJSON.call(this);
+
     d.graphic = this.graphic.toJSON();
     d.graphicType = this.graphicType.toJSON();
     d.variation = this.variation.toJSON();
+
+    var svg = this.attributes.svg;
+
+    if (!svg) {
+      d.svg = null;
+    } else {
+      var svgRect = svg.getBoundingClientRect();
+      d.svg = {
+        width: svgRect.width,
+        height: svgRect.height
+      };
+    }
+    
     return d;
   }
 });

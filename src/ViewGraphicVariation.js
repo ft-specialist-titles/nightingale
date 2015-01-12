@@ -71,6 +71,8 @@ var ViewGraphicVariation = Backbone.View.extend({
 
     d3.select(this.svg).data([config]).call(this.chart);
 
+    this.model.set('svg', this.el.querySelector('.graphic-container>svg.graphic'));
+
     return this;
   }
 

@@ -39,7 +39,7 @@ exports.main = function(){
   document.getElementById('charts').appendChild(charts.render().el);
 
   var viewSelectedVariation;
-  Backbone.on('selectVariation', function (variation, svg) {
+  Backbone.on('selectVariation', function (variation) {
 
     if (viewSelectedVariation) {
       if (viewSelectedVariation.model === variation) {
@@ -49,11 +49,11 @@ exports.main = function(){
       }
     }
 
-    if (!variation || !svg) {
+    if (!variation || !variation.get('svg')) {
       return;
     }
 
-    viewSelectedVariation = new ViewSelectedVariation({model: variation, svg: svg});
+    viewSelectedVariation = new ViewSelectedVariation({model: variation});
     viewSelectedVariation.render();
     document.getElementById('selection').appendChild(viewSelectedVariation.el);
   });
@@ -160,6 +160,8 @@ exports.main = function(){
 
   ViewInlineHelp.init();
 
+  // FIXME: this is a quick fix to the font rendering issue on the png exports
+  //        find out why we need this and if there's a better way to fix.
   document.body.appendChild(fontFix());
 
   // REFACTOR: move this into a separate application
