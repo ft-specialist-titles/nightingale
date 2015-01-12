@@ -23,6 +23,7 @@ var LineControls = Backbone.Model.extend({
     config.y.zeroOrigin = config.falseorigin = !this.attributes.startFromZero;
     config.y.flip = this.attributes.flipYAxis;
     config.niceValue = this.attributes.nice;
+    config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
     return config;
   }
 
