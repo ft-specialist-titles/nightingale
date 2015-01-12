@@ -20,12 +20,13 @@ var ViewGraphicControls = RegionView.extend({
     '[name="subtitle"]':  'subtitle',
     '[name="footnote"]':  'footnote',
     '[name="source"]':    'source',
-    '[name="noSource"]':  'noSource'
+    '[name="noSource"]':  'noSource',
   },
 
   events: {
     'click [name="suggest-subtitle"]': 'subtitleSuggestion',
-    'click [name="discard"]': 'discard'
+    'click [name="discard"]': 'discard',
+    'click .popular-source': 'usePopularSource'
   },
 
   regions: {
@@ -47,6 +48,12 @@ var ViewGraphicControls = RegionView.extend({
         dataImport: this.dataImport
       });
     }
+  },
+
+  usePopularSource: function(event) {
+    var value = event.target.textContent;
+    this.model.set('source', value);
+    event.preventDefault();
   },
 
   selectInput: function(name) {
