@@ -138,7 +138,7 @@ exports.main = function(){
   }
 
   // REFACTOR: this logic should be in a model somewhere.
-  graphic.chart.xAxis.on('change:datatype', function(model) {
+  graphic.chart.xAxis.on('change:datatype change:dateFormat', function(model) {
 
     var property = model.get('property');
     var datatype = model.get('datatype');
