@@ -4,26 +4,47 @@ var datePartSeparators = /[\-\ ]/g;
 module.exports = createTimeTransformer;
 
 function createTimeTransformer (format) {
-  var formatter = d3.time.format(format).parse
+
+  var parser = createDateParser(format);
+
   function transformTime (d) {
     var type = typeof d;
 
     if (!d) return null;
 
-    if (d instanceof Date) return d;
+    if (isValidDate(d)) return d;
 
     if (type !== 'string') return null;
 
     d = d.trim();
 
-    var normalizedString = d.replace(datePartSeparators, '/')
-    var parseValue = formatter(normalizedString);
+    var normalizedString = d.replace(datePartSeparators, '/');
+    var parseValue = parser(normalizedString);
 
-    if (parseValue && parseValue instanceof Date) {
+    if (isValidDate(parseValue)) {
       return parseValue;
     }
 
     return null;
   }
+
   return transformTime;
+
+}
+
+function isValidDate(d) {
+  return d && d instanceof Date && !isNaN(+d);
+}
+
+function createDate(value) {
+  return new Date(value);
+}
+
+function useJavascriptDateFn(format) {
+  return format === 'ISO' || format === 'JAVASCRIPT';
+}
+
+function createDateParser(format) {
+  var useJs = useJavascriptDateFn(format);
+  return useJs ? createDate : d3.time.format(format).parse;
 }
