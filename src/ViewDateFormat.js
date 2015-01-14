@@ -12,6 +12,8 @@ var formats = new Backbone.Collection([
   {value: '%m/%d/%y', label: 'MM/DD/YY - eg 01/31/14'},
   {value: '%d/%B/%Y', label: 'Date Month YYYY (long) - eg 01 January 2014'},
   {value: '%d/%b/%Y', label: 'Date Month YYYY (short) - eg 01 Jan 2014'},
+  {value: '%B/%d/%Y', label: 'Month Date YYYY (long) - eg January 01 2014'},
+  {value: '%b/%d/%Y', label: 'Month Date YYYY (short) - eg Jan 01 2014'},
   {value: '%d/%m/%Y/%H/%M', label: 'Date Time (Short) - eg 31/01/2014 23:00'},
   {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2014 23:00:00 GMT+0000 (GMT)'},
   {value: 'ISO', label: 'ISO 8601 - eg 2014-01-30T12:23:00.000Z'}
