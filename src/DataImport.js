@@ -494,10 +494,15 @@ var DataImport = Backbone.Model.extend({
     //       ... need to work out a row on useful header row on the fly, using letters A-Z
 
 
-    if (isPipelineFormat) {
-      pipelineData = DataImport.parsePipeline(attributes.dataAsString);
-      attributes.dataAsString = pipelineData.dataString;
-      pipelineOptions = pipelineData.options;
+    try {
+      if (isPipelineFormat) {
+        pipelineData = DataImport.parsePipeline(attributes.dataAsString);
+        attributes.dataAsString = pipelineData.dataString;
+        pipelineOptions = pipelineData.options;
+      }
+    } catch (pipelineError) {
+      error.message = pipelineError.message;
+      return error;
     }
 
     var processRow = function(row, rowNum) {
@@ -816,6 +821,12 @@ var DataImport = Backbone.Model.extend({
     var options = {};
 
     while(line = lines.pop()) {
+      if (!line) {
+        continue;
+      }
+      if (line.charAt(0) === '\t') {
+        throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
+      }
       line = line.trim();
       if (!line) {
         continue;
