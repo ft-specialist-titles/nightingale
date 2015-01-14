@@ -51,9 +51,25 @@ var ViewGraphicControls = RegionView.extend({
   },
 
   usePopularSource: function(event) {
-    var value = event.target.textContent;
-    this.model.set('source', value);
     event.preventDefault();
+
+    var textToAdd = event.target.textContent;
+    var oldValue = this.model.get('source');
+
+    if (oldValue && oldValue.indexOf(textToAdd) !== -1) {
+      return;
+    }
+
+    var newValue;
+
+    if(event.metaKey) {
+      console.log('META', newValue, oldValue)
+      newValue = textToAdd;
+    } else {
+      newValue = !oldValue && !oldValue.trim() ? textToAdd : (oldValue + ', ' + textToAdd);
+    }
+
+    this.model.set('source', newValue);
   },
 
   selectInput: function(name) {
