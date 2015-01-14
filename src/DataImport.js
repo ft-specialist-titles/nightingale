@@ -52,6 +52,11 @@ var sniffDatatype = function(value, colNum) {
 
   value = value.trim();
 
+  if (value === '*') {
+    o.nulls++;
+    return;
+  }
+
   var parsedNum = toNumber(value);
 
   if (!isNaN(parsedNum)) {
@@ -765,12 +770,7 @@ var DataImport = Backbone.Model.extend({
       }
     }
 
-    transform.table(data, newColumns, transform.number, Datatypes.NUMERIC, function (oldV) {
-      if (oldV === '*') {
-        typeInfo.nulls++;
-        typeInfo.strings--;
-      }
-    });
+    transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);
 
     console.table(dataTypeCounters);
 
