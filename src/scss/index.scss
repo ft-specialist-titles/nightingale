@@ -214,69 +214,16 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
   }
 }
 
-
 .chart-name{
   border-bottom: 1px solid $ui-grey;
   margin-bottom: 5px;
   padding-bottom: 5px;
 }
 
-.view-imported-data{
-  .alert-success{
-    position: fixed;
-    margin: 5px auto;
-    max-width: 400px;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 4;
-  }
-}
-
 .has-error{
   select{
     color: $state-danger-text;
     background-color: transparentize($state-danger-bg, .5);
-  }
-}
-
-
-.config-axes{
-  table{
-    width: 100%;
-    margin-top: -40px;
-  }
-  tbody{
-    tr:first-child > td{
-      border-top: 0 none;
-    }
-    tr td{
-      line-height: 23px;
-    }
-  }
-  thead tr th{
-    border-top: 0 none;
-    border-bottom: 0 none;
-    font-weight: normal;
-    font-size: 13px;
-  }
-  thead tr.group-header-row{
-    th{
-      text-align: center;
-      border-top: 0 none;
-      padding-bottom: 0;
-    }
-  }
-  .property-col{
-    font-family: monospace;
-  }
-  .radio-col{
-    width: 63px;
-    text-align: center;
-    padding-top: 3px;
-    input[type="radio"] {
-      margin-top: 0;
-    }
   }
 }
 

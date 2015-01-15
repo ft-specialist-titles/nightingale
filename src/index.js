@@ -3,7 +3,6 @@ var GraphicType = require('./GraphicType.js');
 var ViewGraphicTypes = require('./ViewGraphicTypes.js');
 var ViewImportData = require('./ViewImportData.js');
 var DataImport = require('./DataImport.js');
-var ViewImportedData = require('./ViewImportedData.js');
 var ViewInlineHelp = require('./ViewInlineHelp.js');
 var Graphic = require('./Graphic.js');
 var ViewGraphicControls = require('./ViewGraphicControls.js');
@@ -73,9 +72,6 @@ exports.main = function(){
 
   var importdataView = new ViewImportData({model: importdata});
   document.getElementById('controls').appendChild(importdataView.render().el);
-
-  // var importeddataView = new ViewImportedData({model: importdata});
-  // document.getElementById('controls').appendChild(importeddataView.render().el);
 
   var setColumnAxis = function(column, value) {
     column.collection = null;
