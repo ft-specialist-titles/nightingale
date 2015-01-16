@@ -101,7 +101,7 @@ var predictedDateFormat = (function(){
   var separator = /\/\-\ /;
   // first letters of all months and days. ordered by amount of occurrences and then by months, days
   var firstletters = /[jmsfatondw]/;
-  var typeNames = ['month', 'year', 'day', 'ampm', 'weekday'];
+  var typeNames = ['month', 'year', 'day', 'ampm', 'weekday', 'time'];
   var types = {};
   var abbreviatedFormats = {
     '%m/%d/%Y': '%x',
@@ -175,12 +175,70 @@ var predictedDateFormat = (function(){
       this.format = '%p';
       this.type = types.ampm;
 
-    // TODO: time format
-    // eg 13:00 | 09:00 | 09:00:00 | 09:00:00
-    //} else if () {
+    } else if (d.indexOf(':') !== -1) {
 
-    // TODO: timezone eg GMT+0100 (BST)
-    //} else if () {
+      var timeElements = d.split(':');
+      var num;
+      var timePart;
+      var timeStrings = [];
+      var ampm = false;
+
+      // it's only possible to have 4 components in a time format
+      // ie %H:%M:%S:%L
+      if (timeElements.length <= 4) {
+
+        timeElements.reduce(function(result, timePart, i) {
+
+          var len = timePart.length;
+          var zulu = timePart.substr(len - 1) === 'Z';
+          var lastTwo = timePart.substr(len - 2).toLowerCase();
+          var am = lastTwo === 'am';
+          var pm = lastTwo === 'pm'; 
+          var ampm = am || pm;
+          timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
+          var num = Number(timePart);
+          var format = undefined;
+
+          if (timePart === '' || isNaN(num)) {
+            format = undefined;
+          } else if (i === 0 && num >= 0 && num <= 23) {
+            format = '%H';
+          } else if (i === 1 && num >= 0 && num <= 59) {
+            format = '%M';
+
+          // How the hell can a minute have 61 seconds?!
+          // https://docs.python.org/2/library/time.html
+          } else if (i === 2 && num >= 0 && num <= 61) {
+            if (timePart.test(/\d{2}\.\d{3}$/)) {
+              format = '%S.%L';
+            } else {
+              format = '%S';
+            }
+          } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
+            format = '%L';
+          }
+
+          if (zulu) {
+            format += 'Z';
+          } else if (ampm) {
+            format += '%p';
+          }
+
+          timeStrings.push(format);
+
+          return result;
+
+        }, timeStrings);
+
+      }
+
+      if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
+        this.format = timeStrings.join(':');
+        this.type = types.time;
+        if (ampm && Number(timeElements[0]) <= 12) {
+          this.format.replace('%H', '%I');
+        }
+      }
 
     } else if (/^\([a-z]+\)$/.test(d)) {
       console.log('this is part of the time zone info');
@@ -390,6 +448,10 @@ var predictedDateFormat = (function(){
     }
 
     format = format.length ? format.join('/') : null;
+
+    if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
+      format = format.replace('%H', '%I');
+    }
 
     if (format in abbreviatedFormats) {
       return abbreviatedFormats[format];

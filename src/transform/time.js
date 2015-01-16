@@ -6,6 +6,11 @@ module.exports = createTimeTransformer;
 function createTimeTransformer (format) {
 
   var parser = createDateParser(format);
+  var today = new Date();
+  var year = today.getFullYear();
+  var day = today.getDate();
+  var month = today.getMonth();
+  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M');
 
   function transformTime (d) {
     var type = typeof d;
@@ -22,6 +27,11 @@ function createTimeTransformer (format) {
     var parseValue = parser(normalizedString);
 
     if (isValidDate(parseValue)) {
+      if (timeOnlyFormat) {
+        parseValue.setDate(day);
+        parseValue.setMonth(month);
+        parseValue.setFullYear(year);
+      }
       return parseValue;
     }
 
