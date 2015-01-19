@@ -6,14 +6,10 @@ $popover-max-width: 360px;
 
 @font-face{
     font-family: "BentonSans";
-    src: url("http://s1.ft-static.com/m/font/ft-velcro/bentonsans-regular.eot");
-    src: url("http://s1.ft-static.com/m/font/ft-velcro/bentonsans-regular.eot?#iefix") format("embedded-opentype"), 
-    url("http://interactivegraphics.ft-static.com/inc/fonts/BentonSansRegular.woff") format("woff"),
-    url("http://interactivegraphics.ft-static.com/inc/fonts/BentonSansRegular.ttf") format("truetype");
+    src: url("http://interactivegraphics.ft-static.com/inc/fonts/BentonSansRegular.woff") format("woff");
     font-style: normal;
     font-weight: normal;
 }
-
 
 *, *:before, *:after {
   -moz-box-sizing: border-box;
