@@ -14,14 +14,28 @@ function fontFace(name, fontDataURI) {
 
 
 exports.fontFix = function() {
-  var svg = document.createElement('svg');
+  var svg = document.createElementNS(svgSchema, 'svg');
 
   svg.setAttribute('version', '1.1');
+  svg.setAttribute('width', 11);
+  svg.setAttribute('height', 11);
+  svg.style.position = 'fixed';
+  svg.style.top = '-20px';
 
   var fontface = fontFace('BentonSans', bentonFontDataURI);
   var style = svgStyleElement(fontface);
 
   svg.insertAdjacentHTML('afterbegin', '<defs>'+ style +'</defs>');
+  var text = document.createElementNS(svgSchema, 'text');
+  text.setAttributeNS(null, 'font-family', 'BentonSans');
+  text.setAttributeNS(null, 'font-weight', 'normal');
+  text.setAttributeNS(null, 'font-style', 'normal');
+  text.setAttributeNS(null, 'font-size', 11);
+  text.setAttributeNS(null, 'x', 0);
+  text.setAttributeNS(null, 'y', 11);
+  text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
+
+  svg.appendChild(text);
 
   return svg;
 }
