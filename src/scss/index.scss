@@ -462,6 +462,13 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
   }
 }
 
+.feedback-details{
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  a{ color: #7C8A96; }
+}
+
 .pilcrow:before{
   content:"¶";
   position: block;
