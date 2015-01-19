@@ -21,7 +21,6 @@ function createTimeTransformer (format) {
     if (type !== 'string') return null;
 
     var parseValue = parser(d.trim());
-    console.log('pv', parseValue);
 
     if (isValidDate(parseValue)) {
       if (timeOnlyFormat) {
