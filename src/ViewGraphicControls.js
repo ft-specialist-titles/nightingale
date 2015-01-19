@@ -63,7 +63,6 @@ var ViewGraphicControls = RegionView.extend({
     var newValue;
 
     if(event.metaKey) {
-      console.log('META', newValue, oldValue)
       newValue = textToAdd;
     } else {
       newValue = !oldValue && !oldValue.trim() ? textToAdd : (oldValue + ', ' + textToAdd);
