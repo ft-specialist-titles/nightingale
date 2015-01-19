@@ -1,5 +1,4 @@
 var d3 = require('d3');
-var datePartSeparators = /[\-\ ]/g;
 
 module.exports = createTimeTransformer;
 
@@ -10,7 +9,7 @@ function createTimeTransformer (format) {
   var year = today.getFullYear();
   var day = today.getDate();
   var month = today.getMonth();
-  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M');
+  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
 
   function transformTime (d) {
     var type = typeof d;
@@ -21,10 +20,8 @@ function createTimeTransformer (format) {
 
     if (type !== 'string') return null;
 
-    d = d.trim();
-
-    var normalizedString = d.replace(datePartSeparators, '/');
-    var parseValue = parser(normalizedString);
+    var parseValue = parser(d.trim());
+    console.log('pv', parseValue);
 
     if (isValidDate(parseValue)) {
       if (timeOnlyFormat) {
@@ -54,7 +51,17 @@ function useJavascriptDateFn(format) {
   return format === 'ISO' || format === 'JAVASCRIPT';
 }
 
+var datePartSeparators = /[\-\ ]/g;
+
 function createDateParser(format) {
   var useJs = useJavascriptDateFn(format);
-  return useJs ? createDate : d3.time.format(format).parse;
+  if (useJs) {
+    return createDate;
+  } else {
+    var parser = d3.time.format(format).parse;
+    return function(value) {
+      var normalizedString = value.replace(datePartSeparators, '/');
+      return parser(normalizedString);
+    }
+  }
 }
