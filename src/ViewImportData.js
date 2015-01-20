@@ -36,7 +36,7 @@ var ViewImportData = Backbone.View.extend({
       var types = clipboardData.types;
       var data;
       if (types && types.length && /^text\/[A-Za-z\-]+/.test(types[0]) && types[1] !== 'Files') {
-        data = (clipboardData.getData('text/plain') || '').trim();
+        data = (clipboardData.getData('text/plain') || '');
         if (data) {
           this.model.set({dataAsString: data}, {validate: true});
         }
