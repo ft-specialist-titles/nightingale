@@ -1,11 +1,5 @@
 <div class="axis-panel panel panel-default">
-  {{#if warningMessage}}
-    <div class="panel-heading"><span class="axis-name">{{name}}</span>
-      <span class="pull-right alert alert-warning">{{warningMessage}}</span>
-    </div>
-  {{else}}
-    <div class="panel-heading"><span class="axis-name">Dependent axis ({{name}})</span></div>
-  {{/if}}
+  <div class="panel-heading"><span class="axis-name">Dependent axis ({{name}})</span>{{#if warningMessage}}<span class="pull-right alert alert-warning">{{warningMessage}}</span>{{/if}}</div>
   <div class="panel-body">
     <form role="form">
       <!--

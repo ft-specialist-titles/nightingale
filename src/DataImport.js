@@ -7,7 +7,14 @@ var Axis = require('./Axis.js');
 
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
 var aYearALongWayInTheFuture = 3000;
-var transform = require('./transform/index.js')
+var transform = require('./transform/index.js');
+
+var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+var emptyheaderRows = [0,1,2,3,4,5,6,7,8,9,10].reduce(function (a, num) {
+  return a.concat(alphabet.map(function (h) {
+    return h + (num === 0 ? '' : num);
+  }));
+}, []);
 
 var isPartDate = function(value) {
   var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
@@ -503,6 +510,13 @@ var DataImport = Backbone.Model.extend({
     var method;
     var data = [];
 
+    // remove empty rows from the bottom
+    attributes.dataAsString = (attributes.dataAsString || '').trimRight();
+    
+    // we can't just trimLeft as then we would loose empty column headers
+    // so we must remove things that look like empty rows from the beginning
+    attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');
+
     if (!attributes.dataAsString) {
       error.message = 'No data found';
       return error;
@@ -585,13 +599,19 @@ var DataImport = Backbone.Model.extend({
 
           // ensure no duplicate column names
           n = colNames[i];
+
+          if (!n) {
+            n = emptyheaderRows[i];
+          }
+
           if (n in names) {
             names[n]++;
             n = n + '-' + names[n];
-            colNames[i] = n;
           } else {
             names[n] = 1;
           }
+
+          colNames[i] = n;
 
           dataTypeCounters.push({
             colName: n,
