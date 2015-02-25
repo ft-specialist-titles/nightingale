@@ -7,7 +7,7 @@ var _ = require('underscore');
 // as they both are not fit for using with Browserify
 window.jQuery = Backbone.$ = $;
 var Stickit = require('backbone.stickit');
-require('bootstrap-sass-official');
+require('bootstrap-sass');
 
 $(document.body).tooltip({ selector: '.has-tooltip[title]' });
 
