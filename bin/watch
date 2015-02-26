@@ -3,5 +3,5 @@
 dir=${1:-.tmp}
 mkdir -p $dir && \
 echo \<\!DOCTYPE html\> > $dir/index.html && \
-(cat $dir/vendor.js &> /dev/null || ./bin/build-vendor $dir) && \
+(cat $dir/scripts/vendor.js &> /dev/null || ./bin/build-vendor $dir) && \
 (./bin/build-js watchify $dir & npm run watch-css & npm run watch-html & srvlr $dir -u index.html\#test)

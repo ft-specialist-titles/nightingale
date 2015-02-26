@@ -3,8 +3,8 @@
 cmd=${1:-browserify}
 dir=${2:-.tmp}
 mkdir -p $dir && \
-$cmd -e src/index.js \
-    -r ./src/index.js:playfair \
+$cmd -e src/scripts/index.js \
+    -r ./src/scripts/index.js:playfair \
     -x ./bower_components/jquery/dist/jquery.js \
     -x ./bower_components/underscore/underscore.js \
     -x ./bower_components/backbone/backbone.js \

@@ -7,8 +7,8 @@
     "test": "browserify test/**/*.test.js | testling",
     "watch-js": "./bin/build-js watchify .tmp",
     "build-js": "./bin/build-js browserify dist && uglifyjs dist/bundle.js -c -o dist/bundle.js",
-    "watch-css": "mkdir -p .tmp && sass --style expanded --load-path=bower_components --watch src/scss/index.scss:.tmp/bundle.css",
-    "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/scss/index.scss dist/bundle.css",
+    "watch-css": "mkdir -p .tmp && sass --style expanded --load-path=bower_components --watch src/styles/index.scss:.tmp/bundle.css",
+    "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/styles/index.scss dist/bundle.css",
     "watch-html": "mkdir -p .tmp && jade src --watch --pretty -p .tmp -o .tmp -O \"$(<package.json)\"",
     "watch": "./bin/watch .tmp",
     "tmp-vendor": "./bin/build-vendor .tmp",
@@ -34,9 +34,10 @@
     "browserify-shim": "~3.7.0"
   },
   "devDependencies": {
+    "coverify": "^1.0.7",
     "tape": "~2.13.1",
-    "watchify": "~0.10.1",
-    "testling": "~1.6.1"
+    "testling": "~1.6.1",
+    "watchify": "~0.10.1"
   },
   "browserify": {
     "transform": [
