@@ -1,5 +1,5 @@
 #!/bin/bash
 dir=${1:-.tmp}
 mkdir -p $dir && \
-jade src -p $dir -o $dir  -O "$(<package.json)";
+jade src -p $dir -o $dir  -O "{site:$(<package.json)}";
 html-minifier --collapse-boolean-attributes --collapse-whitespace --remove-comments-from-cdata --remove-empty-attributes $dir/index.html -o $dir/index.html
