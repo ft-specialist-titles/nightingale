@@ -1,11 +1,11 @@
 var Backbone = require('./core/backbone');
-var GraphicType = require('./charting/GraphicType.js');
-var ViewGraphicTypes = require('./charting/ViewGraphicTypes.js');
-var ViewImportData = require('./charting/ViewImportData.js');
-var DataImport = require('./charting/DataImport.js');
-var ViewInlineHelp = require('./charting/ViewInlineHelp.js');
 var Graphic = require('./charting/Graphic.js');
 var ViewGraphicControls = require('./charting/ViewGraphicControls.js');
+var ViewGraphicTypes = require('./charting/ViewGraphicTypes.js');
+var GraphicType = require('./charting/GraphicType.js');
+var DataImport = require('./charting/DataImport.js');
+var ViewImportData = require('./charting/ViewImportData.js');
+var ViewInlineHelp = require('./charting/ViewInlineHelp.js');
 var ViewSelectedVariation = require('./charting/ViewSelectedVariation.js');
 var Variations = require('./charting/Variations.js');
 var LineControls = require('./charting/LineControls.js');
@@ -16,7 +16,7 @@ var fontFix = require('./export/svgDataURI.js').fontFix;
 var _ =require('underscore');
 var $ = require('jquery');
 
-exports.main = function(){
+var nightingale = function(){
 
   var graphic = new Graphic();
   var importdata = new DataImport();
@@ -39,7 +39,6 @@ exports.main = function(){
 
   var viewSelectedVariation;
   Backbone.on('selectVariation', function (variation) {
-
     if (viewSelectedVariation) {
       if (viewSelectedVariation.model === variation) {
         return;
@@ -142,7 +141,7 @@ exports.main = function(){
     var dateFormat = model.get('dateFormat');
     var revertedDataset = revertColumn(currentDataset, property);
 
-    // transform the data
+    //transform the data
     if (Datatypes.isNumeric(datatype)) {
       transform.series(revertedDataset, property, transform.number());
     } else if (Datatypes.isTime(datatype) && dateFormat) {
@@ -168,3 +167,5 @@ exports.main = function(){
   }
 
 };
+
+module.exports = window.nightingale = nightingale;

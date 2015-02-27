@@ -6,13 +6,13 @@
   "scripts": {
     "test": "browserify test/**/*.test.js | testling",
     "watch-js": "./bin/build-js watchify .tmp",
-    "build-js": "./bin/build-js browserify dist && uglifyjs dist/bundle.js -c -o dist/bundle.js",
+    "build-js": "./bin/build-js browserify npm-dist && uglifyjs dist/bundle.js -c -o dist/bundle.js",
     "watch-css": "mkdir -p .tmp && sass --style expanded --load-path=bower_components --watch src/styles/index.scss:.tmp/bundle.css",
     "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/styles/index.scss dist/bundle.css",
     "watch-html": "mkdir -p .tmp && jade src --watch --pretty -p .tmp -o .tmp -O \"$(<package.json)\"",
     "watch": "./bin/watch .tmp",
     "tmp-vendor": "./bin/build-vendor .tmp",
-    "build": "rm -rf dist && npm run build-css && ./bin/build-vendor dist && npm run build-js && ./bin/build-html dist",
+    "build": "rm -rf npm-dist && npm run build-css && ./bin/build-vendor npm-dist && npm run build-js && ./bin/build-html npm-dist",
     "start": "npm run build && srvlr dist -R -l tiny"
   },
   "repository": {
@@ -22,22 +22,22 @@
   "author": "luke.kavanagh@ft.com",
   "license": "MIT",
   "dependencies": {
-    "browserify": "~4.1.5",
-    "uglify-js": "^2.4.16",
-    "jade": "~1.3.1",
-    "debowerify": "~0.7.1",
-    "html-minifier": "~0.6.1",
-    "handlebars": "~1.3.0",
-    "hbsfy": "~1.3.2",
-    "exorcist": "~0.1.6",
-    "brfs": "~1.2.0",
-    "browserify-shim": "~3.7.0"
+    "brfs": "^1.4.0",
+    "browserify": "^9.0.3",
+    "browserify-shim": "^3.8.3",
+    "debowerify": "^1.2.0",
+    "exorcist": "^0.1.6",
+    "handlebars": "^3.0.0",
+    "hbsfy": "^2.2.1",
+    "html-minifier": "^0.7.0",
+    "jade": "^1.9.2",
+    "uglify-js": "^2.4.16"
   },
   "devDependencies": {
     "coverify": "^1.0.7",
-    "tape": "~2.13.1",
-    "testling": "~1.6.1",
-    "watchify": "~0.10.1"
+    "tape": "^3.5.0",
+    "testling": "^1.7.1",
+    "watchify": "^2.4.0"
   },
   "browserify": {
     "transform": [
