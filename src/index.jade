@@ -2,16 +2,15 @@ doctype html
 html
   meta(name=site.name + ':version', content=site.version)
   title=name
-  link(rel='stylesheet', href='bundle.css')
+  link(rel='stylesheet', href='styles/index.min.css')
 body
   #layout
     #controls
     #charts
     #selection
-  script(src='vendor.js')
-  script(src='bundle.js')
+  script(src='scripts/index.min.js')
   script.
-    try{require('playfair').main();} catch(e) {
+    try{ nightingale();} catch(e) {
     var d = document.createElement('pre');
     var s = d.style;
     s.position = 'fixed', s.zIndex = 2, s.width = '100%'; 
