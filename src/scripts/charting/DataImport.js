@@ -1,3 +1,4 @@
+require('./../polyfill/bind');
 var Backbone = require('./../core/backbone.js');
 var Column = require('./Column.js');
 var d3 = require('d3');
