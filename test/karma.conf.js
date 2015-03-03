@@ -6,11 +6,9 @@ module.exports = function(config) {
         frameworks: ['jasmine', 'browserify'],
         reporters: ['progress', 'coverage'],
         preprocessors: {
-            //'src/scripts/**/*.js': ['browserify', 'coverage'],
             'test/**/*.js': ['browserify'],
             '_site/*.html': ['html2js']
         },
-        //plugins:['karma-html2js-preprocessor', 'karma-coverage', 'karma-commonjs', 'karma-jasmine', 'karma-phantomjs-launcher', 'karma-chrome-launcher', 'karma-browserify'],
         coverageReporter: {
             dir : 'test/coverage/',
             reporters: [
@@ -28,20 +26,29 @@ module.exports = function(config) {
             ]
         },
         files: [
-            {pattern: '_site/*.html', watched: false },
-            {pattern: '_site/styles/*.*', included: false, served: true},
-            //{pattern: 'src/scripts/**/*.*', included: true},
+            {pattern: '_site/**/*.*', included: true, served: true, watched: true},
             'test/**/*.spec.js'
         ],
         exclude: [
+            '**/*.png',
             'src/**/*.requirejs.js',
+            '**/*.min.js',
             'src/**/*.txt',
             'src/**/*.csv',
-            'src/**/*.hbs'
+            'src/**/*.hbs',
+            'bower_components/**/*',
+            'node_modules/**/*'
         ]
     };
-    if (pkg.browserify) karmaConfig.browserify = pkg.browserify;
-    if (pkg.browser) karmaConfig.browser = pkg.browser;
-    if (pkg["browserify-shim"]) karmaConfig["browserify-shim"] = pkg["browserify-shim"];
+    karmaConfig.browser = pkg.browser || {};
+    karmaConfig["browserify-shim"] = pkg["browserify-shim"] || {};
+    karmaConfig.browserify = pkg.browserify || {};
+    karmaConfig.browserify.transform = [ 'istanbulify' ];
+    //karmaConfig.browserify = {
+    //    debug: true,
+    //        transform: [ istanbulify({
+    //        ignore: ['**/node_modules/**', '**/test/**']
+    //    })]
+    //};
     return config.set(karmaConfig);
 };
