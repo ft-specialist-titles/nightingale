@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "coverify": "^1.0.7",
+    "istanbulify": "git://github.com/peter-mouland/istanbulify",
     "tape": "^3.5.0",
     "testling": "^1.7.1",
     "watchify": "^2.4.0"

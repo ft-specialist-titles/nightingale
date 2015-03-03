@@ -27676,6 +27676,7 @@ module.exports = Backbone.Model.extend({
 });
 
 },{"./../core/backbone.js":66,"./Axis.js":34}],37:[function(require,module,exports){
+require('./../polyfill/bind');
 var Backbone = require('./../core/backbone.js');
 var Column = require('./Column.js');
 var d3 = require("./../../../bower_components/d3/d3.js");
@@ -28674,7 +28675,7 @@ Object.keys(tests).forEach(function (key) {
 
 module.exports = DataImport;
 
-},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../transform/index.js":87,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],38:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../polyfill/bind":73,"./../transform/index.js":88,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],38:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 module.exports = Backbone.Model.extend({
@@ -29092,7 +29093,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":66,"./../templates/axis-label.hbs":73}],49:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/axis-label.hbs":74}],49:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -29125,7 +29126,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/datatype.hbs":75}],50:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/datatype.hbs":76}],50:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -29274,7 +29275,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"./../core/RegionView.js":65,"./../templates/axis.hbs":74,"./Datatypes.js":39,"./ViewDatatype.js":49,"./ViewHighlight.js":56,"./ViewSeriesControls.js":62}],52:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../templates/axis.hbs":75,"./Datatypes.js":39,"./ViewDatatype.js":49,"./ViewHighlight.js":56,"./ViewSeriesControls.js":62}],52:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
@@ -29371,7 +29372,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-controls.hbs":76,"./ViewDependantAxisControls.js":51,"./ViewIndependantAxisControls.js":58}],53:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-controls.hbs":77,"./ViewDependantAxisControls.js":51,"./ViewIndependantAxisControls.js":58}],53:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -29390,7 +29391,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":66,"./../templates/graphic-type-controls.hbs":77}],54:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/graphic-type-controls.hbs":78}],54:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('./GraphicVariation.js');
@@ -29449,7 +29450,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"./../core/CollectionView.js":64,"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-type.hbs":78,"./GraphicVariation.js":43,"./ViewGraphicVariation.js":55}],55:[function(require,module,exports){
+},{"./../core/CollectionView.js":64,"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-type.hbs":79,"./GraphicVariation.js":43,"./ViewGraphicVariation.js":55}],55:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var linechart = require("./../../../bower_components/o-charts/src/index.js").chart.line;
@@ -29531,7 +29532,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/jquery/dist/jquery.js":8,"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/graphic.hbs":79}],56:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/jquery/dist/jquery.js":8,"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/graphic.hbs":80}],56:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('./Datatypes.js');
 
@@ -29567,7 +29568,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"./../core/backbone.js":66,"./../templates/highlight.hbs":80,"./Datatypes.js":39}],57:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/highlight.hbs":81,"./Datatypes.js":39}],57:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./DataImport.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -29762,7 +29763,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/backbone.js":66,"./../templates/import-warning.hbs":81,"./../templates/import.hbs":82,"./DataImport.js":37}],58:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/backbone.js":66,"./../templates/import-warning.hbs":82,"./../templates/import.hbs":83,"./DataImport.js":37}],58:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./ViewAxisLabel.js');
 var ViewDatatype = require('./ViewDatatype.js');
@@ -29842,7 +29843,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"./../core/RegionView.js":65,"./../templates/independant-axis-control.hbs":83,"./Datatypes.js":39,"./ViewAxisLabel.js":48,"./ViewDatatype.js":49,"./ViewDateFormat.js":50,"./ViewHighlight.js":56}],59:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../templates/independant-axis-control.hbs":84,"./Datatypes.js":39,"./ViewAxisLabel.js":48,"./ViewDatatype.js":49,"./ViewDateFormat.js":50,"./ViewHighlight.js":56}],59:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -29913,7 +29914,7 @@ var ViewLineControls = Backbone.View.extend({
 
 module.exports = ViewLineControls;
 
-},{"./../core/backbone.js":66,"./../templates/type-controls-line.hbs":86}],61:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/type-controls-line.hbs":87}],61:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
@@ -30022,7 +30023,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/RegionView.js":65,"./../export/download.js":68,"./../templates/selected-variation.hbs":85,"./ViewGraphicTypeControls.js":53,"./ViewLineControls.js":60,"util":3}],62:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/RegionView.js":65,"./../export/download.js":68,"./../templates/selected-variation.hbs":86,"./ViewGraphicTypeControls.js":53,"./ViewLineControls.js":60,"util":3}],62:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./ViewSeriesList.js');
 
@@ -30347,7 +30348,7 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/CollectionView.js":64,"./../core/backbone.js":66,"./../templates/ordered-column.hbs":84,"./Axis.js":34}],64:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/CollectionView.js":64,"./../core/backbone.js":66,"./../templates/ordered-column.hbs":85,"./Axis.js":34}],64:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -31052,14 +31053,39 @@ var nightingale = function(){
 };
 
 module.exports = window.nightingale = nightingale;
-},{"./../../bower_components/jquery/dist/jquery.js":8,"./../../bower_components/underscore/underscore.js":25,"./charting/DataImport.js":37,"./charting/Datatypes.js":39,"./charting/Graphic.js":41,"./charting/GraphicType.js":42,"./charting/LineControls.js":45,"./charting/Variations.js":47,"./charting/ViewGraphicControls.js":52,"./charting/ViewGraphicTypes.js":54,"./charting/ViewImportData.js":57,"./charting/ViewInlineHelp.js":59,"./charting/ViewSelectedVariation.js":61,"./core/backbone":66,"./export/svgDataURI.js":69,"./transform/index.js":87}],73:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":8,"./../../bower_components/underscore/underscore.js":25,"./charting/DataImport.js":37,"./charting/Datatypes.js":39,"./charting/Graphic.js":41,"./charting/GraphicType.js":42,"./charting/LineControls.js":45,"./charting/Variations.js":47,"./charting/ViewGraphicControls.js":52,"./charting/ViewGraphicTypes.js":54,"./charting/ViewImportData.js":57,"./charting/ViewInlineHelp.js":59,"./charting/ViewSelectedVariation.js":61,"./core/backbone":66,"./export/svgDataURI.js":69,"./transform/index.js":88}],73:[function(require,module,exports){
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function(oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs   = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP    = function() {},
+            fBound  = function() {
+                return fToBind.apply(this instanceof fNOP
+                        ? this
+                        : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+
+        return fBound;
+    };
+}
+},{}],74:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<label>Label</label>\n<input name=\"label\" class=\"form-control\" />\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],74:[function(require,module,exports){
+},{"hbsfy/runtime":33}],75:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31078,7 +31104,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <!--\n      <div class=\"form-group\">\n        <label>Label</label>\n        <input name=\"label\" class=\"form-control\" />\n      </div>\n      <div data-region=\"datatype\" class=\"form-group\"></div>\n    -->\n      <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n        <label>Series</label>\n        <div data-region=\"series\"></div>\n      </div>\n      <!--\n      <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n        <label>Format</label>\n        <div class=\"row\">\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n          </div>\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n          </div>\n        </div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n        <label>Highlight</label>\n        <div data-region=\"highlight\"></div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n        <label>Forecast</label>\n        <select class=\"form-control\">\n          <option>Pick a date</option>\n        </select>\n        <span class=\"help-block\">When does the forecast begin?</span>\n      </div>\n          -->\n    </form>\n  </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],75:[function(require,module,exports){
+},{"hbsfy/runtime":33}],76:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31097,42 +31123,42 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],76:[function(require,module,exports){
+},{"hbsfy/runtime":33}],77:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Description\n<button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\nDiscard data\n</button>\n  </div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <div class=\"form-group\">\n        <label>Title</label>\n        <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n        <p class=\"help-block\">What question does the chart answer?</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Subtitle</label>\n          <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also helps.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Footnote</label>\n        <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Source</label>\n        <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\" list=\"common-sources-list\"/>\n        <datalist id=\"common-sources-list\">\n          <option value=\"Thomson Reuters Datastream\"></option> \n          <option value=\"Bloomberg\"></option> \n          <option value=\"World Bank\"></option>\n          <option value=\"IMF\"></option>\n          <option value=\"ONS\"></option>\n          <option value=\"Eurostat\"></option>\n          <option value=\"US Census Bureau\"></option>\n          <option value=\"US Bureau of Labor Statistics\"></option>\n        </datalist>\n        <p class=\"help-block popular-sources\">Popular sources: <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics</button>.</p>\n      </div>\n    </form>\n  </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],77:[function(require,module,exports){
+},{"hbsfy/runtime":33}],78:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div><!-- Graphic Type Control --></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],78:[function(require,module,exports){
+},{"hbsfy/runtime":33}],79:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-region=\"variations\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],79:[function(require,module,exports){
+},{"hbsfy/runtime":33}],80:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"graphic-container\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],80:[function(require,module,exports){
+},{"hbsfy/runtime":33}],81:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-section-name=\"categorical\">\n  <select class=\"form-control\">\n  <option>Select a categories from the series</option>\n  </select>\n</div>\n<div data-section-name=\"numeric\">\n  <select class=\"form-control\">\n  <option>None</option>\n  </select>\n</div>\n<div data-section-name=\"time\">\n  <select class=\"form-control\">\n  <option>Select a date from the series</option>\n  </select>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],81:[function(require,module,exports){
+},{"hbsfy/runtime":33}],82:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -31143,21 +31169,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "</p>\n  <p><button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button></p>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],82:[function(require,module,exports){
+},{"hbsfy/runtime":33}],83:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"view-importdata__content\">\n  <h1 class=\"text-center import-data-title\">Import data</h1>\n    <div class=\"warning-message\"></div>\n  <div class=\"fake-field\">\n    <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n  </div>\n  <div class=\"form-group\">\n    <input type=\"file\" style=\"display:none\" name=\"file\" accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\" />\n    <p class=\"text-center help-block\">You may also drag and drop or <button name=\"select-file\" class=\"btn btn-link\">pick a file</button> too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\" href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.</p>\n  </div>\n  <div class=\"form-group\">\n    <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n  </div>\n  <div class=\"feedback-details\">\n  <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n  </div>\n  <!--\n  <div class=\"text-center\">\n      <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n      <div class=\"btn-group\">\n        <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n        <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n          <span class=\"caret\"></span>\n          <span class=\"sr-only\">Toggle Dropdown</span>\n        </button>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li><a href=\"#\">GDP per capita</a></li>\n          <li><a href=\"#\">Something else</a></li>\n        </ul>\n      </div>\n    </div>\n    -->\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],83:[function(require,module,exports){
+},{"hbsfy/runtime":33}],84:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Independent axis (X)</div>\n  <div class=\"panel-body\">\n    <div class=\"form-group\">\n      <label>Column (in the imported data table)</label>\n      <select name=\"columns\" class=\"form-control pull\"></select>\n    </div>\n    <div class=\"form-group\" data-region=\"datatype\"></div>\n    <div class=\"form-group\" data-region=\"dateFormat\"></div>\n    <!--\n    <div class=\"form-group\" data-region=\"label\"></div>\n    <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n      <label>Highlight</label>\n      <div data-region=\"highlight\"></div>\n    </div>\n  -->\n  </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],84:[function(require,module,exports){
+},{"hbsfy/runtime":33}],85:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31199,7 +31225,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</span>\n</span>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],85:[function(require,module,exports){
+},{"hbsfy/runtime":33}],86:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -31216,14 +31242,14 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "px</td>\n      </tr>\n    </tbody>\n  </table>\n  <hr>\n  <div data-region=\"graphic-type-controls\"></div>\n  <div class=\"view-export-controls\">\n    <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n  </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],86:[function(require,module,exports){
+},{"hbsfy/runtime":33}],87:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero \n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"nice\">Nice\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"thinLines\">Thin lines\n  </label>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":33}],87:[function(require,module,exports){
+},{"hbsfy/runtime":33}],88:[function(require,module,exports){
 module.exports = {
   number: require('./number.js'),
   time: require('./time.js'),
@@ -31231,7 +31257,7 @@ module.exports = {
   table: require('./table.js')
 };
 
-},{"./number.js":88,"./series.js":89,"./table.js":90,"./time.js":91}],88:[function(require,module,exports){
+},{"./number.js":89,"./series.js":90,"./table.js":91,"./time.js":92}],89:[function(require,module,exports){
 var currencySymbol = /^(\$|€|¥|£)/;
 var allCommas = /\,/g;
 var percent = /(\%)$/;
@@ -31270,7 +31296,7 @@ function createNumberTransformer (options) {
   return transformNumber;
 }
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
@@ -31288,7 +31314,7 @@ function series(array, property, transformer, customLogic) {
   }
 }
 
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 var Datatypes = require('../charting/Datatypes.js');
 var series = require('./series.js');
 
@@ -31330,7 +31356,7 @@ function transformTable(data, columns, transform, type, customLogic) {
   }
 }
 
-},{"../charting/Datatypes.js":39,"./series.js":89}],91:[function(require,module,exports){
+},{"../charting/Datatypes.js":39,"./series.js":90}],92:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 
 module.exports = createTimeTransformer;
