@@ -21,24 +21,13 @@
   },
   "author": "luke.kavanagh@ft.com",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "brfs": "^1.4.0",
-    "browserify": "^9.0.3",
     "browserify-shim": "^3.8.3",
     "debowerify": "^1.2.0",
-    "exorcist": "^0.1.6",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
-    "html-minifier": "^0.7.0",
-    "jade": "^1.9.2",
-    "uglify-js": "^2.4.16"
-  },
-  "devDependencies": {
-    "coverify": "^1.0.7",
-    "istanbulify": "git://github.com/peter-mouland/istanbulify",
-    "tape": "^3.5.0",
-    "testling": "^1.7.1",
-    "watchify": "^2.4.0"
+    "istanbulify": "git://github.com/peter-mouland/istanbulify"
   },
   "browserify": {
     "transform": [

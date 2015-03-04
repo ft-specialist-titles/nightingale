@@ -9,7 +9,7 @@ We encourage small change pull requests, the smaller the change the quicker and 
 To build the Nightingale locally, you'll need to install:
  * [NodeJS](http://nodejs.org/)
  * [Bower](http://bower.io/)
- * [srvlr](https://github.com/kavanagh/srvlr)
+ * [component-helper](https://github.com/skyglobal/component-helper)
 
 ## pre-requisits
 
@@ -38,6 +38,6 @@ if behind a proxy run, setup git to use https:
 
 ## Running Locally
 
- * `npm run start`
- * `npm test`
+ * `component serve`
+ * `component test`
 
