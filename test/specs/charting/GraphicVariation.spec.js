@@ -1,6 +1,4 @@
-document.body.innerHTML = __html__['_site/index.html'];
-
-var transformNumber = require('../../../src/scripts/charting/axis');
+var transformNumber = require('../../../src/scripts/charting/GraphicVariation');
 
 describe('transformTable module can ', function () {
 

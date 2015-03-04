@@ -1,8 +1,8 @@
 {
   "name": "nightingale",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "description": "Chart making tool for journalists",
-  "main": "src/index.js",
+  "main": "_site/index.html",
   "scripts": {
     "test": "browserify test/**/*.test.js | testling",
     "watch-js": "./bin/build-js watchify .tmp",
