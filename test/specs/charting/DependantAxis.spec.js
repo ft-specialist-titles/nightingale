@@ -1,4 +1,4 @@
-var transformNumber = require('../../../src/scripts/charting/DataImport');
+var transformNumber = require('../../../src/scripts/charting/DependantAxis');
 
 describe('transformTable module can ', function () {
 

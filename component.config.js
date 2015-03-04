@@ -47,9 +47,7 @@ module.exports = {
         demo: {
             root: "./src"
         },
-        dist : { // Compiled source code to be redistributed i.e. via bower
-            root: "./dist"
-        },
+        dist : false,
         "site": { // Final build (Compiled demo + source) code pushed to your chosen release cloud i.e. AWS
             root: './_site'
         }
