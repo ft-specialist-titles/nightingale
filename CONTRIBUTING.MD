@@ -38,6 +38,6 @@ if behind a proxy run, setup git to use https:
 
 ## Running Locally
 
- * `component serve`
- * `component test`
+ * `npm start`
+ * `npm test`
 

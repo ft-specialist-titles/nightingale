@@ -4,16 +4,11 @@
   "description": "Chart making tool for journalists",
   "main": "_site/index.html",
   "scripts": {
-    "test": "browserify test/**/*.test.js | testling",
-    "watch-js": "./bin/build-js watchify .tmp",
-    "build-js": "./bin/build-js browserify npm-dist && uglifyjs dist/bundle.js -c -o dist/bundle.js",
-    "watch-css": "mkdir -p .tmp && sass --style expanded --load-path=bower_components --watch src/styles/index.scss:.tmp/bundle.css",
-    "build-css": "mkdir -p dist && sass --style compressed --load-path=bower_components src/styles/index.scss dist/bundle.css",
-    "watch-html": "mkdir -p .tmp && jade src --watch --pretty -p .tmp -o .tmp -O \"$(<package.json)\"",
-    "watch": "./bin/watch .tmp",
-    "tmp-vendor": "./bin/build-vendor .tmp",
-    "build": "rm -rf npm-dist && npm run build-css && ./bin/build-vendor npm-dist && npm run build-js && ./bin/build-html npm-dist",
-    "start": "npm run build && srvlr dist -R -l tiny"
+    "test": "component test quick",
+    "test:tdd": "component test tdd",
+    "build": "component build",
+    "start": "component serve",
+    "start:quick": "component serve quick"
   },
   "repository": {
     "type": "git",
@@ -23,11 +18,11 @@
   "license": "MIT",
   "devDependencies": {
     "brfs": "^1.4.0",
+    "browserify-istanbul": "^0.2.0",
     "browserify-shim": "^3.8.3",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
-    "hbsfy": "^2.2.1",
-    "istanbulify": "git://github.com/peter-mouland/istanbulify"
+    "hbsfy": "^2.2.1"
   },
   "browserify": {
     "transform": [
