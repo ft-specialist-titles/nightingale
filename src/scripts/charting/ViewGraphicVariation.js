@@ -4,6 +4,7 @@ var linechart = require('o-charts').chart.line;
 var d3 = require('d3');
 var _ = require('underscore');
 
+//todo: variation -- to variant
 var ViewGraphicVariation = Backbone.View.extend({
 
   initialize: function(options) {

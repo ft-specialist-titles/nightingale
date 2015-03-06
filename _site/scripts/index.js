@@ -29457,6 +29457,7 @@ var linechart = require("./../../../bower_components/o-charts/src/index.js").cha
 var d3 = require("./../../../bower_components/d3/d3.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
+//todo: variation -- to variant
 var ViewGraphicVariation = Backbone.View.extend({
 
   initialize: function(options) {

@@ -1,12 +1,11 @@
 {
   "name": "nightingale",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Chart making tool for journalists",
   "main": "_site/index.html",
   "scripts": {
     "test": "component test quick",
     "test:tdd": "component test tdd",
-    "build": "component build",
     "start": "component serve",
     "start:quick": "component serve quick"
   },
