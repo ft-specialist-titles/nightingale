@@ -4,10 +4,10 @@
   "description": "Chart making tool for journalists",
   "main": "_site/index.html",
   "scripts": {
-    "test": "component test quick",
-    "test:tdd": "component test tdd",
     "start": "component serve",
-    "start:quick": "component serve quick"
+    "test": "component build && component test",
+    "tdd": "component test tdd",
+    "release": "npm test && component release"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
     "brfs": "^1.4.0",
     "browserify-istanbul": "^0.2.0",
     "browserify-shim": "^3.8.3",
+    "component-helper": "git://github.com/peter-mouland/component-helper",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1"

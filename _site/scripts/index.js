@@ -1,624 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],2:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],3:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-},{"./support/isBuffer":2,"inherits":1}],4:[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Backbone.Stickit v0.8.0, MIT Licensed
 // Copyright (c) 2012 The New York Times, CMS Group, Matthew DeLambo <delambo@gmail.com>
 
@@ -1195,7 +575,7 @@ function hasOwnProperty(obj, prop) {
 
 }));
 
-},{"./../backbone/backbone.js":5,"./../underscore/underscore.js":25}],5:[function(require,module,exports){
+},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":22}],2:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2805,7 +2185,7 @@ function hasOwnProperty(obj, prop) {
 
 }));
 
-},{"./../underscore/underscore.js":25}],6:[function(require,module,exports){
+},{"./../underscore/underscore.js":22}],3:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.2 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -5113,7 +4493,7 @@ if (typeof jQuery === 'undefined') {
 
 }(jQuery);
 
-},{}],7:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.4.13"
@@ -14329,7 +13709,7 @@ if (typeof jQuery === 'undefined') {
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.3
  * http://jquery.com/
@@ -23536,7 +22916,7 @@ return jQuery;
 
 }));
 
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict'
 
 var d3 = require("./../../../d3/d3.js");
@@ -23607,7 +22987,7 @@ function categoryAxis() {
 
 module.exports = categoryAxis;
 
-},{"./../../../d3/d3.js":7}],10:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],7:[function(require,module,exports){
 'use strict'
 
 var d3 = require("./../../../d3/d3.js");
@@ -23911,14 +23291,14 @@ function dateAxis() {
 
 module.exports = dateAxis;
 
-},{"./../../../d3/d3.js":7}],11:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],8:[function(require,module,exports){
 module.exports = {
   category: require('./category.js'),
   date: require('./date.js'),
   number: require('./number.js')
 };
 
-},{"./category.js":9,"./date.js":10,"./number.js":12}],12:[function(require,module,exports){
+},{"./category.js":6,"./date.js":7,"./number.js":9}],9:[function(require,module,exports){
 'use strict'
 
 //this is wrapper for d3.svg.axis
@@ -24130,7 +23510,7 @@ function numericAxis() {
 
 module.exports = numericAxis;
 
-},{"./../../../d3/d3.js":7}],13:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],10:[function(require,module,exports){
 'use strict';
 var d3 = require("./../../../d3/d3.js");
 
@@ -24202,14 +23582,14 @@ function blankChart() {
 
 module.exports = blankChart;
 
-},{"./../../../d3/d3.js":7}],14:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],11:[function(require,module,exports){
 module.exports = {
   line: require('./line.js'),
   blank: require('./blank.js'),
   pie: require('./pie.js')
 };
 
-},{"./blank.js":13,"./line.js":15,"./pie.js":16}],15:[function(require,module,exports){
+},{"./blank.js":10,"./line.js":12,"./pie.js":13}],12:[function(require,module,exports){
 //reusable linechart
 'use strict'
 
@@ -24689,7 +24069,7 @@ function lineChart(p) {
 
 module.exports = lineChart;
 
-},{"../axis/date.js":10,"../axis/number.js":12,"../element/line-key.js":17,"../element/logo.js":18,"../element/text-area.js":19,"../util/aspect-ratios.js":21,"../util/line-interpolators.js":23,"../util/line-thickness.js":24,"./../../../d3/d3.js":7}],16:[function(require,module,exports){
+},{"../axis/date.js":7,"../axis/number.js":9,"../element/line-key.js":14,"../element/logo.js":15,"../element/text-area.js":16,"../util/aspect-ratios.js":18,"../util/line-interpolators.js":20,"../util/line-thickness.js":21,"./../../../d3/d3.js":4}],13:[function(require,module,exports){
 'use strict';
 var d3 = require("./../../../d3/d3.js");
 
@@ -24771,7 +24151,7 @@ function pieChart() {
 
 module.exports = pieChart;
 
-},{"./../../../d3/d3.js":7}],17:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],14:[function(require,module,exports){
 'use strict'
 
 var d3 = require("./../../../d3/d3.js");
@@ -24855,7 +24235,7 @@ function lineKey(options) {
 
 module.exports = lineKey;
 
-},{"../util/line-thickness.js":24,"./../../../d3/d3.js":7}],18:[function(require,module,exports){
+},{"../util/line-thickness.js":21,"./../../../d3/d3.js":4}],15:[function(require,module,exports){
 //the ft logo there's probably an easier ay to do this...
 
 'use strict'
@@ -24890,7 +24270,7 @@ module.exports = ftLogo;
 		h3.075L110.955,1.959z"/>
 		*/
 
-},{"./../../../d3/d3.js":7}],19:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],16:[function(require,module,exports){
 //text area provides a wrapping text block of a given type
 
 'use strict'
@@ -24988,7 +24368,7 @@ function textArea() {
 
 module.exports = textArea;
 
-},{"./../../../d3/d3.js":7}],20:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],17:[function(require,module,exports){
 'use strict';
 
 module.exports  = {
@@ -25008,7 +24388,7 @@ module.exports  = {
 
 };
 
-},{"./axis/index.js":11,"./chart/index.js":14,"./element/line-key.js":17,"./element/text-area.js":19,"./util/chart-attribute-styles.js":22}],21:[function(require,module,exports){
+},{"./axis/index.js":8,"./chart/index.js":11,"./element/line-key.js":14,"./element/text-area.js":16,"./util/chart-attribute-styles.js":19}],18:[function(require,module,exports){
 // More info:
 // http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
 
@@ -25079,7 +24459,7 @@ module.exports = {
   }
 };
 
-},{}],22:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // because of the need to export and convert browser rendered SVGs 
 // we need a simple way to attach styles as attributes if necessary, 
 // so, heres a list of attributes and the selectors to which they should be applied
@@ -25260,7 +24640,7 @@ function applyAttributes(){
 
 module.exports = applyAttributes;
 
-},{"./../../../d3/d3.js":7}],23:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],20:[function(require,module,exports){
 'use strict';
 
 //a place to define custom line interpolators
@@ -25292,7 +24672,7 @@ module.exports = {
   gappedLine:gappedLineInterpolator
 };
 
-},{"./../../../d3/d3.js":7}],24:[function(require,module,exports){
+},{"./../../../d3/d3.js":4}],21:[function(require,module,exports){
 var thicknesses = {
   small: 2,
   medium: 4,
@@ -25321,7 +24701,7 @@ module.exports = function(value) {
   }
 }
 
-},{}],25:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //     Underscore.js 1.8.2
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -26859,7 +26239,627 @@ module.exports = function(value) {
   }
 }.call(this));
 
-},{}],26:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],24:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],25:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+},{"./support/isBuffer":24,"inherits":23}],26:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -28675,7 +28675,7 @@ Object.keys(tests).forEach(function (key) {
 
 module.exports = DataImport;
 
-},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../polyfill/bind":73,"./../transform/index.js":88,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],38:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./../polyfill/bind":72,"./../transform/index.js":87,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],38:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 module.exports = Backbone.Model.extend({
@@ -28787,7 +28787,7 @@ var DependantAxis = Axis.extend({
 
 module.exports = DependantAxis;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./Axis.js":34,"./Datatypes.js":39}],41:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./Axis.js":34,"./Datatypes.js":39}],41:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var Chart = require('./Chart.js');
@@ -28824,7 +28824,7 @@ var Graphic = Backbone.Model.extend({
 
 module.exports = Graphic;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./Chart.js":35}],42:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./Chart.js":35}],42:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 var GraphicType = Backbone.Model.extend({
@@ -29002,7 +29002,7 @@ var IndependantAxis = Axis.extend({
 
 module.exports = IndependantAxis;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],45:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./Axis.js":34,"./Column.js":36,"./Datatypes.js":39}],45:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var Chart = require('./Chart.js');
@@ -29035,7 +29035,7 @@ var LineControls = Backbone.Model.extend({
 
 module.exports = LineControls;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./Chart.js":35,"./TickStyle.js":46}],46:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./Chart.js":35,"./TickStyle.js":46}],46:[function(require,module,exports){
 module.exports = {
   // works out best set of ticks to display
   AUTO: 'auto', 
@@ -29093,7 +29093,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":66,"./../templates/axis-label.hbs":74}],49:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/axis-label.hbs":73}],49:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -29126,7 +29126,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/datatype.hbs":76}],50:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./../templates/datatype.hbs":75}],50:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -29275,7 +29275,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"./../core/RegionView.js":65,"./../templates/axis.hbs":75,"./Datatypes.js":39,"./ViewDatatype.js":49,"./ViewHighlight.js":56,"./ViewSeriesControls.js":62}],52:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../templates/axis.hbs":74,"./Datatypes.js":39,"./ViewDatatype.js":49,"./ViewHighlight.js":56,"./ViewSeriesControls.js":62}],52:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
@@ -29372,7 +29372,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-controls.hbs":77,"./ViewDependantAxisControls.js":51,"./ViewIndependantAxisControls.js":58}],53:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-controls.hbs":76,"./ViewDependantAxisControls.js":51,"./ViewIndependantAxisControls.js":58}],53:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -29391,7 +29391,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":66,"./../templates/graphic-type-controls.hbs":78}],54:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/graphic-type-controls.hbs":77}],54:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('./GraphicVariation.js');
@@ -29450,7 +29450,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"./../core/CollectionView.js":64,"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-type.hbs":79,"./GraphicVariation.js":43,"./ViewGraphicVariation.js":55}],55:[function(require,module,exports){
+},{"./../core/CollectionView.js":64,"./../core/RegionView.js":65,"./../core/backbone.js":66,"./../templates/graphic-type.hbs":78,"./GraphicVariation.js":43,"./ViewGraphicVariation.js":55}],55:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var linechart = require("./../../../bower_components/o-charts/src/index.js").chart.line;
@@ -29533,7 +29533,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":7,"./../../../bower_components/jquery/dist/jquery.js":8,"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/backbone.js":66,"./../templates/graphic.hbs":80}],56:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/index.js":17,"./../../../bower_components/underscore/underscore.js":22,"./../core/backbone.js":66,"./../templates/graphic.hbs":79}],56:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('./Datatypes.js');
 
@@ -29569,7 +29569,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"./../core/backbone.js":66,"./../templates/highlight.hbs":81,"./Datatypes.js":39}],57:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/highlight.hbs":80,"./Datatypes.js":39}],57:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./DataImport.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -29764,7 +29764,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/backbone.js":66,"./../templates/import-warning.hbs":82,"./../templates/import.hbs":83,"./DataImport.js":37}],58:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":66,"./../templates/import-warning.hbs":81,"./../templates/import.hbs":82,"./DataImport.js":37}],58:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./ViewAxisLabel.js');
 var ViewDatatype = require('./ViewDatatype.js');
@@ -29844,7 +29844,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"./../core/RegionView.js":65,"./../templates/independant-axis-control.hbs":84,"./Datatypes.js":39,"./ViewAxisLabel.js":48,"./ViewDatatype.js":49,"./ViewDateFormat.js":50,"./ViewHighlight.js":56}],59:[function(require,module,exports){
+},{"./../core/RegionView.js":65,"./../templates/independant-axis-control.hbs":83,"./Datatypes.js":39,"./ViewAxisLabel.js":48,"./ViewDatatype.js":49,"./ViewDateFormat.js":50,"./ViewHighlight.js":56}],59:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -29915,7 +29915,7 @@ var ViewLineControls = Backbone.View.extend({
 
 module.exports = ViewLineControls;
 
-},{"./../core/backbone.js":66,"./../templates/type-controls-line.hbs":87}],61:[function(require,module,exports){
+},{"./../core/backbone.js":66,"./../templates/type-controls-line.hbs":86}],61:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
@@ -30024,7 +30024,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/index.js":20,"./../../../bower_components/underscore/underscore.js":25,"./../core/RegionView.js":65,"./../export/download.js":68,"./../templates/selected-variation.hbs":86,"./ViewGraphicTypeControls.js":53,"./ViewLineControls.js":60,"util":3}],62:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/index.js":17,"./../../../bower_components/underscore/underscore.js":22,"./../core/RegionView.js":65,"./../export/download.js":68,"./../templates/selected-variation.hbs":85,"./ViewGraphicTypeControls.js":53,"./ViewLineControls.js":60,"util":25}],62:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./ViewSeriesList.js');
 
@@ -30349,7 +30349,7 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":8,"./../core/CollectionView.js":64,"./../core/backbone.js":66,"./../templates/ordered-column.hbs":85,"./Axis.js":34}],64:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":64,"./../core/backbone.js":66,"./../templates/ordered-column.hbs":84,"./Axis.js":34}],64:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30436,7 +30436,7 @@ var CollectionView = Backbone.View.extend({
 
 module.exports = CollectionView;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./backbone.js":66}],65:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./backbone.js":66}],65:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30505,7 +30505,7 @@ var RegionView = Backbone.View.extend({
 
 module.exports = RegionView;
 
-},{"./../../../bower_components/underscore/underscore.js":25,"./backbone.js":66}],66:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22,"./backbone.js":66}],66:[function(require,module,exports){
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var Backbone = require("./../../../bower_components/backbone/backbone.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -30529,7 +30529,7 @@ handlers.forEach(function (handler) {
 
 module.exports = Backbone;
 
-},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":4,"./../../../bower_components/backbone/backbone.js":5,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":6,"./../../../bower_components/jquery/dist/jquery.js":8,"./../../../bower_components/underscore/underscore.js":25,"./stickit-handlers/btn-group-radio.js":67}],67:[function(require,module,exports){
+},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":22,"./stickit-handlers/btn-group-radio.js":67}],67:[function(require,module,exports){
 var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
 
 module.exports = {
@@ -30578,7 +30578,7 @@ module.exports = {
   }
 };
 
-},{"./../../../../bower_components/jquery/dist/jquery.js":8}],68:[function(require,module,exports){
+},{"./../../../../bower_components/jquery/dist/jquery.js":5}],68:[function(require,module,exports){
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
@@ -30882,7 +30882,378 @@ module.exports = {
   BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
 };
 
-},{"./../../../bower_components/underscore/underscore.js":25}],72:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":22}],72:[function(require,module,exports){
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function(oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs   = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP    = function() {},
+            fBound  = function() {
+                return fToBind.apply(this instanceof fNOP
+                        ? this
+                        : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+
+        return fBound;
+    };
+}
+},{}],73:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\" />\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],74:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "<span class=\"pull-right alert alert-warning\">"
+    + this.escapeExpression(((helper = (helper = helpers.warningMessage || (depth0 != null ? depth0.warningMessage : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"warningMessage","hash":{},"data":data}) : helper)))
+    + "</span>";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, helper;
+
+  return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
+    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + ")</span>"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <!--\n      <div class=\"form-group\">\n        <label>Label</label>\n        <input name=\"label\" class=\"form-control\" />\n      </div>\n      <div data-region=\"datatype\" class=\"form-group\"></div>\n    -->\n      <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n        <label>Series</label>\n        <div data-region=\"series\"></div>\n      </div>\n      <!--\n      <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n        <label>Format</label>\n        <div class=\"row\">\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n          </div>\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n          </div>\n        </div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n        <label>Highlight</label>\n        <div data-region=\"highlight\"></div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n        <label>Forecast</label>\n        <select class=\"form-control\">\n          <option>Pick a date</option>\n        </select>\n        <span class=\"help-block\">When does the forecast begin?</span>\n      </div>\n          -->\n    </form>\n  </div>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],75:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n  </div>\n";
+},"3":function(depth0,helpers,partials,data) {
+    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n  </div>\n";
+},"5":function(depth0,helpers,partials,data) {
+    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n  </div>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"datatype\">\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.numeric : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.time : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.categorical : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],76:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Description\n<button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\nDiscard data\n</button>\n  </div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <div class=\"form-group\">\n        <label>Title</label>\n        <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n        <p class=\"help-block\">What question does the chart answer?</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Subtitle</label>\n          <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also helps.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Footnote</label>\n        <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Source</label>\n        <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\" list=\"common-sources-list\"/>\n        <datalist id=\"common-sources-list\">\n          <option value=\"Thomson Reuters Datastream\"></option> \n          <option value=\"Bloomberg\"></option> \n          <option value=\"World Bank\"></option>\n          <option value=\"IMF\"></option>\n          <option value=\"ONS\"></option>\n          <option value=\"Eurostat\"></option>\n          <option value=\"US Census Bureau\"></option>\n          <option value=\"US Bureau of Labor Statistics\"></option>\n        </datalist>\n        <p class=\"help-block popular-sources\">Popular sources: <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics</button>.</p>\n      </div>\n    </form>\n  </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],77:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div><!-- Graphic Type Control --></div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],78:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div data-region=\"variations\"></div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],79:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"graphic-container\"></div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],80:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div data-section-name=\"categorical\">\n  <select class=\"form-control\">\n  <option>Select a categories from the series</option>\n  </select>\n</div>\n<div data-section-name=\"numeric\">\n  <select class=\"form-control\">\n  <option>None</option>\n  </select>\n</div>\n<div data-section-name=\"time\">\n  <select class=\"form-control\">\n  <option>Select a date from the series</option>\n  </select>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],81:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, helper;
+
+  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n  <h4>Warning</h4>\n  <p>"
+    + ((stack1 = ((helper = (helper = helpers.message || (depth0 != null ? depth0.message : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"message","hash":{},"data":data}) : helper))) != null ? stack1 : "")
+    + "</p>\n  <p><button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button></p>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],82:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"view-importdata__content\">\n  <h1 class=\"text-center import-data-title\">Import data</h1>\n    <div class=\"warning-message\"></div>\n  <div class=\"fake-field\">\n    <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n  </div>\n  <div class=\"form-group\">\n    <input type=\"file\" style=\"display:none\" name=\"file\" accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\" />\n    <p class=\"text-center help-block\">You may also drag and drop or <button name=\"select-file\" class=\"btn btn-link\">pick a file</button> too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\" href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.</p>\n  </div>\n  <div class=\"form-group\">\n    <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n  </div>\n  <div class=\"feedback-details\">\n  <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n  </div>\n  <!--\n  <div class=\"text-center\">\n      <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n      <div class=\"btn-group\">\n        <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n        <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n          <span class=\"caret\"></span>\n          <span class=\"sr-only\">Toggle Dropdown</span>\n        </button>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li><a href=\"#\">GDP per capita</a></li>\n          <li><a href=\"#\">Something else</a></li>\n        </ul>\n      </div>\n    </div>\n    -->\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],83:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Independent axis (X)</div>\n  <div class=\"panel-body\">\n    <div class=\"form-group\">\n      <label>Column (in the imported data table)</label>\n      <select name=\"columns\" class=\"form-control pull\"></select>\n    </div>\n    <div class=\"form-group\" data-region=\"datatype\"></div>\n    <div class=\"form-group\" data-region=\"dateFormat\"></div>\n    <!--\n    <div class=\"form-group\" data-region=\"label\"></div>\n    <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n      <label>Highlight</label>\n      <div data-region=\"highlight\"></div>\n    </div>\n  -->\n  </div>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],84:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + ".";
+},"3":function(depth0,helpers,partials,data) {
+    return "  <span name=\"label\" class=\"series-name\"></span>\n";
+},"5":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "  <span title=\"click to edit the series "
+    + this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\" contenteditable></span>\n";
+},"7":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "    <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
+    + this.escapeExpression(((helper = (helper = helpers.property || (depth0 != null ? depth0.property : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"property","hash":{},"data":data}) : helper)))
+    + "\">Add series</button>\n";
+},"9":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "  <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
+    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" data-help=\"LINE_SERIES\"></span>\n  <!--\n  <span class=\"swatch swatch-bar\" data-placement=\"top\" data-index=\""
+    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<span class=\"series-item-drag-content\">\n<span class=\"series-num\" draggable=\"true\">"
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"unless","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</span>\n<span>\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
+    + "</span>\n<span class=\"series-item-controls\">\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
+    + "</span>\n</span>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],85:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, alias1=this.lambda, alias2=this.escapeExpression;
+
+  return "<div>\n  <table class=\"table table-bordered table-condensed\">\n    <tbody>\n      <tr>\n        <th class=\"property-name\">Chart type</th>\n        <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
+    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Variation</th>\n        <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
+    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Width</th>\n        <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
+    + "px</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Height</th>\n        <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
+    + "px</td>\n      </tr>\n    </tbody>\n  </table>\n  <hr>\n  <div data-region=\"graphic-type-controls\"></div>\n  <div class=\"view-export-controls\">\n    <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n  </div>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],86:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero \n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"nice\">Nice\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"thinLines\">Thin lines\n  </label>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":33}],87:[function(require,module,exports){
+module.exports = {
+  number: require('./number.js'),
+  time: require('./time.js'),
+  series: require('./series.js'),
+  table: require('./table.js')
+};
+
+},{"./number.js":88,"./series.js":89,"./table.js":90,"./time.js":91}],88:[function(require,module,exports){
+var currencySymbol = /^(\$|€|¥|£)/;
+var allCommas = /\,/g;
+var percent = /(\%)$/;
+
+module.exports = createNumberTransformer;
+
+function createNumberTransformer (options) {
+
+  options = options || {};
+
+  function transformNumber(d) {
+
+    var _NaN = options.interpolateNulls ? null : NaN;
+ 
+    if (d === null || d === undefined) return _NaN;
+
+    var type = typeof d;
+
+    if (type === 'number') return d;
+
+    if (type !== 'string') return _NaN;
+
+    d = d.trim()
+        .replace(allCommas, '')
+        .replace(currencySymbol, '')
+        .replace(percent, '');
+
+    if (d === '') return _NaN;
+
+    if (d === '*') return null;
+
+    return Number(d);
+
+  }
+
+  return transformNumber;
+}
+
+},{}],89:[function(require,module,exports){
+module.exports = series;
+
+function series(array, property, transformer, customLogic) {
+  var oldValue;
+  var newValue;
+  var hasCustomLogic = typeof customLogic === 'function';
+  var customValue;
+  for (var i = 0, x = array.length; i < x; i++) {
+    oldValue = array[i][property];
+    newValue = transformer(oldValue);
+    if (newValue === undefined) newValue = null;
+    customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
+    if (customValue === undefined) customValue = newValue;
+    array[i][property] = customValue;
+  }
+}
+
+},{}],90:[function(require,module,exports){
+var Datatypes = require('../charting/Datatypes.js');
+var series = require('./series.js');
+
+module.exports = transformTable;
+
+function transformTable(data, columns, transform, type, customLogic) {
+
+  if (typeof type === 'string') {
+    if (type === Datatypes.TIME) {
+      type = Datatypes.isTime;
+    } else if (type === Datatypes.NUMERIC) {
+      type = Datatypes.isNumeric;
+    } else if (type === Datatypes.isCategorical) {
+      type = Datatypes.isCategorical;
+    }
+  }
+
+  if (type === null) {
+    type = function() { return true; }
+  }
+
+  if (typeof type !== 'function') {
+    return;
+  }
+
+  var typeInfo;
+  var colName;
+  var transformFn;
+
+  for (var i = 0, x = columns.length; i < x; i++) {
+    typeInfo = columns[i].get('typeInfo');
+    colName = typeInfo.colName;
+    if (type(typeInfo.datatype)) {
+      transformFn = transform(typeInfo);
+      if (transformFn) {
+        series(data, colName, transformFn, customLogic);
+      }
+    }
+  }
+}
+
+},{"../charting/Datatypes.js":39,"./series.js":89}],91:[function(require,module,exports){
+var d3 = require("./../../../bower_components/d3/d3.js");
+
+module.exports = createTimeTransformer;
+
+function createTimeTransformer (format) {
+
+  var parser = createDateParser(format);
+  var today = new Date();
+  var year = today.getFullYear();
+  var day = today.getDate();
+  var month = today.getMonth();
+  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
+
+  function transformTime (d) {
+    var type = typeof d;
+
+    if (!d) return null;
+
+    if (isValidDate(d)) return d;
+
+    if (type !== 'string') return null;
+
+    var parseValue = parser(d.trim());
+
+    if (isValidDate(parseValue)) {
+      if (timeOnlyFormat) {
+        parseValue.setDate(day);
+        parseValue.setMonth(month);
+        parseValue.setFullYear(year);
+      }
+      return parseValue;
+    }
+
+    return null;
+  }
+
+  return transformTime;
+
+}
+
+function isValidDate(d) {
+  return d && d instanceof Date && !isNaN(+d);
+}
+
+function createDate(value) {
+  return new Date(value);
+}
+
+function useJavascriptDateFn(format) {
+  return format === 'ISO' || format === 'JAVASCRIPT';
+}
+
+var datePartSeparators = /[\-\ ]/g;
+
+function createDateParser(format) {
+  var useJs = useJavascriptDateFn(format);
+  if (useJs) {
+    return createDate;
+  } else {
+    var parser = d3.time.format(format).parse;
+    return function(value) {
+      var normalizedString = value.replace(datePartSeparators, '/');
+      return parser(normalizedString);
+    }
+  }
+}
+
+},{"./../../../bower_components/d3/d3.js":4}],"index":[function(require,module,exports){
 var Backbone = require('./core/backbone');
 var Graphic = require('./charting/Graphic.js');
 var ViewGraphicControls = require('./charting/ViewGraphicControls.js');
@@ -31054,375 +31425,4 @@ var nightingale = function(){
 };
 
 module.exports = window.nightingale = nightingale;
-},{"./../../bower_components/jquery/dist/jquery.js":8,"./../../bower_components/underscore/underscore.js":25,"./charting/DataImport.js":37,"./charting/Datatypes.js":39,"./charting/Graphic.js":41,"./charting/GraphicType.js":42,"./charting/LineControls.js":45,"./charting/Variations.js":47,"./charting/ViewGraphicControls.js":52,"./charting/ViewGraphicTypes.js":54,"./charting/ViewImportData.js":57,"./charting/ViewInlineHelp.js":59,"./charting/ViewSelectedVariation.js":61,"./core/backbone":66,"./export/svgDataURI.js":69,"./transform/index.js":88}],73:[function(require,module,exports){
-if (!Function.prototype.bind) {
-    Function.prototype.bind = function(oThis) {
-        if (typeof this !== 'function') {
-            // closest thing possible to the ECMAScript 5
-            // internal IsCallable function
-            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-        }
-
-        var aArgs   = Array.prototype.slice.call(arguments, 1),
-            fToBind = this,
-            fNOP    = function() {},
-            fBound  = function() {
-                return fToBind.apply(this instanceof fNOP
-                        ? this
-                        : oThis,
-                    aArgs.concat(Array.prototype.slice.call(arguments)));
-            };
-
-        fNOP.prototype = this.prototype;
-        fBound.prototype = new fNOP();
-
-        return fBound;
-    };
-}
-},{}],74:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\" />\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],75:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "<span class=\"pull-right alert alert-warning\">"
-    + this.escapeExpression(((helper = (helper = helpers.warningMessage || (depth0 != null ? depth0.warningMessage : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"warningMessage","hash":{},"data":data}) : helper)))
-    + "</span>";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, helper;
-
-  return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
-    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
-    + ")</span>"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <!--\n      <div class=\"form-group\">\n        <label>Label</label>\n        <input name=\"label\" class=\"form-control\" />\n      </div>\n      <div data-region=\"datatype\" class=\"form-group\"></div>\n    -->\n      <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n        <label>Series</label>\n        <div data-region=\"series\"></div>\n      </div>\n      <!--\n      <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n        <label>Format</label>\n        <div class=\"row\">\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n          </div>\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n          </div>\n        </div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n        <label>Highlight</label>\n        <div data-region=\"highlight\"></div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n        <label>Forecast</label>\n        <select class=\"form-control\">\n          <option>Pick a date</option>\n        </select>\n        <span class=\"help-block\">When does the forecast begin?</span>\n      </div>\n          -->\n    </form>\n  </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],76:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n  </div>\n";
-},"3":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n  </div>\n";
-},"5":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n  </div>\n";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1;
-
-  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"datatype\">\n"
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.numeric : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.time : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.categorical : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],77:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Description\n<button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\nDiscard data\n</button>\n  </div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <div class=\"form-group\">\n        <label>Title</label>\n        <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n        <p class=\"help-block\">What question does the chart answer?</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Subtitle</label>\n          <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also helps.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Footnote</label>\n        <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Source</label>\n        <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\" list=\"common-sources-list\"/>\n        <datalist id=\"common-sources-list\">\n          <option value=\"Thomson Reuters Datastream\"></option> \n          <option value=\"Bloomberg\"></option> \n          <option value=\"World Bank\"></option>\n          <option value=\"IMF\"></option>\n          <option value=\"ONS\"></option>\n          <option value=\"Eurostat\"></option>\n          <option value=\"US Census Bureau\"></option>\n          <option value=\"US Bureau of Labor Statistics\"></option>\n        </datalist>\n        <p class=\"help-block popular-sources\">Popular sources: <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics</button>.</p>\n      </div>\n    </form>\n  </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],78:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div><!-- Graphic Type Control --></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],79:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-region=\"variations\"></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],80:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"graphic-container\"></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],81:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-section-name=\"categorical\">\n  <select class=\"form-control\">\n  <option>Select a categories from the series</option>\n  </select>\n</div>\n<div data-section-name=\"numeric\">\n  <select class=\"form-control\">\n  <option>None</option>\n  </select>\n</div>\n<div data-section-name=\"time\">\n  <select class=\"form-control\">\n  <option>Select a date from the series</option>\n  </select>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],82:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, helper;
-
-  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n  <h4>Warning</h4>\n  <p>"
-    + ((stack1 = ((helper = (helper = helpers.message || (depth0 != null ? depth0.message : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"message","hash":{},"data":data}) : helper))) != null ? stack1 : "")
-    + "</p>\n  <p><button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button></p>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],83:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"view-importdata__content\">\n  <h1 class=\"text-center import-data-title\">Import data</h1>\n    <div class=\"warning-message\"></div>\n  <div class=\"fake-field\">\n    <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n  </div>\n  <div class=\"form-group\">\n    <input type=\"file\" style=\"display:none\" name=\"file\" accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\" />\n    <p class=\"text-center help-block\">You may also drag and drop or <button name=\"select-file\" class=\"btn btn-link\">pick a file</button> too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\" href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.</p>\n  </div>\n  <div class=\"form-group\">\n    <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n  </div>\n  <div class=\"feedback-details\">\n  <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n  </div>\n  <!--\n  <div class=\"text-center\">\n      <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n      <div class=\"btn-group\">\n        <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n        <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n          <span class=\"caret\"></span>\n          <span class=\"sr-only\">Toggle Dropdown</span>\n        </button>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li><a href=\"#\">GDP per capita</a></li>\n          <li><a href=\"#\">Something else</a></li>\n        </ul>\n      </div>\n    </div>\n    -->\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],84:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Independent axis (X)</div>\n  <div class=\"panel-body\">\n    <div class=\"form-group\">\n      <label>Column (in the imported data table)</label>\n      <select name=\"columns\" class=\"form-control pull\"></select>\n    </div>\n    <div class=\"form-group\" data-region=\"datatype\"></div>\n    <div class=\"form-group\" data-region=\"dateFormat\"></div>\n    <!--\n    <div class=\"form-group\" data-region=\"label\"></div>\n    <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n      <label>Highlight</label>\n      <div data-region=\"highlight\"></div>\n    </div>\n  -->\n  </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],85:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + ".";
-},"3":function(depth0,helpers,partials,data) {
-    return "  <span name=\"label\" class=\"series-name\"></span>\n";
-},"5":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "  <span title=\"click to edit the series "
-    + this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\" contenteditable></span>\n";
-},"7":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "    <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
-    + this.escapeExpression(((helper = (helper = helpers.property || (depth0 != null ? depth0.property : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"property","hash":{},"data":data}) : helper)))
-    + "\">Add series</button>\n";
-},"9":function(depth0,helpers,partials,data) {
-    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
-
-  return "  <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
-    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" data-help=\"LINE_SERIES\"></span>\n  <!--\n  <span class=\"swatch swatch-bar\" data-placement=\"top\" data-index=\""
-    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1;
-
-  return "<span class=\"series-item-drag-content\">\n<span class=\"series-num\" draggable=\"true\">"
-    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"unless","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</span>\n<span>\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
-    + "</span>\n<span class=\"series-item-controls\">\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
-    + "</span>\n</span>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],86:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, alias1=this.lambda, alias2=this.escapeExpression;
-
-  return "<div>\n  <table class=\"table table-bordered table-condensed\">\n    <tbody>\n      <tr>\n        <th class=\"property-name\">Chart type</th>\n        <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
-    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Variation</th>\n        <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
-    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Width</th>\n        <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
-    + "px</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Height</th>\n        <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
-    + "px</td>\n      </tr>\n    </tbody>\n  </table>\n  <hr>\n  <div data-region=\"graphic-type-controls\"></div>\n  <div class=\"view-export-controls\">\n    <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n  </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],87:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero \n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"nice\">Nice\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"thinLines\">Thin lines\n  </label>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":33}],88:[function(require,module,exports){
-module.exports = {
-  number: require('./number.js'),
-  time: require('./time.js'),
-  series: require('./series.js'),
-  table: require('./table.js')
-};
-
-},{"./number.js":89,"./series.js":90,"./table.js":91,"./time.js":92}],89:[function(require,module,exports){
-var currencySymbol = /^(\$|€|¥|£)/;
-var allCommas = /\,/g;
-var percent = /(\%)$/;
-
-module.exports = createNumberTransformer;
-
-function createNumberTransformer (options) {
-
-  options = options || {};
-
-  function transformNumber(d) {
-
-    var _NaN = options.interpolateNulls ? null : NaN;
- 
-    if (d === null || d === undefined) return _NaN;
-
-    var type = typeof d;
-
-    if (type === 'number') return d;
-
-    if (type !== 'string') return _NaN;
-
-    d = d.trim()
-        .replace(allCommas, '')
-        .replace(currencySymbol, '')
-        .replace(percent, '');
-
-    if (d === '') return _NaN;
-
-    if (d === '*') return null;
-
-    return Number(d);
-
-  }
-
-  return transformNumber;
-}
-
-},{}],90:[function(require,module,exports){
-module.exports = series;
-
-function series(array, property, transformer, customLogic) {
-  var oldValue;
-  var newValue;
-  var hasCustomLogic = typeof customLogic === 'function';
-  var customValue;
-  for (var i = 0, x = array.length; i < x; i++) {
-    oldValue = array[i][property];
-    newValue = transformer(oldValue);
-    if (newValue === undefined) newValue = null;
-    customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
-    if (customValue === undefined) customValue = newValue;
-    array[i][property] = customValue;
-  }
-}
-
-},{}],91:[function(require,module,exports){
-var Datatypes = require('../charting/Datatypes.js');
-var series = require('./series.js');
-
-module.exports = transformTable;
-
-function transformTable(data, columns, transform, type, customLogic) {
-
-  if (typeof type === 'string') {
-    if (type === Datatypes.TIME) {
-      type = Datatypes.isTime;
-    } else if (type === Datatypes.NUMERIC) {
-      type = Datatypes.isNumeric;
-    } else if (type === Datatypes.isCategorical) {
-      type = Datatypes.isCategorical;
-    }
-  }
-
-  if (type === null) {
-    type = function() { return true; }
-  }
-
-  if (typeof type !== 'function') {
-    return;
-  }
-
-  var typeInfo;
-  var colName;
-  var transformFn;
-
-  for (var i = 0, x = columns.length; i < x; i++) {
-    typeInfo = columns[i].get('typeInfo');
-    colName = typeInfo.colName;
-    if (type(typeInfo.datatype)) {
-      transformFn = transform(typeInfo);
-      if (transformFn) {
-        series(data, colName, transformFn, customLogic);
-      }
-    }
-  }
-}
-
-},{"../charting/Datatypes.js":39,"./series.js":90}],92:[function(require,module,exports){
-var d3 = require("./../../../bower_components/d3/d3.js");
-
-module.exports = createTimeTransformer;
-
-function createTimeTransformer (format) {
-
-  var parser = createDateParser(format);
-  var today = new Date();
-  var year = today.getFullYear();
-  var day = today.getDate();
-  var month = today.getMonth();
-  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
-
-  function transformTime (d) {
-    var type = typeof d;
-
-    if (!d) return null;
-
-    if (isValidDate(d)) return d;
-
-    if (type !== 'string') return null;
-
-    var parseValue = parser(d.trim());
-
-    if (isValidDate(parseValue)) {
-      if (timeOnlyFormat) {
-        parseValue.setDate(day);
-        parseValue.setMonth(month);
-        parseValue.setFullYear(year);
-      }
-      return parseValue;
-    }
-
-    return null;
-  }
-
-  return transformTime;
-
-}
-
-function isValidDate(d) {
-  return d && d instanceof Date && !isNaN(+d);
-}
-
-function createDate(value) {
-  return new Date(value);
-}
-
-function useJavascriptDateFn(format) {
-  return format === 'ISO' || format === 'JAVASCRIPT';
-}
-
-var datePartSeparators = /[\-\ ]/g;
-
-function createDateParser(format) {
-  var useJs = useJavascriptDateFn(format);
-  if (useJs) {
-    return createDate;
-  } else {
-    var parser = d3.time.format(format).parse;
-    return function(value) {
-      var normalizedString = value.replace(datePartSeparators, '/');
-      return parser(normalizedString);
-    }
-  }
-}
-
-},{"./../../../bower_components/d3/d3.js":7}]},{},[72]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/underscore/underscore.js":22,"./charting/DataImport.js":37,"./charting/Datatypes.js":39,"./charting/Graphic.js":41,"./charting/GraphicType.js":42,"./charting/LineControls.js":45,"./charting/Variations.js":47,"./charting/ViewGraphicControls.js":52,"./charting/ViewGraphicTypes.js":54,"./charting/ViewImportData.js":57,"./charting/ViewInlineHelp.js":59,"./charting/ViewSelectedVariation.js":61,"./core/backbone":66,"./export/svgDataURI.js":69,"./transform/index.js":87}]},{},["index"]);
