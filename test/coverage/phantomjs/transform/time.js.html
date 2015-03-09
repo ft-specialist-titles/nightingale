@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for transform/time.js</title>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="../prettify.css">
+
+    <link rel="stylesheet" href="../base.css">
+    <style type='text/css'>
+        div.coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class="header low">
+    <h1>Code coverage report for <span class="entity">transform/time.js</span></h1>
+    <h2>
+        
+        Statements: <span class="metric">21.95% <small>(9 / 41)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Branches: <span class="metric">0% <small>(0 / 19)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Functions: <span class="metric">0% <small>(0 / 7)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Lines: <span class="metric">23.68% <small>(9 / 38)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
+    </h2>
+    <div class="path"><a href="../index.html">All files</a> &#187; <a href="index.html">transform/</a> &#187; time.js</div>
+</div>
+<div class="body">
+<pre><table class="coverage">
+<tr><td class="line-count">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var d3 = require('d3');
+&nbsp;
+module.exports = createTimeTransformer;
+&nbsp;
+<span class="fstat-no" title="function not covered" >function createTimeTransformer (format) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var parser = createDateParser(format);</span>
+<span class="cstat-no" title="statement not covered" >  var today = new Date();</span>
+<span class="cstat-no" title="statement not covered" >  var year = today.getFullYear();</span>
+<span class="cstat-no" title="statement not covered" >  var day = today.getDate();</span>
+<span class="cstat-no" title="statement not covered" >  var month = today.getMonth();</span>
+<span class="cstat-no" title="statement not covered" >  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;</span>
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function transformTime (d) {</span>
+<span class="cstat-no" title="statement not covered" >    var type = typeof d;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!d) <span class="cstat-no" title="statement not covered" >return null;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (isValidDate(d)) <span class="cstat-no" title="statement not covered" >return d;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (type !== 'string') <span class="cstat-no" title="statement not covered" >return null;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var parseValue = parser(d.trim());</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (isValidDate(parseValue)) {</span>
+<span class="cstat-no" title="statement not covered" >      if (timeOnlyFormat) {</span>
+<span class="cstat-no" title="statement not covered" >        parseValue.setDate(day);</span>
+<span class="cstat-no" title="statement not covered" >        parseValue.setMonth(month);</span>
+<span class="cstat-no" title="statement not covered" >        parseValue.setFullYear(year);</span>
+      }
+<span class="cstat-no" title="statement not covered" >      return parseValue;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return null;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return transformTime;</span>
+&nbsp;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function isValidDate(d) {</span>
+<span class="cstat-no" title="statement not covered" >  return d &amp;&amp; d instanceof Date &amp;&amp; !isNaN(+d);</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function createDate(value) {</span>
+<span class="cstat-no" title="statement not covered" >  return new Date(value);</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function useJavascriptDateFn(format) {</span>
+<span class="cstat-no" title="statement not covered" >  return format === 'ISO' || format === 'JAVASCRIPT';</span>
+}
+&nbsp;
+var datePartSeparators = /[\-\ ]/g;
+&nbsp;
+<span class="fstat-no" title="function not covered" >function createDateParser(format) {</span>
+<span class="cstat-no" title="statement not covered" >  var useJs = useJavascriptDateFn(format);</span>
+<span class="cstat-no" title="statement not covered" >  if (useJs) {</span>
+<span class="cstat-no" title="statement not covered" >    return createDate;</span>
+  } else {
+<span class="cstat-no" title="statement not covered" >    var parser = d3.time.format(format).parse;</span>
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >function(value) {</span></span>
+<span class="cstat-no" title="statement not covered" >      var normalizedString = value.replace(datePartSeparators, '/');</span>
+<span class="cstat-no" title="statement not covered" >      return parser(normalizedString);</span>
+    }
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+
+</div>
+<div class="footer">
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Mar 09 2015 11:18:58 GMT+0000 (GMT)</div>
+</div>
+
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+
+<script src="../sorter.js"></script>
+</body>
+</html>

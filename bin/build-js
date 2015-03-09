@@ -3,20 +3,20 @@
 cmd=${1:-browserify}
 dir=${2:-.tmp}
 mkdir -p $dir && \
-$cmd -e src/index.js \
-    -r ./src/index.js:playfair \
+$cmd -e src/scripts/index.js \
+    -r ./src/scripts/index.js:playfair \
     -x ./bower_components/jquery/dist/jquery.js \
     -x ./bower_components/underscore/underscore.js \
     -x ./bower_components/backbone/backbone.js \
     -x ./bower_components/d3/d3.js \
-    -x ./bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js \
+    -x ./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js \
     -x ./node_modules/hbsfy/runtime.js \
     --noparse=./bower_components/jquery/dist/jquery.js \
     --noparse=./bower_components/underscore/underscore.js \
     --noparse=./bower_components/backbone/backbone.js \
     --noparse=./node_modules/hbsfy/runtime.js \
     --noparse=./bower_components/d3/d3.js \
-    --noparse=./bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js \
+    --noparse=./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js \
     --insert-globals \
     --detect-globals false \
     -o $dir/bundle.js

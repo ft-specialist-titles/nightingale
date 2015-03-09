@@ -1,0 +1,3051 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for charting/DataImport.js</title>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="../prettify.css">
+
+    <link rel="stylesheet" href="../base.css">
+    <style type='text/css'>
+        div.coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class="header low">
+    <h1>Code coverage report for <span class="entity">charting/DataImport.js</span></h1>
+    <h2>
+        
+        Statements: <span class="metric">32.3% <small>(177 / 548)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Branches: <span class="metric">30.79% <small>(129 / 419)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Functions: <span class="metric">32.26% <small>(10 / 31)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        
+        Lines: <span class="metric">32.72% <small>(177 / 541)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        
+        Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
+    </h2>
+    <div class="path"><a href="../index.html">All files</a> &#187; <a href="index.html">charting/</a> &#187; DataImport.js</div>
+</div>
+<div class="body">
+<pre><table class="coverage">
+<tr><td class="line-count">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909
+910
+911
+912
+913
+914
+915
+916
+917
+918
+919
+920
+921
+922
+923
+924
+925
+926
+927
+928
+929
+930
+931
+932
+933
+934
+935
+936
+937
+938
+939
+940
+941
+942
+943
+944
+945
+946
+947
+948
+949
+950
+951
+952
+953
+954
+955
+956
+957
+958
+959
+960
+961
+962
+963
+964
+965
+966
+967
+968
+969
+970
+971
+972
+973
+974
+975
+976
+977
+978
+979
+980
+981
+982
+983
+984
+985
+986
+987
+988
+989
+990
+991
+992
+993
+994
+995
+996
+997
+998
+999</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">11</span>
+<span class="cline-any cline-yes">286</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">110</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">14</span>
+<span class="cline-any cline-yes">14</span>
+<span class="cline-any cline-yes">54</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">47</span>
+<span class="cline-any cline-yes">47</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">47</span>
+<span class="cline-any cline-yes">12</span>
+<span class="cline-any cline-yes">12</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">11</span>
+<span class="cline-any cline-yes">11</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">31</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">27</span>
+<span class="cline-any cline-yes">27</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">27</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">68</span>
+<span class="cline-any cline-yes">26</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">65</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">65</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">60</span>
+<span class="cline-any cline-yes">60</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">32</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21</span>
+<span class="cline-any cline-yes">50</span>
+<span class="cline-any cline-yes">50</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">44</span>
+<span class="cline-any cline-yes">44</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-yes">35</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">require('./../polyfill/bind');
+var Backbone = require('./../core/backbone.js');
+var Column = require('./Column.js');
+var d3 = require('d3');
+var _ = require('underscore');
+var Datatypes = require('./Datatypes.js');
+var Axis = require('./Axis.js');
+&nbsp;
+var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+var aYearALongWayInTheFuture = 3000;
+var transform = require('./../transform/index.js');
+&nbsp;
+var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+var emptyheaderRows = [0,1,2,3,4,5,6,7,8,9,10].reduce(function (a, num) {
+  return a.concat(alphabet.map(function (h) {
+    return h + (num === 0 ? '' : num);
+  }));
+}, []);
+&nbsp;
+var isPartDate = <span class="fstat-no" title="function not covered" >function(value) {</span>
+<span class="cstat-no" title="statement not covered" >  var isLikelyNumber = (/^\d{1,4}$/.test(value) &amp;&amp; Number(value) &lt; aYearALongWayInTheFuture);</span>
+<span class="cstat-no" title="statement not covered" >  if (isLikelyNumber) {<span class="cstat-no" title="statement not covered" >return true;}</span></span>
+<span class="cstat-no" title="statement not covered" >  var isPartDate = partDateExp.test(value);</span>
+<span class="cstat-no" title="statement not covered" >  if (isPartDate) {<span class="cstat-no" title="statement not covered" >return true;}</span></span>
+<span class="cstat-no" title="statement not covered" >  return false;</span>
+};
+&nbsp;
+var isDateString = <span class="fstat-no" title="function not covered" >function(value) {</span>
+<span class="cstat-no" title="statement not covered" >  if (!value) <span class="cstat-no" title="statement not covered" >return false;</span></span>
+<span class="cstat-no" title="statement not covered" >  var result = true;</span>
+<span class="cstat-no" title="statement not covered" >  var s = value.split(/[\:\/\-\ ]+/);</span>
+<span class="cstat-no" title="statement not covered" >  var i = s.length;</span>
+<span class="cstat-no" title="statement not covered" >  if (!s.length) <span class="cstat-no" title="statement not covered" >return false;</span></span>
+<span class="cstat-no" title="statement not covered" >  while (result &amp;&amp; i--) {</span>
+<span class="cstat-no" title="statement not covered" >    result = isPartDate(s[i]);</span>
+  }
+<span class="cstat-no" title="statement not covered" >  return result;</span>
+};
+&nbsp;
+var toNumber = <span class="fstat-no" title="function not covered" >function(value) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var s = value.trim()</span>
+                .replace(/\,(?=\d{2,3})/g, '')
+                .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
+                .replace(/\ *%$/, '');
+<span class="cstat-no" title="statement not covered" >  var m = s.match(/^\-?[\d\.Ee]+$/);</span>
+<span class="cstat-no" title="statement not covered" >  return !m || m.length !== 1 ? NaN : Number(m[0]);</span>
+};
+&nbsp;
+var sniffDatatype = <span class="fstat-no" title="function not covered" >function(value, colNum) {</span>
+  // this is set as the context when the forEach invokes .
+<span class="cstat-no" title="statement not covered" >  var o = this[colNum];</span>
+<span class="cstat-no" title="statement not covered" >  var isNumber = false;</span>
+<span class="cstat-no" title="statement not covered" >  var isDate = false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (value === '' || value === undefined || value === null) {</span>
+<span class="cstat-no" title="statement not covered" >    o.nulls++;</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  value = value.trim();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (value === '*') {</span>
+<span class="cstat-no" title="statement not covered" >    o.nulls++;</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var parsedNum = toNumber(value);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!isNaN(parsedNum)) {</span>
+<span class="cstat-no" title="statement not covered" >    isNumber = true;</span>
+<span class="cstat-no" title="statement not covered" >    o.numbers++;</span>
+<span class="cstat-no" title="statement not covered" >    o.numberValues.push(value);</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (isDateString(value)) {</span>
+<span class="cstat-no" title="statement not covered" >    isDate = true;</span>
+<span class="cstat-no" title="statement not covered" >    o.dates++;</span>
+<span class="cstat-no" title="statement not covered" >    o.dateValues.push(value)</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if ((!isDate &amp;&amp; !isNumber) || (isNumber &amp;&amp; hasNonNumberChars)) {</span>
+<span class="cstat-no" title="statement not covered" >    o.strings++;</span>
+<span class="cstat-no" title="statement not covered" >    o.stringValues.push(value);</span>
+  }
+};
+&nbsp;
+&nbsp;
+function normalise(value) {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!value) <span class="cstat-no" title="statement not covered" >return null;</span>
+&nbsp;
+  return value.toString()
+              .trim()
+              // make all regexp quicker and simpler by removing case
+              .toLowerCase()
+              // normalise separtators
+              .replace(/[\/\ ]/g, '-');
+}
+&nbsp;
+var predictedDateFormat = (function(){
+&nbsp;
+  var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
+  var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
+  var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
+  var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
+  var digit = /\d/;
+  var separator = /\/\-\ /;
+  // first letters of all months and days. ordered by amount of occurrences and then by months, days
+  var firstletters = /[jmsfatondw]/;
+  var typeNames = ['month', 'year', 'day', 'ampm', 'weekday', 'time'];
+  var types = {};
+  var abbreviatedFormats = {
+    '%m/%d/%Y': '%x',
+    '%H:%M:%S': '%X'
+  };
+&nbsp;
+  function attachTypes(obj) {
+    typeNames.forEach(function (name) {
+      obj[name] = name;
+    });
+  }
+&nbsp;
+  attachTypes(types);
+&nbsp;
+  function Part(d) {
+&nbsp;
+    var len = d.length;
+    var zeroPadded = len === 2;
+    this.num = NaN;
+    this.type = null;
+    this.format = null;
+    this.guessYear = false;
+    this.guessMonth = false;
+    this.guessDay = false;
+    this.twoDigit = false;
+&nbsp;
+    this.guess = function() {
+      return this.guessYear || this.guessMonth || this.guessDay;
+    }.bind(this);
+&nbsp;
+    if (/^\d{3,4}$/.test(d))  {
+      this.type = types.year;
+      this.format = '%Y';
+    } else if (/^\d{1,2}$/.test(d)) {
+&nbsp;
+      this.twoDigit = zeroPadded;
+      this.num = parseInt(d);
+&nbsp;
+      if (zeroPadded &amp;&amp; this.num &gt; 31) {
+        this.type = types.year;
+        this.format = '%y';
+      } else if (this.num &gt; 12 &amp;&amp; this.num &lt;= 31) {
+        this.guessYear = true;
+        this.guessDay = true;
+      } else <span class="missing-if-branch" title="else path not taken" >E</span>if(this.num &lt;= 12) {
+        this.guessYear = true;
+        this.guessMonth = true;
+        this.guessDay = true;
+      }
+&nbsp;
+    } else <span class="missing-if-branch" title="else path not taken" >E</span>if (len &gt;= 3 &amp;&amp; len &lt;= 9 &amp;&amp; firstletters.test(d.charAt(0))) {
+&nbsp;
+      if (shortMonths.test(d)) {
+        this.format = '%b';
+        this.type = types.month;
+      } else <span class="missing-if-branch" title="else path not taken" >E</span>if (longMonths.test(d)) {
+        this.format = '%B';
+        this.type = types.month;
+        } else <span class="cstat-no" title="statement not covered" >if (shortDays.test(d)) {</span>
+<span class="cstat-no" title="statement not covered" >        this.format = '%a';</span>
+<span class="cstat-no" title="statement not covered" >        this.type = types.weekday;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (longDays.test(d)) {</span>
+<span class="cstat-no" title="statement not covered" >        this.format = '%A';</span>
+<span class="cstat-no" title="statement not covered" >        this.type = types.weekday;</span>
+      } else {
+        // could be GMT+0100 or T13:00:00
+<span class="cstat-no" title="statement not covered" >        console.log('el', d)</span>
+      }
+&nbsp;
+    } else <span class="cstat-no" title="statement not covered" >if (/^(am|pm)$/.test(d)) {</span>
+<span class="cstat-no" title="statement not covered" >      this.format = '%p';</span>
+<span class="cstat-no" title="statement not covered" >      this.type = types.ampm;</span>
+&nbsp;
+    } else <span class="cstat-no" title="statement not covered" >if (d.indexOf(':') !== -1) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      var timeElements = d.split(':');</span>
+<span class="cstat-no" title="statement not covered" >      var num;</span>
+<span class="cstat-no" title="statement not covered" >      var timePart;</span>
+<span class="cstat-no" title="statement not covered" >      var timeStrings = [];</span>
+<span class="cstat-no" title="statement not covered" >      var ampm = false;</span>
+&nbsp;
+      // it's only possible to have 4 components in a time format
+      // ie %H:%M:%S:%L
+<span class="cstat-no" title="statement not covered" >      if (timeElements.length &lt;= 4) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        timeElements.reduce(<span class="fstat-no" title="function not covered" >function(result, timePart, i) {</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          var len = timePart.length;</span>
+<span class="cstat-no" title="statement not covered" >          var zulu = timePart.substr(len - 1) === 'Z';</span>
+<span class="cstat-no" title="statement not covered" >          var lastTwo = timePart.substr(len - 2).toLowerCase();</span>
+<span class="cstat-no" title="statement not covered" >          var am = lastTwo === 'am';</span>
+<span class="cstat-no" title="statement not covered" >          var pm = lastTwo === 'pm'; </span>
+<span class="cstat-no" title="statement not covered" >          var ampm = am || pm;</span>
+<span class="cstat-no" title="statement not covered" >          timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);</span>
+<span class="cstat-no" title="statement not covered" >          var num = Number(timePart);</span>
+<span class="cstat-no" title="statement not covered" >          var format = undefined;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (timePart === '' || isNaN(num)) {</span>
+<span class="cstat-no" title="statement not covered" >            format = undefined;</span>
+          } else <span class="cstat-no" title="statement not covered" >if (i === 0 &amp;&amp; num &gt;= 0 &amp;&amp; num &lt;= 23) {</span>
+<span class="cstat-no" title="statement not covered" >            format = '%H';</span>
+          } else <span class="cstat-no" title="statement not covered" >if (i === 1 &amp;&amp; num &gt;= 0 &amp;&amp; num &lt;= 59) {</span>
+<span class="cstat-no" title="statement not covered" >            format = '%M';</span>
+&nbsp;
+          // How the hell can a minute have 61 seconds?!
+          // https://docs.python.org/2/library/time.html
+          } else <span class="cstat-no" title="statement not covered" >if (i === 2 &amp;&amp; num &gt;= 0 &amp;&amp; num &lt;= 61) {</span>
+<span class="cstat-no" title="statement not covered" >            if (timePart.test(/\d{2}\.\d{3}$/)) {</span>
+<span class="cstat-no" title="statement not covered" >              format = '%S.%L';</span>
+            } else {
+<span class="cstat-no" title="statement not covered" >              format = '%S';</span>
+            }
+          } else <span class="cstat-no" title="statement not covered" >if (i === 3 &amp;&amp; timePart.length === 3 &amp;&amp; num &gt;= 0 &amp;&amp; num &lt;= 999) {</span>
+<span class="cstat-no" title="statement not covered" >            format = '%L';</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (zulu) {</span>
+<span class="cstat-no" title="statement not covered" >            format += 'Z';</span>
+          } else <span class="cstat-no" title="statement not covered" >if (ampm) {</span>
+<span class="cstat-no" title="statement not covered" >            format += '%p';</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          timeStrings.push(format);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          return result;</span>
+&nbsp;
+        }, timeStrings);
+&nbsp;
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (timeStrings.length &amp;&amp; timeStrings.indexOf(undefined) === -1) {</span>
+<span class="cstat-no" title="statement not covered" >        this.format = timeStrings.join(':');</span>
+<span class="cstat-no" title="statement not covered" >        this.type = types.time;</span>
+<span class="cstat-no" title="statement not covered" >        if (ampm &amp;&amp; Number(timeElements[0]) &lt;= 12) {</span>
+<span class="cstat-no" title="statement not covered" >          this.format.replace('%H', '%I');</span>
+        }
+      }
+&nbsp;
+    } else <span class="cstat-no" title="statement not covered" >if (/^\([a-z]+\)$/.test(d)) {</span>
+<span class="cstat-no" title="statement not covered" >      console.log('this is part of the time zone info');</span>
+    }
+  }
+&nbsp;
+  return function (value) {
+&nbsp;
+    // only use one kind of token separator
+    value = normalise(value);
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!value) <span class="cstat-no" title="statement not covered" >return null;</span>
+&nbsp;
+    // resolve quickly for simple year values
+    if (/^\d{1,4}$/.test(value)) {
+      return '%Y';
+&nbsp;
+    // resolve quickly for strings that
+    // look like numbers but definitely not years
+    // eg 12345 or 1.1 or 1,000
+    } else if (/^[\d\.\,]+$/.test(value)) {
+      return null;
+    }
+&nbsp;
+    var tokens = value.split(/\-/g);
+    var numTokens = tokens.length;
+&nbsp;
+    // resolve quickly with values like 00/00
+    if (numTokens === 2 &amp;&amp; /^\d{2}-\d{2}$/.test(value)) {
+      // assume something like 12-12 means December 2012.
+      if (parseInt(tokens[0]) &lt;= 12) {
+        return '%m/%y';
+      } else {
+        // this would mean we have a value like 14-14
+        // which we can never safely make a date from.
+        return null;
+      }
+    } else if (numTokens === 2) {
+      if (shortMonths.test(tokens[0])) {
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (/^\d{4}$/.test(tokens[1])) {
+          return '%b/%Y';
+        } else <span class="cstat-no" title="statement not covered" >if (/^\d{2}$/.test(tokens[1])) {</span>
+<span class="cstat-no" title="statement not covered" >          return '%b/%y';</span>
+        }
+      } else <span class="missing-if-branch" title="if path not taken" >I</span>if (/^\d{4}$/.test(tokens[0]) &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >shortMonths.test(tokens[1]))</span> {
+<span class="cstat-no" title="statement not covered" >        return '%Y/%b';</span>
+      } else <span class="missing-if-branch" title="if path not taken" >I</span>if (/^\d{2}$/.test(tokens[0]) &amp;&amp; shortMonths.test(tokens[1])) {
+<span class="cstat-no" title="statement not covered" >        return '%y/%b';</span>
+      }
+    }
+&nbsp;
+    // trick the parser into thinking the last
+    // token is a year if it matches the pattern 00-00-00
+    if (numTokens === 3 &amp;&amp; /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+      tokens[2] = '99';
+    }
+&nbsp;
+    var parts = [];
+    var token;
+    var part;
+&nbsp;
+    for(var i = 0; i &lt; numTokens; i++) {
+      token = tokens[i];
+      part = new Part(token);
+      parts.push(part);
+    }
+&nbsp;
+    var hasYear = false;
+    var hasMonth = false;
+    var hasDay = false;
+    var numParts = parts.length;
+&nbsp;
+    for(var i = 0; i &lt; numParts; i++) {
+      part = parts[i];
+      if (part.type === types.year) {
+        if (hasYear) {
+          return null;
+        }
+        hasYear = true;
+      }
+      if (part.type === types.month) {
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (hasMonth) {
+<span class="cstat-no" title="statement not covered" >          return null;</span>
+        }
+        hasMonth = true;
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (part.type === types.day) {
+<span class="cstat-no" title="statement not covered" >        if (hasDay) {</span>
+<span class="cstat-no" title="statement not covered" >          return null;</span>
+        }
+<span class="cstat-no" title="statement not covered" >        hasDay = true;</span>
+      }
+    }
+&nbsp;
+    var partsWithGuesses = [];
+&nbsp;
+    for(var i = 0; i &lt; numParts; i++) {
+      part = parts[i];
+      if (part.guess()) {
+        partsWithGuesses.push(part);
+      }
+    }
+&nbsp;
+    var numGuesses = partsWithGuesses.length;
+&nbsp;
+    for(var i = 0; i &lt; numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (hasYear &amp;&amp; part.guessYear) {
+        part.guessYear = false;
+      }
+      if (hasMonth &amp;&amp; part.guessMonth) {
+        part.guessMonth = false;
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasDay &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >part.guessDay)</span> {
+<span class="cstat-no" title="statement not covered" >        part.guessDay = false;</span>
+      }
+    }
+&nbsp;
+    for(var i = 0; i &lt; numGuesses; i++) {
+      part = partsWithGuesses[i];
+      if (!hasDay &amp;&amp; part.guessDay &amp;&amp; !part.guessMonth &amp;&amp; !part.guessYear) {
+        part.guessDay = false;
+        part.type === types.day;
+        hasDay = true;
+        part.format = part.twoDigit ? '%d' : <span class="branch-1 cbranch-no" title="branch not covered" >'%e';</span>
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!hasMonth &amp;&amp; part.guessMonth &amp;&amp; !part.guessDay &amp;&amp; <span class="branch-3 cbranch-no" title="branch not covered" >!part.guessYear)</span> {
+<span class="cstat-no" title="statement not covered" >        part.guessMonth = false;</span>
+<span class="cstat-no" title="statement not covered" >        part.type === types.month;</span>
+<span class="cstat-no" title="statement not covered" >        hasMonth = true;</span>
+<span class="cstat-no" title="statement not covered" >        part.format = '%m';</span>
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!hasYear &amp;&amp; part.guessYear &amp;&amp; !part.guessDay &amp;&amp; <span class="branch-3 cbranch-no" title="branch not covered" >!part.guessMonth)</span> {
+<span class="cstat-no" title="statement not covered" >        part.guessYear = false;</span>
+<span class="cstat-no" title="statement not covered" >        part.type === types.year;</span>
+<span class="cstat-no" title="statement not covered" >        hasYear = true;</span>
+<span class="cstat-no" title="statement not covered" >        part.format = '%y';</span>
+      }
+    }
+&nbsp;
+    for(var i = 0; i &lt; numGuesses; i++) {
+      part = partsWithGuesses[i];
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasYear &amp;&amp; part.guessYear) {
+<span class="cstat-no" title="statement not covered" >        part.guessYear = false;</span>
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasMonth &amp;&amp; part.guessMonth) {
+<span class="cstat-no" title="statement not covered" >        part.guessMonth = false;</span>
+      }
+      if (hasDay &amp;&amp; part.guessDay) {
+        part.guessDay = false;
+      }
+    }
+&nbsp;
+//// 2
+&nbsp;
+&nbsp;
+&nbsp;
+    for(var i = 0; i &lt; numGuesses; i++) {
+      part = partsWithGuesses[i];
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!hasDay &amp;&amp; part.guessDay &amp;&amp; !part.guessMonth &amp;&amp; !part.guessYear) {
+<span class="cstat-no" title="statement not covered" >        part.guessDay = false;</span>
+<span class="cstat-no" title="statement not covered" >        part.type === types.day;</span>
+<span class="cstat-no" title="statement not covered" >        hasDay = true;</span>
+<span class="cstat-no" title="statement not covered" >        part.format = part.twoDigit ? '%d' : '%e';</span>
+      }
+      if (!hasMonth &amp;&amp; part.guessMonth &amp;&amp; !part.guessDay &amp;&amp; !part.guessYear) {
+        part.guessMonth = false;
+        part.type === types.month;
+        hasMonth = true;
+        part.format = '%m';
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!hasYear &amp;&amp; part.guessYear &amp;&amp; !part.guessDay &amp;&amp; <span class="branch-3 cbranch-no" title="branch not covered" >!part.guessMonth)</span> {
+<span class="cstat-no" title="statement not covered" >        part.guessYear = false;</span>
+<span class="cstat-no" title="statement not covered" >        part.type === types.year;</span>
+<span class="cstat-no" title="statement not covered" >        hasYear = true;</span>
+<span class="cstat-no" title="statement not covered" >        part.format = '%y';</span>
+      }
+    }
+&nbsp;
+&nbsp;
+    for(var i = 0; i &lt; numGuesses; i++) {
+      part = partsWithGuesses[i];
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasYear &amp;&amp; part.guessYear) {
+<span class="cstat-no" title="statement not covered" >        part.guessYear = false;</span>
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasMonth &amp;&amp; part.guessMonth) {
+<span class="cstat-no" title="statement not covered" >        part.guessMonth = false;</span>
+      }
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (hasDay &amp;&amp; part.guessDay) {
+<span class="cstat-no" title="statement not covered" >        part.guessDay = false;</span>
+      }
+    }
+&nbsp;
+&nbsp;
+//////////////////////////////
+&nbsp;
+    var format = [];
+&nbsp;
+    for(var i = 0 ; i &lt; numParts; i++) {
+      part = parts[i];
+      if (part.guess()) {
+        return null;
+      }
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (part.format) {
+        format.push(part.format);
+      }
+    }
+&nbsp;
+    format = format.length ? format.join('/') : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (format &amp;&amp; format.indexOf('%H') !== -1 &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >format.indexOf('%p') !== -1)</span> {
+<span class="cstat-no" title="statement not covered" >      format = format.replace('%H', '%I');</span>
+    }
+&nbsp;
+    if (format in abbreviatedFormats) {
+      return abbreviatedFormats[format];
+    }
+&nbsp;
+    return format;
+  }
+&nbsp;
+})();
+&nbsp;
+var Threshold = <span class="fstat-no" title="function not covered" >function(numRows) {</span>
+<span class="cstat-no" title="statement not covered" >  var percent = 95;</span>
+<span class="cstat-no" title="statement not covered" >  var s = 100 / numRows;</span>
+<span class="cstat-no" title="statement not covered" >  var almost = numRows - 1;</span>
+<span class="cstat-no" title="statement not covered" >  this.isAbove = <span class="fstat-no" title="function not covered" >function(count) {</span></span>
+<span class="cstat-no" title="statement not covered" >    return (count &gt;= almost) || (count * s &gt; percent);</span>
+  };
+<span class="cstat-no" title="statement not covered" >  return this;</span>
+};
+&nbsp;
+var DataImport = Backbone.Model.extend({
+&nbsp;
+  defaults: {
+    type: '',
+    hasHeaderRow: true,
+    dataAsString: '',
+    numRows: 0,
+    numCols: 0,
+    colNames: [],
+    pipelineOptions: null,
+    warning: {
+      message: null,
+      rows: []
+    },
+    data: [],
+    originalData: []
+  },
+&nbsp;
+  columns: null,
+&nbsp;
+  initialize: <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >    this.columns = new Backbone.Collection();</span>
+<span class="cstat-no" title="statement not covered" >    this.listenTo(this, 'invalid', this.discardData);</span>
+  },
+&nbsp;
+  validate: <span class="fstat-no" title="function not covered" >function(attributes, options) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var error = { message: '', details: []};</span>
+<span class="cstat-no" title="statement not covered" >    var method;</span>
+<span class="cstat-no" title="statement not covered" >    var data = [];</span>
+&nbsp;
+    // remove empty rows from the bottom
+<span class="cstat-no" title="statement not covered" >    attributes.dataAsString = (attributes.dataAsString || '').trimRight();</span>
+    
+    // we can't just trimLeft as then we would loose empty column headers
+    // so we must remove things that look like empty rows from the beginning
+<span class="cstat-no" title="statement not covered" >    attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!attributes.dataAsString) {</span>
+<span class="cstat-no" title="statement not covered" >      error.message = 'No data found';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!attributes.type) {</span>
+<span class="cstat-no" title="statement not covered" >      attributes.type = DataImport.guessDataFormat(attributes.dataAsString);</span>
+<span class="cstat-no" title="statement not covered" >      if (!attributes.type) {</span>
+<span class="cstat-no" title="statement not covered" >        error.message = 'Unrecognised data format';</span>
+<span class="cstat-no" title="statement not covered" >        return error;</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var isPipelineFormat = DataImport.isPipelineFormat(attributes.dataAsString);</span>
+&nbsp;
+    // Special case allow .txt pipline files. So just change the type to TSV.
+<span class="cstat-no" title="statement not covered" >    if (isPipelineFormat &amp;&amp; attributes.type === 'text/plain') {</span>
+<span class="cstat-no" title="statement not covered" >      attributes.type = 'text/tsv';</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var supportedFormat = DataImport.isValidType(attributes.type);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!supportedFormat) {</span>
+<span class="cstat-no" title="statement not covered" >      error.message = 'Unsupported file type';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values' ) {</span>
+<span class="cstat-no" title="statement not covered" >      method = 'TSV';</span>
+    } else <span class="cstat-no" title="statement not covered" >if (attributes.type === 'text/csv') {</span>
+<span class="cstat-no" title="statement not covered" >      method = 'CSV';</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      error.message = 'Unsupported import format';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var colNames;</span>
+<span class="cstat-no" title="statement not covered" >    var numCols;</span>
+<span class="cstat-no" title="statement not covered" >    var convertFn;</span>
+<span class="cstat-no" title="statement not covered" >    var warningRows = [];</span>
+<span class="cstat-no" title="statement not covered" >    var warningMessage = null;</span>
+<span class="cstat-no" title="statement not covered" >    var hasHeaderRow = true;</span>
+<span class="cstat-no" title="statement not covered" >    var dataTypeCounters = [];</span>
+<span class="cstat-no" title="statement not covered" >    var pipelineData;</span>
+<span class="cstat-no" title="statement not covered" >    var pipelineOptions = null;</span>
+<span class="cstat-no" title="statement not covered" >    var missingCols = 0;</span>
+<span class="cstat-no" title="statement not covered" >    var extraCols = 0;</span>
+&nbsp;
+&nbsp;
+    // TODO: handle when the first row is not a header row.
+    //       ... need to work out a row on useful header row on the fly, using letters A-Z
+&nbsp;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    try {</span>
+<span class="cstat-no" title="statement not covered" >      if (isPipelineFormat) {</span>
+<span class="cstat-no" title="statement not covered" >        pipelineData = DataImport.parsePipeline(attributes.dataAsString);</span>
+<span class="cstat-no" title="statement not covered" >        attributes.dataAsString = pipelineData.dataString;</span>
+<span class="cstat-no" title="statement not covered" >        pipelineOptions = pipelineData.options;</span>
+      }
+    } catch (pipelineError) {
+<span class="cstat-no" title="statement not covered" >      error.message = pipelineError.message;</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var processRow = <span class="fstat-no" title="function not covered" >function(row, rowNum) {</span></span>
+<span class="cstat-no" title="statement not covered" >      var values = row.map(Function.prototype.call, String.prototype.trim);</span>
+<span class="cstat-no" title="statement not covered" >      var numValues = values.length;</span>
+<span class="cstat-no" title="statement not covered" >      var result;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (hasHeaderRow &amp;&amp; rowNum === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        colNames = values;</span>
+<span class="cstat-no" title="statement not covered" >        numCols = numValues;</span>
+&nbsp;
+        // TODO: ensure none of the values are null/undefined/empty-string
+        // if so throw an error
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        var names = {}, n;</span>
+        
+<span class="cstat-no" title="statement not covered" >        for (var i = 0; i &lt; numCols; i++) {</span>
+&nbsp;
+          // ensure no duplicate column names
+<span class="cstat-no" title="statement not covered" >          n = colNames[i];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (!n) {</span>
+<span class="cstat-no" title="statement not covered" >            n = emptyheaderRows[i];</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (n in names) {</span>
+<span class="cstat-no" title="statement not covered" >            names[n]++;</span>
+<span class="cstat-no" title="statement not covered" >            n = n + '-' + names[n];</span>
+          } else {
+<span class="cstat-no" title="statement not covered" >            names[n] = 1;</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          colNames[i] = n;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          dataTypeCounters.push({</span>
+            colName: n,
+            strings: 0,
+            stringValues: [],
+            nulls: 0,
+            numbers: 0,
+            numberValues: [],
+            dates: 0,
+            dateValues: []
+          });
+        }
+<span class="cstat-no" title="statement not covered" >        return;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (numValues &lt;= 1 &amp;&amp; !values[0]) {</span>
+        // empty row
+<span class="cstat-no" title="statement not covered" >        return;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (numValues &gt; numCols) {</span>
+<span class="cstat-no" title="statement not covered" >        warningRows.push({rowNum: rowNum, numValues: numValues, values: values.slice(0), message: 'Too many values'});</span>
+<span class="cstat-no" title="statement not covered" >        extraCols += (numValues - numCols);</span>
+<span class="cstat-no" title="statement not covered" >        values = values.slice(0, numCols);</span>
+      } else <span class="cstat-no" title="statement not covered" >if (numValues &lt; numCols) {</span>
+<span class="cstat-no" title="statement not covered" >        warningRows.push({rowNum: rowNum, numValues: numValues, values: values.slice(0), message: 'Not as many values as there are columns'});</span>
+<span class="cstat-no" title="statement not covered" >        missingCols += (numCols - numValues);</span>
+<span class="cstat-no" title="statement not covered" >        values = values.concat(new Array(numCols - numValues));</span>
+      }
+      
+<span class="cstat-no" title="statement not covered" >      values.forEach(sniffDatatype, dataTypeCounters);</span>
+<span class="cstat-no" title="statement not covered" >      result = _.object(colNames, values);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return result;</span>
+    };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    try {</span>
+<span class="cstat-no" title="statement not covered" >      data = d3[method.toLowerCase()].parseRows(attributes.dataAsString, processRow);</span>
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" >      error.message = 'There was a problem with the ' + method + ' data';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var numRows = data.length;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!numRows) {</span>
+<span class="cstat-no" title="statement not covered" >      error.message = 'No data found';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (numCols &lt; 2) {</span>
+<span class="cstat-no" title="statement not covered" >      error.message = 'Your data needs 2 columns or more.';</span>
+<span class="cstat-no" title="statement not covered" >      return error;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (warningRows.length) {</span>
+<span class="cstat-no" title="statement not covered" >      if (!!missingCols &amp;&amp; missingCols/numRows % 1 === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        warningMessage = 'The data appears to be missing ' + (missingCols/numRows) + ' whole columns of data.';</span>
+      } else <span class="cstat-no" title="statement not covered" >if(!!extraCols &amp;&amp; extraCols/numRows % 1 === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        warningMessage = 'There  seems to be ' + (extraCols/numRows) + ' columns without headers. The data for these has been discarded.';</span>
+      } else <span class="cstat-no" title="statement not covered" >if(!missingCols &amp;&amp; !!extraCols &amp;&amp; extraCols &lt; numRows) {</span>
+<span class="cstat-no" title="statement not covered" >        warningMessage = 'Some rows have too many values. These values have been discarded.';</span>
+      } else <span class="cstat-no" title="statement not covered" >if(!extraCols &amp;&amp; !!missingCols &amp;&amp; missingCols &lt; numRows) {</span>
+        // DO NOTHING - we assume the last (right-most) column has some null values.
+      } else {
+<span class="cstat-no" title="statement not covered" >        warningMessage = 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var threshold = new Threshold(numRows);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    dataTypeCounters.forEach(<span class="fstat-no" title="function not covered" >function (typeCounter) {</span></span>
+<span class="cstat-no" title="statement not covered" >      if (threshold.isAbove(typeCounter.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.NONE;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (typeCounter.numbers &gt; typeCounter.dates &amp;&amp; threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.NUMERIC;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.TIME;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.CATEGORICAL;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.NUMERIC;</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        typeCounter.datatype = Datatypes.NONE;</span>
+      }
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var xAxis;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    dataTypeCounters.forEach(<span class="fstat-no" title="function not covered" >function (counter) {</span></span>
+<span class="cstat-no" title="statement not covered" >      var type = counter.datatype;</span>
+<span class="cstat-no" title="statement not covered" >      if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {</span>
+<span class="cstat-no" title="statement not covered" >        if (!xAxis) {</span>
+<span class="cstat-no" title="statement not covered" >          xAxis = counter;</span>
+<span class="cstat-no" title="statement not covered" >          counter.predictedAxis = Axis.X;</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >          counter.predictedAxis = Axis.NONE;</span>
+        }
+      } else <span class="cstat-no" title="statement not covered" >if (Datatypes.isNumeric(type)) {</span>
+<span class="cstat-no" title="statement not covered" >        counter.predictedAxis = Axis.Y;</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        counter.predictedAxis = Axis.NONE;</span>
+      }
+    });
+&nbsp;
+    // second pass in case we predict wrongly the first time
+    // if !axes.y.length &amp;&amp; !axes.x then error
+    // if !axes.y.length then look at axes.none and try to add some of them to axes.y
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var newColumns = dataTypeCounters.map(<span class="fstat-no" title="function not covered" >function (counter, index) {</span></span>
+<span class="cstat-no" title="statement not covered" >      return new Column({</span>
+        property: counter.colName,
+        label: counter.colName,
+        axis: counter.predictedAxis,
+        typeInfo: counter
+      });
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var originalData = JSON.parse(JSON.stringify(data));</span>
+<span class="cstat-no" title="statement not covered" >    var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;</span>
+<span class="cstat-no" title="statement not covered" >    var unsafeDateString = true;</span>
+<span class="cstat-no" title="statement not covered" >    var timeCols = []</span>
+<span class="cstat-no" title="statement not covered" >    var typeInfo;</span>
+<span class="cstat-no" title="statement not covered" >    var colName</span>
+<span class="cstat-no" title="statement not covered" >    var attemptedDate;</span>
+<span class="cstat-no" title="statement not covered" >    var val;</span>
+<span class="cstat-no" title="statement not covered" >    var dateFormat;</span>
+<span class="cstat-no" title="statement not covered" >    var countDateFormats;</span>
+<span class="cstat-no" title="statement not covered" >    var totalNonDateStrings;</span>
+<span class="cstat-no" title="statement not covered" >    var mostPopularDateFormatCount;</span>
+<span class="cstat-no" title="statement not covered" >    var mostPopularDateFormat;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (var i = 0, x = newColumns.length; i &lt; x; i++) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      typeInfo = newColumns[i].get('typeInfo');</span>
+<span class="cstat-no" title="statement not covered" >      colName = typeInfo.colName;</span>
+      
+<span class="cstat-no" title="statement not covered" >      if (typeInfo.datatype === Datatypes.TIME) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        typeInfo.dateFormats = [];</span>
+<span class="cstat-no" title="statement not covered" >        countDateFormats = {};</span>
+<span class="cstat-no" title="statement not covered" >        totalNonDateStrings = 0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        for (var j = 0; j &lt; numRows; j++) {</span>
+<span class="cstat-no" title="statement not covered" >          val = data[j][colName];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (!val) <span class="cstat-no" title="statement not covered" >continue;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          attemptedDate = NaN;</span>
+<span class="cstat-no" title="statement not covered" >          unsafeDateString = true;/</span>/isUnsafeDateString.test(val);
+&nbsp;
+          // Don't attempt to make a date object from an unsafe string. Javascript's date 
+          // constructor (esp in Chrome/V8) will happily parse ambiguous strings without understanding
+          // the difference between day and month when they appear first.
+          // Any will fill in the year if one isn't provied
+<span class="cstat-no" title="statement not covered" >          if(typeof val === 'string' &amp;&amp; !unsafeDateString) {</span>
+<span class="cstat-no" title="statement not covered" >            attemptedDate = new Date(val);</span>
+          }
+          
+<span class="cstat-no" title="statement not covered" >          if (isNaN(+attemptedDate)) {</span>
+<span class="cstat-no" title="statement not covered" >            dateFormat = predictedDateFormat(val);</span>
+<span class="cstat-no" title="statement not covered" >            totalNonDateStrings++;</span>
+<span class="cstat-no" title="statement not covered" >            if (dateFormat) {</span>
+<span class="cstat-no" title="statement not covered" >              typeInfo.dateFormats.push(dateFormat);</span>
+<span class="cstat-no" title="statement not covered" >              if (dateFormat in countDateFormats) {</span>
+<span class="cstat-no" title="statement not covered" >                countDateFormats[dateFormat]++;</span>
+              } else {
+<span class="cstat-no" title="statement not covered" >                countDateFormats[dateFormat] = 1;</span>
+              }
+            }
+          } else {
+<span class="cstat-no" title="statement not covered" >            data[j][colName] = attemptedDate;</span>
+          }
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        mostPopularDateFormat = null;</span>
+<span class="cstat-no" title="statement not covered" >        mostPopularDateFormatCount = 0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        var formatKeys = Object.keys(countDateFormats);</span>
+<span class="cstat-no" title="statement not covered" >        var numKeys = formatKeys.length;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (numKeys === 1) {</span>
+<span class="cstat-no" title="statement not covered" >          typeInfo.mostPopularDateFormat = formatKeys[0];</span>
+        } else <span class="cstat-no" title="statement not covered" >if (numKeys &gt; 1) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          var containsLongMonths;</span>
+<span class="cstat-no" title="statement not covered" >          var containsShortMonths;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          formatKeys.forEach(<span class="fstat-no" title="function not covered" >function (key) {</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            var count = countDateFormats[key];</span>
+<span class="cstat-no" title="statement not covered" >            if (count &gt;= mostPopularDateFormatCount) {</span>
+              // it's not good enough for the current format to be joint most-popular
+<span class="cstat-no" title="statement not covered" >              mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;</span>
+<span class="cstat-no" title="statement not covered" >              mostPopularDateFormatCount = count;</span>
+            }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (key.indexOf('%B') !== -1) {</span>
+<span class="cstat-no" title="statement not covered" >              containsLongMonths = key;</span>
+            } else <span class="cstat-no" title="statement not covered" >if(key.indexOf('%b') !== -1) {</span>
+<span class="cstat-no" title="statement not covered" >              containsShortMonths = key;</span>
+            }
+&nbsp;
+          });
+&nbsp;
+<span class="fstat-no" title="function not covered" >          function gtDateThreshold(count) {</span>
+<span class="cstat-no" title="statement not covered" >            return count * 100 / totalNonDateStrings &gt; 95</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (mostPopularDateFormatCount &amp;&amp; totalNonDateStrings) {</span>
+            
+            // the most popular date format found is more than 95%
+            // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
+<span class="cstat-no" title="statement not covered" >            var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount);</span>
+&nbsp;
+            // handle the case when some of the dates are in the month of May
+            // we therefore have a mix of long and short month formats ie %B and %b
+            // We can gloss over this because either date format will correct parse the date on those strings
+<span class="cstat-no" title="statement not covered" >            if (!greaterThanThreshold &amp;&amp; containsShortMonths &amp;&amp; containsLongMonths) {</span>
+<span class="cstat-no" title="statement not covered" >              if (mostPopularDateFormat === containsLongMonths) {</span>
+<span class="cstat-no" title="statement not covered" >                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%B', '%b')] || 0;</span>
+              } else <span class="cstat-no" title="statement not covered" >if (mostPopularDateFormat === containsShortMonths) {</span>
+<span class="cstat-no" title="statement not covered" >                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%b', '%B')] || 0;</span>
+              }
+              // recalculate if the count is over the threshold
+<span class="cstat-no" title="statement not covered" >              greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount);</span>
+            }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (greaterThanThreshold) {</span>
+<span class="cstat-no" title="statement not covered" >              typeInfo.mostPopularDateFormat = mostPopularDateFormat;</span>
+            } else {
+<span class="cstat-no" title="statement not covered" >              typeInfo.mostPopularDateFormat = null;</span>
+            }
+&nbsp;
+          } else {
+<span class="cstat-no" title="statement not covered" >            typeInfo.mostPopularDateFormat = null;</span>
+          }
+&nbsp;
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (typeInfo.mostPopularDateFormat &amp;&amp; typeInfo.predictedAxis === Axis.X) {</span>
+<span class="cstat-no" title="statement not covered" >          transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));</span>
+        } else <span class="cstat-no" title="statement not covered" >if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {</span>
+<span class="cstat-no" title="statement not covered" >          typeInfo.datatype = Datatypes.NUMERIC;</span>
+<span class="cstat-no" title="statement not covered" >          newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);</span>
+        }
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    console.table(dataTypeCounters);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    this.set({</span>
+      numCols: numCols,
+      data: data,
+      originalData: originalData,
+      colNames: colNames,
+      numRows: numRows,
+      pipelineOptions: pipelineOptions,
+      warning: {
+        message: warningMessage,
+        rows: warningRows
+      }
+    });
+<span class="cstat-no" title="statement not covered" >    this.columns.reset(newColumns);</span>
+&nbsp;
+  },
+&nbsp;
+  discardData: <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >    this.set(this.defaults);</span>
+<span class="cstat-no" title="statement not covered" >    this.columns.reset([]);</span>
+  },
+&nbsp;
+  ignoreWarning: <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >    this.set('warning', this.defaults.warning);</span>
+  }
+&nbsp;
+},{
+&nbsp;
+  isValidType: <span class="fstat-no" title="function not covered" >function(type) {</span>
+<span class="cstat-no" title="statement not covered" >    return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';</span>
+  },
+&nbsp;
+  isPipelineFormat: <span class="fstat-no" title="function not covered" >function(str) {</span>
+<span class="cstat-no" title="statement not covered" >    return str.substring(0, 2) === '&amp;\t';</span>
+  },
+&nbsp;
+  parsePipeline: <span class="fstat-no" title="function not covered" >function(str) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var lines = str.trim().split(/[\n\r]+/gm);</span>
+<span class="cstat-no" title="statement not covered" >    var line;</span>
+<span class="cstat-no" title="statement not covered" >    var options = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    while(line = lines.pop()) {</span>
+<span class="cstat-no" title="statement not covered" >      if (!line) {</span>
+<span class="cstat-no" title="statement not covered" >        continue;</span>
+      }
+<span class="cstat-no" title="statement not covered" >      if (line.charAt(0) === '\t') {</span>
+<span class="cstat-no" title="statement not covered" >        throw new Error('Pipeline formatted files must have a value for every cell in the index ("&amp;") column.');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      line = line.trim();</span>
+<span class="cstat-no" title="statement not covered" >      if (!line) {</span>
+<span class="cstat-no" title="statement not covered" >        continue;</span>
+      }
+<span class="cstat-no" title="statement not covered" >      if (line.charAt(0) !== '&amp;') {</span>
+<span class="cstat-no" title="statement not covered" >        lines.push(line);</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+      }
+<span class="cstat-no" title="statement not covered" >      var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);</span>
+<span class="cstat-no" title="statement not covered" >      var value = bits[1];</span>
+<span class="cstat-no" title="statement not covered" >      if (value || value !== 'delete if not required') {</span>
+<span class="cstat-no" title="statement not covered" >        options[bits[0].replace(/^&amp;/, '')] = value;</span>
+      }
+    }
+<span class="cstat-no" title="statement not covered" >    str = lines.join('\n');</span>
+<span class="cstat-no" title="statement not covered" >    return {dataString: str, options: options};</span>
+  },
+&nbsp;
+  guessDataFormat: <span class="fstat-no" title="function not covered" >function(dataAsString) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (dataAsString) {</span>
+<span class="cstat-no" title="statement not covered" >      var lines = dataAsString.split(/\n/g);</span>
+<span class="cstat-no" title="statement not covered" >      if (lines.length) {</span>
+<span class="cstat-no" title="statement not covered" >        var line = (lines[0]||'').replace(/"(.*?)"/g, '');</span>
+<span class="cstat-no" title="statement not covered" >        var tabs = (line.match(/\t/g)  || []).length;</span>
+<span class="cstat-no" title="statement not covered" >        var commas = (line.match(/\,/g) || []).length;</span>
+<span class="cstat-no" title="statement not covered" >        if (tabs &gt; commas) {</span>
+<span class="cstat-no" title="statement not covered" >          return 'text/tsv';</span>
+        } else <span class="cstat-no" title="statement not covered" >if (commas &gt; tabs) {</span>
+<span class="cstat-no" title="statement not covered" >          return 'text/csv';</span>
+        }
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return null;</span>
+  } 
+&nbsp;
+});
+&nbsp;
+var tests = {
+  '1.101': null,
+  '1,000': null,
+  '1,000,000': null,
+  '1': '%Y',
+  '11': '%Y',
+  '111': '%Y',
+  '1999': '%Y',
+  '11111': null,
+  '01-1999': '%m/%Y',
+  '12-1999': '%m/%Y',
+  '13-1999': null,
+  '32-1999': null,
+  'Jan 1999': '%b/%Y',
+  '31/01/2014': '%d/%m/%Y',
+  '31/01/14': '%d/%m/%y',
+  '01/31/2014': '%x',
+  '01/31/14': '%m/%d/%y',
+  '01 January 2014': '%d/%B/%Y',
+  '13/01/13': '%d/%m/%y',
+  '01/13/13': '%m/%d/%y',
+  '13/01/01': '%d/%m/%y',
+  '01/13/01': '%m/%d/%y',
+  '12/01/12': null,
+  '01/12/12': null,
+  '1/1/14': null,
+  '01-01-01': null,
+  '14/14': null,
+  '11/14': '%m/%y',
+  '01/13/2013': '%x',
+  '01/13/13': '%m/%d/%y',
+  '01 Jan 2014': '%d/%b/%Y',
+  '32 Jan 2014': null,
+  'Jan 01 2014': '%b/%d/%Y',
+  'Jan 32 2014': null,
+  'January 01 2014': '%B/%d/%Y',
+  '2014 January 01': '%Y/%B/%d',
+};
+&nbsp;
+Object.keys(tests).forEach(function (key) {
+  var date = key;
+  var format = tests[key];
+  var result = predictedDateFormat(date);
+  console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
+});
+&nbsp;
+module.exports = DataImport;
+&nbsp;</pre></td></tr>
+</table></pre>
+
+</div>
+<div class="footer">
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Mar 09 2015 11:18:58 GMT+0000 (GMT)</div>
+</div>
+
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+
+<script src="../sorter.js"></script>
+</body>
+</html>

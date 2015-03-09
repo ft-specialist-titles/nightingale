@@ -1,7 +1,0 @@
-{
-  "app": {
-    "name": "nightingale",
-    "js": "bundle.js",
-    "css": "bundle.css"
-  }
-}
