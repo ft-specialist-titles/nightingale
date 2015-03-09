@@ -2,7 +2,7 @@
   "name": "nightingale",
   "version": "0.0.3",
   "description": "Chart making tool for journalists",
-  "main": "_site/index.html",
+  "main": "src/scripts/o-charts.js",
   "scripts": {
     "start": "component serve",
     "test": "component build && component test",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "devDependencies": {
     "brfs": "^1.4.0",
-    "browserify-istanbul": "^0.2.0",
+    "browserify-istanbul": "^0.2.1",
     "browserify-shim": "^3.8.3",
     "component-helper": "git://github.com/peter-mouland/component-helper",
     "debowerify": "^1.2.0",
