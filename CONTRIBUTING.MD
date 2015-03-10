@@ -20,10 +20,9 @@ if behind a proxy run, setup git to use https:
 ## Workflow
 
 1. Fork the project
-2. Clone your fork
-`ssh://git@git.svc.ft.com:7999/~YOUR-USERNAME/nightingale.git`
+2. `git clone repo-url` your fork
 3. Setup your 'upstream'
-`git remote add upstream ssh://git@git.svc.ft.com:7999/igct/nightingale.git`
+`git remote add upstream https://github.com/Financial-Times/nightingale.git`
 4. Run `npm i && bower i`
 5. Create a topic branch to contain your change
 `git checkout -b my-feature`
