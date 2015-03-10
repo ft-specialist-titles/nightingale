@@ -1,4 +1,4 @@
-Nightingale
+Nightingale  [![Circle CI](https://circleci.com/gh/Financial-Times/nightingale/tree/master.svg?style=svg)](https://circleci.com/gh/Financial-Times/nightingale/tree/master)
 ========================
 > Create responsive charts: http://editorial.ft.com/nightingale/
 
