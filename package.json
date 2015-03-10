@@ -4,7 +4,7 @@
   "description": "Chart making tool for journalists",
   "main": "src/scripts/o-charts.js",
   "scripts": {
-    "start": "component serve",
+    "start": "component build && component serve",
     "test": "component build && component test",
     "tdd": "component test tdd",
     "release": "npm test && component release"
