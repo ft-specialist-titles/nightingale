@@ -1,6 +1,9 @@
 test:
   pre:
-    - npm i && bower i
+    - bower i
+  post:
+    - git config user.name "circleci"
+    - git config user.email "peter.mouland@ft.com"
 deployment:
   production:
     branch: master
