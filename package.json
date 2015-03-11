@@ -1,6 +1,6 @@
 {
   "name": "nightingale",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Chart making tool for journalists",
   "main": "src/scripts/o-charts.js",
   "scripts": {
