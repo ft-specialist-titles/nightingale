@@ -2,14 +2,11 @@ test:
   pre:
     - bower i
   post:
-    - git config user.name "circleci"
-    - git config user.email "peter.mouland@ft.com"
+    - git config --global user.name "circleci"
+    - git config --global user.email "peter.mouland@ft.com"
 deployment:
   production:
     branch: master
-    pre:
-      - git config user.name "circleci"
-      - git config user.email "peter.mouland@ft.com"
     commands:
       - ./node_modules/component-helper/bin/component release --version=current
 machine:
