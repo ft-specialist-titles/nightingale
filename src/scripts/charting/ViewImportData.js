@@ -2,6 +2,8 @@ var Backbone = require('./../core/backbone.js');
 var DataImport = require('./DataImport.js');
 var $ = require('jquery');
 
+var tracking = require('./../tracking/tracking.js');
+
 var ViewImportData = Backbone.View.extend({
 
   className: 'view-importdata',
@@ -148,6 +150,8 @@ var ViewImportData = Backbone.View.extend({
     } else {
       window.removeEventListener('paste', this.__paste, false);
       this.$el.delay(200).fadeOut(100);
+      //track that the data collection view has been removed and graphic view will be seen
+      tracking.trackPage('GraphicsPreview');
     }
   },
 
