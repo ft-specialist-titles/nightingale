@@ -170,6 +170,7 @@ var nightingale = function(){
         var fs = require('fs');
         var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
         importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        tracking.trackEvent('test');
     }
 };
 
