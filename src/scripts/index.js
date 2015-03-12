@@ -15,6 +15,7 @@ var fontFix = require('./export/svgDataURI.js').fontFix;
 
 var _ =require('underscore');
 var $ = require('jquery');
+var version = require('./utils/version');
 
 var nightingale = function(){
 
@@ -165,7 +166,9 @@ var nightingale = function(){
     var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
     importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
   }
-
+    return {
+        version: version
+    }
 };
 
 module.exports = window.nightingale = nightingale;

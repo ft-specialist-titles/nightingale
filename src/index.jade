@@ -11,7 +11,7 @@ body
   script(src='scripts/vendor.min.js')
   script(src='scripts/index.min.js')
   script.
-    try{ nightingale();} catch(e) {
+    try{ var ng = nightingale();} catch(e) {
     var d = document.createElement('pre');
     var s = d.style;
     s.position = 'fixed', s.zIndex = 2, s.width = '100%'; 
