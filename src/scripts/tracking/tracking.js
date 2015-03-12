@@ -11,6 +11,9 @@ var Tracking = function () {
         a.src = g;
         m.parentNode.insertBefore(a, m)
     })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-60698836-1', 'auto');
+    ga('send', 'pageview');
 };
 
 Tracking.prototype.trackPage = function (pageName) {
