@@ -6,7 +6,7 @@ module.exports = {
     build: {
         fonts: true, // true or false. Set to false if you are doing your own thing in the fonts directory
         styles: 'sass', // 'sass'. less not yet available
-        html: 'jade',// 'mustache' or 'jade'.
+        html: 'mustache',// 'mustache' or 'jade'.
         scripts: 'browserify' // 'browserify' or 'requirejs'
     },
     browserify: {
@@ -20,7 +20,7 @@ module.exports = {
             './bower_components/bootstrap-sass/assets/javascripts/bootstrap.js',
             './bower_components/d3/d3.js'
         ],
-        vendorBundle: [
+        //vendorBundle: [
             //{ file :'./bower_components/underscore/underscore.js', expose: 'underscore'},
             //{ file :'./bower_components/backbone/backbone.js', expose: 'backbone'},
             //{ file :'./node_modules/hbsfy/runtime.js', expose: 'hbsfy'},
@@ -28,7 +28,7 @@ module.exports = {
             //{ file :'./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js', expose: 'bootstrap-sass'},
             //{ file :'./bower_components/jquery/dist/jquery.js', expose: 'jquery'},
             //{ file :'./node_modules/handlebars/runtime.js', expose: 'handlebars'}
-        ]
+        //]
     },
     test: 'karma',  // or false.  where your tests config, specs and reports are saved
     karma : {//or mocha not yet available
