@@ -5,6 +5,7 @@ var ViewLineControls = require('./ViewLineControls.js');
 var download = require('./../export/download.js');
 var util = require('util');
 var attributeStyler = require('o-charts').util.attributeStyler;
+var tracking = require('./../tracking/tracking.js');
 
 var ViewSelectedVariation = RegionView.extend({
 
@@ -80,6 +81,7 @@ var ViewSelectedVariation = RegionView.extend({
       // prevent doubleclick
       setTimeout(removeDisabledState, 200);
     });
+    tracking.trackEvent('saveImage-'+format);
   },
 
   render: function() {

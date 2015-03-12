@@ -2,7 +2,6 @@ var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
 var ViewDependantAxisControls = require('./ViewDependantAxisControls.js');
-
 var tracking = require('./../tracking/tracking.js');
 
 var ViewGraphicControls = RegionView.extend({
@@ -85,6 +84,8 @@ var ViewGraphicControls = RegionView.extend({
 
   discard: function() {
     this.dataImport.discardData();
+    // on discarding data the app will show data import view
+    tracking.trackPage('DataImport');
   },
 
   render: function() {

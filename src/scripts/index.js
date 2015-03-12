@@ -14,7 +14,7 @@ var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
 var tracking = require('./tracking/tracking.js');
 
-var _ =require('underscore');
+var _ = require('underscore');
 var $ = require('jquery');
 
 var nightingale = function(){
@@ -161,7 +161,9 @@ var nightingale = function(){
   document.body.appendChild(fontFix());
 
    //START - GoogleAnalytics Tracking - generated from console.
-    tracking.initialise();
+   tracking.initialise();
+   // app will start on the data import view
+   tracking.trackPage('DataImport');
 
     // REFACTOR: move this into a separate application
     if (document.location.hash === '#test') {
