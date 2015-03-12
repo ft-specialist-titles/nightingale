@@ -12,6 +12,7 @@ var LineControls = require('./charting/LineControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
+var tracking = require('./tracking/tracking.js');
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -159,13 +160,15 @@ var nightingale = function(){
   //        find out why we need this and if there's a better way to fix.
   document.body.appendChild(fontFix());
 
-  // REFACTOR: move this into a separate application
-  if (document.location.hash === '#test') {
-    var fs = require('fs');
-    var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
-    importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
-  }
+   //START - GoogleAnalytics Tracking - generated from console.
+    tracking.initialise();
 
+    // REFACTOR: move this into a separate application
+    if (document.location.hash === '#test') {
+        var fs = require('fs');
+        var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
+        importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+    }
 };
 
 module.exports = window.nightingale = nightingale;

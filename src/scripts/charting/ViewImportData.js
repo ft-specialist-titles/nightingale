@@ -2,6 +2,8 @@ var Backbone = require('./../core/backbone.js');
 var DataImport = require('./DataImport.js');
 var $ = require('jquery');
 
+var tracking = require('./../tracking/tracking.js');
+
 var ViewImportData = Backbone.View.extend({
 
   className: 'view-importdata',

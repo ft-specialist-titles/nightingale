@@ -3,6 +3,8 @@ var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
 var ViewDependantAxisControls = require('./ViewDependantAxisControls.js');
 
+var tracking = require('./../tracking/tracking.js');
+
 var ViewGraphicControls = RegionView.extend({
 
   initialize: function(options) {
