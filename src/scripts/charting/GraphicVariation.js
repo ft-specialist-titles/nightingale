@@ -21,7 +21,7 @@ var GraphicVariation = Backbone.Model.extend({
 
   createConfig: function() {
     // FIXME: is it still necessary to make a copy of the data?
-    var data = this.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d)});
+    var data = this.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d);});
 
     if (!data.length) return;
 

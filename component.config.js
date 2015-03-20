@@ -10,7 +10,7 @@ module.exports = {
         scripts: 'browserify' // 'browserify' or 'requirejs'
     },
     browserify: {
-        insertGlobals : false,
+        insertGlobals : true,
         detectGlobals : false,
         noParse: [
             './bower_components/jquery/dist/jquery.js',

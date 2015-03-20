@@ -16,7 +16,7 @@ var handlers = [
 ];
 
 handlers.forEach(function (handler) {
-  Backbone.Stickit.addHandler(handler)
+  Backbone.Stickit.addHandler(handler);
 });
 
 module.exports = Backbone;

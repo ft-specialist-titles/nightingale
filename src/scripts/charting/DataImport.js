@@ -1,3 +1,6 @@
+/*jshint -W083 */
+//todo: PM: remove hint once tests are written
+
 require('./../polyfill/bind');
 var Backbone = require('./../core/backbone.js');
 var Column = require('./Column.js');
@@ -76,7 +79,7 @@ var sniffDatatype = function(value, colNum) {
   if (isDateString(value)) {
     isDate = true;
     o.dates++;
-    o.dateValues.push(value)
+    o.dateValues.push(value);
   }
 
   var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
@@ -97,6 +100,10 @@ function normalise(value) {
               .toLowerCase()
               // normalise separtators
               .replace(/[\/\ ]/g, '-');
+}
+
+function gtDateThreshold(count, totalNonDateStrings) {
+    return count * 100 / totalNonDateStrings > 95;
 }
 
 var predictedDateFormat = (function(){
@@ -176,7 +183,7 @@ var predictedDateFormat = (function(){
         this.type = types.weekday;
       } else {
         // could be GMT+0100 or T13:00:00
-        console.log('el', d)
+        console.log('el', d);
       }
 
     } else if (/^(am|pm)$/.test(d)) {
@@ -205,7 +212,7 @@ var predictedDateFormat = (function(){
           var ampm = am || pm;
           timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
           var num = Number(timePart);
-          var format = undefined;
+          var format;
 
           if (timePart === '' || isNaN(num)) {
             format = undefined;
@@ -307,8 +314,9 @@ var predictedDateFormat = (function(){
     var parts = [];
     var token;
     var part;
+    var i = 0;
 
-    for(var i = 0; i < numTokens; i++) {
+    for(i = 0; i < numTokens; i++) {
       token = tokens[i];
       part = new Part(token);
       parts.push(part);
@@ -319,7 +327,7 @@ var predictedDateFormat = (function(){
     var hasDay = false;
     var numParts = parts.length;
 
-    for(var i = 0; i < numParts; i++) {
+    for(i = 0; i < numParts; i++) {
       part = parts[i];
       if (part.type === types.year) {
         if (hasYear) {
@@ -343,7 +351,7 @@ var predictedDateFormat = (function(){
 
     var partsWithGuesses = [];
 
-    for(var i = 0; i < numParts; i++) {
+    for(i = 0; i < numParts; i++) {
       part = parts[i];
       if (part.guess()) {
         partsWithGuesses.push(part);
@@ -352,7 +360,7 @@ var predictedDateFormat = (function(){
 
     var numGuesses = partsWithGuesses.length;
 
-    for(var i = 0; i < numGuesses; i++) {
+    for(i = 0; i < numGuesses; i++) {
       part = partsWithGuesses[i];
       if (hasYear && part.guessYear) {
         part.guessYear = false;
@@ -365,7 +373,7 @@ var predictedDateFormat = (function(){
       }
     }
 
-    for(var i = 0; i < numGuesses; i++) {
+    for(i = 0; i < numGuesses; i++) {
       part = partsWithGuesses[i];
       if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
         part.guessDay = false;
@@ -387,7 +395,7 @@ var predictedDateFormat = (function(){
       }
     }
 
-    for(var i = 0; i < numGuesses; i++) {
+    for(i = 0; i < numGuesses; i++) {
       part = partsWithGuesses[i];
       if (hasYear && part.guessYear) {
         part.guessYear = false;
@@ -404,7 +412,7 @@ var predictedDateFormat = (function(){
 
 
 
-    for(var i = 0; i < numGuesses; i++) {
+    for(i = 0; i < numGuesses; i++) {
       part = partsWithGuesses[i];
       if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
         part.guessDay = false;
@@ -427,7 +435,7 @@ var predictedDateFormat = (function(){
     }
 
 
-    for(var i = 0; i < numGuesses; i++) {
+    for(i = 0; i < numGuesses; i++) {
       part = partsWithGuesses[i];
       if (hasYear && part.guessYear) {
         part.guessYear = false;
@@ -445,7 +453,7 @@ var predictedDateFormat = (function(){
 
     var format = [];
 
-    for(var i = 0 ; i < numParts; i++) {
+    for(i = 0 ; i < numParts; i++) {
       part = parts[i];
       if (part.guess()) {
         return null;
@@ -466,7 +474,7 @@ var predictedDateFormat = (function(){
     }
 
     return format;
-  }
+  };
 
 })();
 
@@ -730,9 +738,9 @@ var DataImport = Backbone.Model.extend({
     var originalData = JSON.parse(JSON.stringify(data));
     var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
     var unsafeDateString = true;
-    var timeCols = []
+    var timeCols = [];
     var typeInfo;
-    var colName
+    var colName;
     var attemptedDate;
     var val;
     var dateFormat;
@@ -814,15 +822,11 @@ var DataImport = Backbone.Model.extend({
 
           });
 
-          function gtDateThreshold(count) {
-            return count * 100 / totalNonDateStrings > 95
-          }
-
           if (mostPopularDateFormatCount && totalNonDateStrings) {
             
             // the most popular date format found is more than 95%
             // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
-            var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount);
+            var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
 
             // handle the case when some of the dates are in the month of May
             // we therefore have a mix of long and short month formats ie %B and %b
@@ -834,7 +838,7 @@ var DataImport = Backbone.Model.extend({
                 mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%b', '%B')] || 0;
               }
               // recalculate if the count is over the threshold
-              greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount);
+              greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
             }
 
             if (greaterThanThreshold) {
@@ -898,7 +902,7 @@ var DataImport = Backbone.Model.extend({
   },
 
   parsePipeline: function(str) {
-
+      /*jshint -W084 */
     var lines = str.trim().split(/[\n\r]+/gm);
     var line;
     var options = {};
@@ -979,7 +983,6 @@ var tests = {
   '14/14': null,
   '11/14': '%m/%y',
   '01/13/2013': '%x',
-  '01/13/13': '%m/%d/%y',
   '01 Jan 2014': '%d/%b/%Y',
   '32 Jan 2014': null,
   'Jan 01 2014': '%b/%d/%Y',

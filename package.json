@@ -1,12 +1,12 @@
 {
   "name": "nightingale",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Chart making tool for journalists",
   "main": "src/scripts/nightingale.js",
   "scripts": {
     "build": "component build",
     "start": "component build && component serve",
-    "test": "component build && component test",
+    "test": "jshint src && component build && component test",
     "tdd": "component test tdd",
     "release": "npm test && component release"
   },
@@ -23,7 +23,8 @@
     "component-helper": "git://github.com/peter-mouland/component-helper",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
-    "hbsfy": "^2.2.1"
+    "hbsfy": "^2.2.1",
+    "jshint": "^2.6.3"
   },
   "browserify": {
     "transform": [

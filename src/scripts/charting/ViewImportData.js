@@ -43,7 +43,7 @@ var ViewImportData = Backbone.View.extend({
           this.model.set({dataAsString: data}, {validate: true});
         }
       }
-    }).bind(this)
+    }).bind(this);
     window.addEventListener('dragover', this.__dragover, false);
     var self = this;
     window.addEventListener('dragenter', function(event){ 
@@ -130,10 +130,10 @@ var ViewImportData = Backbone.View.extend({
           break;
         default:
           msg = 'An error occurred reading this file.';
-      };
+      }
 
-      self.showError({message: msg})
-    }
+      self.showError({message: msg});
+    };
 
     reader.readAsText(file);
   },

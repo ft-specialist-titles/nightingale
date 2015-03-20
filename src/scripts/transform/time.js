@@ -61,6 +61,6 @@ function createDateParser(format) {
     return function(value) {
       var normalizedString = value.replace(datePartSeparators, '/');
       return parser(normalizedString);
-    }
+    };
   }
 }

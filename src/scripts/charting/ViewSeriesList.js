@@ -75,7 +75,7 @@ function sortablelist(view){
       if (e.target.draggable) {
         dragging.$el.hide();
         var t = $(e.currentTarget);
-        var after = placeholder.index() < t.index()
+        var after = placeholder.index() < t.index();
         var p = t[after ? 'after' : 'before'](placeholder);
 
         // no-cancel behaviour

@@ -9,7 +9,7 @@ var ViewGraphicControls = RegionView.extend({
   initialize: function(options) {
     RegionView.prototype.initialize.apply(this, arguments);
     this.dataImport = options.dataImport;
-    this.listenTo(Backbone, 'selectChartElement', this.selectInput)
+    this.listenTo(Backbone, 'selectChartElement', this.selectInput);
   },
 
   template: require('./../templates/graphic-controls.hbs'),

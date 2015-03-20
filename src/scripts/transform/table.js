@@ -16,7 +16,7 @@ function transformTable(data, columns, transform, type, customLogic) {
   }
 
   if (type === null) {
-    type = function() { return true; }
+    type = function() { return true; };
   }
 
   if (typeof type !== 'function') {

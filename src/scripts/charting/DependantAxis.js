@@ -3,7 +3,7 @@ var Axis = require('./Axis.js');
 var _ = require('underscore');
 var Datatypes = require('./Datatypes.js');
 
-var captitalizeFirstLetter = function(str) {
+function captitalizeFirstLetter(str) {
   if (!str || typeof str !== 'string') return str;
   return str.replace(/^./, function (match) {
     return match.toUpperCase();

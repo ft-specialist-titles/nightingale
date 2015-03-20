@@ -1,6 +1,5 @@
 var Backbone = require('backbone');
 var _ = require('underscore');
-var undef = undefined;
 
 var Mutator     = function () {},
     oldGet      = Backbone.Model.prototype.get,
@@ -12,7 +11,7 @@ Mutator.prototype.mutators = {};
 
 // override get functionality to fetch the mutator props
 Mutator.prototype.get = function (attr) {
-    var isMutator = this.mutators !== undef;
+    var isMutator = this.mutators !== undefined;
     console.log('get', isMutator, this.mutators);
 
     // check if we have a getter mutation
@@ -30,7 +29,7 @@ Mutator.prototype.get = function (attr) {
 
 // override set functionality to set the mutator props
 Mutator.prototype.set = function (key, value, options) {
-    var isMutator = this.mutators !== undef,
+    var isMutator = this.mutators !== undefined,
         ret = null,
         attrs = null;
 
@@ -70,7 +69,7 @@ Mutator.prototype.set = function (key, value, options) {
                 }
 
                 if(_.isFunction(meth)){
-                    if (options === undef || (_.isObject(options) === true && options.silent !== true && (options.mutators !== undef && options.mutators.silent !== true))) {
+                    if (options === undefined || (_.isObject(options) === true && options.silent !== true && (options.mutators !== undefined && options.mutators.silent !== true))) {
                         this.trigger('mutators:set:' + attrKey);
                     }
                     meth.call(this, attrKey, attr, options, _.bind(oldSet, this));
@@ -109,7 +108,7 @@ Mutator.prototype.toJSON = function (options) {
 // override get functionality to get HTML-escaped the mutator props
 Mutator.prototype.escape = function (attr){
     var val = this.get(attr);
-    return _.escape(val == null ? '' : '' + val);
+    return _.escape(val === null ? '' : '' + val);
 };
 
 // extend the models prototype

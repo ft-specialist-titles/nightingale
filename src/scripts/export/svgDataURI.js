@@ -38,7 +38,7 @@ exports.fontFix = function() {
   svg.appendChild(text);
 
   return svg;
-}
+};
 
 var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
 

@@ -1,3 +1,4 @@
+/* globals unescape, MouseEvent, XMLSerializer */
 exports.createFilename = function createFilename(name, ext) {
   ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
   return (name || 'untitled').replace(/\s+/g,'-').replace(new RegExp('\\' + ext + '$', 'i'), '') + ext;
@@ -73,7 +74,7 @@ var utf8ToBase64 = exports.utf8ToBase64 = function utf8ToBase64(str) {
   //   - https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
 
   return window.btoa(unescape(encodeURIComponent(str)));
-}
+};
 
 exports.toDataURI = function toDataURI(data, type, encoding) {
 
@@ -93,5 +94,5 @@ exports.toDataURI = function toDataURI(data, type, encoding) {
   }
 
   return 'data:' + type + ';' + encoding + ',' + encodedData;
-}
+};
 

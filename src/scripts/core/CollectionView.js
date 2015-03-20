@@ -24,7 +24,7 @@ var CollectionView = Backbone.View.extend({
           itemView.render = function(){
             this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
             return this;
-          }
+          };
         }
       }
       this._ItemClass = Backbone.View.extend(itemView);

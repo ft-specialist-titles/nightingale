@@ -23,9 +23,9 @@ var RegionView = Backbone.View.extend({
     _.each(this.regions, function (region, selector) {
       var el = this.findRegionContainer(selector);
       if (!!region._view && (this.regionsDirty || !el)) {
-        region._view.remove()
+        region._view.remove();
         region._view = null;
-      };
+      }
       if (!el) return;
       if (!region._view) {
         region._view = this.createRegion(selector);
