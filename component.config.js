@@ -1,8 +1,6 @@
-var bower = require('./bower.json');
 var pkg = require('./package.json');
 
 module.exports = {
-    bower: bower,
     build: {
         fonts: true, // true or false. Set to false if you are doing your own thing in the fonts directory
         styles: 'sass', // 'sass'. less not yet available
@@ -35,7 +33,7 @@ module.exports = {
         config: './test/karma.conf.js',
         summary: './test/coverage/summary.json'
     },
-    release: false,
+    release: ['git'],
     serve: 'staticApp', // `staticApp` or `nodeApp`
     staticApp: {
         server: { baseDir : '_site' },
