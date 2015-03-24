@@ -1,12 +1,10 @@
 var pkg = require('./package.json');
 
 module.exports = {
-    build: {
-        fonts: true, // true or false. Set to false if you are doing your own thing in the fonts directory
-        styles: 'sass', // 'sass'. less not yet available
-        html: 'mustache',// 'mustache' or 'jade'.
-        scripts: 'browserify' // 'browserify' or 'requirejs'
-    },
+    build: ['sass', 'mustache', 'browserify'],
+    test: 'karma',
+    release: ['git'],
+    serve: 'staticApp',
     browserify: {
         insertGlobals : true,
         detectGlobals : false,
@@ -28,13 +26,10 @@ module.exports = {
             //{ file :'./node_modules/handlebars/runtime.js', expose: 'handlebars'}
         //]
     },
-    test: 'karma',  // or false.  where your tests config, specs and reports are saved
-    karma : {//or mocha not yet available
+    karma : {
         config: './test/karma.conf.js',
         summary: './test/coverage/summary.json'
     },
-    release: ['git'],
-    serve: 'staticApp', // `staticApp` or `nodeApp`
     staticApp: {
         server: { baseDir : '_site' },
         port: 3456

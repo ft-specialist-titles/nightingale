@@ -6,7 +6,7 @@
  * Once the feature/bug-fix is complete, rebase from master.
  * Merge your changes into master
  * `npm test` : Run the tests again
- * `component bump` : See [bump-the-version](#bump-the-version) for options.
+ * `npm run bump` : See [bump-the-version](#bump-the-version) for options.
  * `git push` : to kick of the deploy process
 
 CircleCI will then run your tests, and if successful:
@@ -29,10 +29,10 @@ This will push the current files within `_site` to gh-pages branch (making your 
 
 > Bump the version within your app
 
-`component bump`
+`npm run bump`
 
 This will update the version number in all the docs (package.json, version.js, *.md and *.html).
 
-By default, this applies a  `patch`.  Add either `patch`, `minor`, `major`, `prerelease` or even `v3.2.1` to specify the type of bump.
+By default, this applies a  `patch`.  Add a double-dash `patch`, `minor`, `major`, `prerelease` or even `v3.2.1` to specify the type of bump.
 
-i.e. `component bump major`
+i.e. `npm run bump -- major`
