@@ -2,10 +2,17 @@
 
 > This method relies on the version number being incremented manually before code is pushed to Git.
 
+**Submitting a PR**
  * Ensure all changes are made and pushed to feature branches
  * Once the feature/bug-fix is complete, rebase from master.
- * Merge your changes into master
+ * `npm test` : Run the tests
+
+**Accepting a PR**
+ * Switch to the PR branch and review code
+ * `npm test` : Run the tests
+ * Merge the PR into master
  * `npm test` : Run the tests again
+ * `npm run coverage` : take a look at the code coverage
  * `npm run bump` : See [bump-the-version](#bump-the-version) for options.
  * `git push` : to kick of the deploy process
 
