@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <meta name={{ site.name }}:version content={{ site.version }}>
+    <meta name={{ name }}:version content={{ version }}>
     <title></title>
-    <link rel=stylesheet href=styles/index.min.css>
+    <link rel=stylesheet href=styles/nighingale.css>
     <script src=scripts/vendor.js></script>
     <script src=scripts/nightingale.js></script>
 </html>
@@ -14,7 +14,7 @@
     </div>
     <script>
         try {
-            var ng = require('nightingale')();
+            var ng = window.nightingale();
         } catch (e) {
             var d = document.createElement('pre');
             var s = d.style;

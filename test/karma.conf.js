@@ -26,7 +26,7 @@ module.exports = function(config) {
         },
         files: [
             {pattern: '_site/**/vendor.*', included: true, served: true, watched: true},
-            {pattern: '_site/**/*.*', included: true, served: true, watched: true},
+            {pattern: '_site/**/*.js', included: true, served: true, watched: true},
             'test/**/*.spec.js'
         ],
         exclude: [

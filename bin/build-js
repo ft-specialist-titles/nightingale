@@ -1,16 +1,10 @@
 #!/bin/bash
 
 cmd=${1:-browserify}
-dir=${2:-.tmp}
+dir=${2:-_site/scripts}
 mkdir -p $dir && \
-$cmd -e src/scripts/index.js \
-    -r ./src/scripts/index.js:playfair \
-    -x ./bower_components/jquery/dist/jquery.js \
-    -x ./bower_components/underscore/underscore.js \
-    -x ./bower_components/backbone/backbone.js \
-    -x ./bower_components/d3/d3.js \
-    -x ./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js \
-    -x ./node_modules/hbsfy/runtime.js \
+$cmd -e src/scripts/nightingale.js \
+    -r ./src/scripts/nightingale.js:nightingale \
     --noparse=./bower_components/jquery/dist/jquery.js \
     --noparse=./bower_components/underscore/underscore.js \
     --noparse=./bower_components/backbone/backbone.js \
@@ -19,5 +13,11 @@ $cmd -e src/scripts/index.js \
     --noparse=./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js \
     --insert-globals \
     --detect-globals false \
-    -o $dir/bundle.js
-# | exorcist $dir/bundle.js.map > $dir/bundle.js
+    -o $dir/nightingale.js
+
+#    -x ./bower_components/jquery/dist/jquery.js \
+#    -x ./bower_components/underscore/underscore.js \
+#    -x ./bower_components/backbone/backbone.js \
+#    -x ./bower_components/d3/d3.js \
+#    -x ./bower_components/bootstrap-sass/assets/javascripts/bootstrap.js \
+#    -x ./node_modules/hbsfy/runtime.js \

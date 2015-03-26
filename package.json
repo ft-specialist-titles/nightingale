@@ -4,13 +4,16 @@
   "description": "Chart making tool for journalists",
   "main": "src/scripts/nightingale.js",
   "scripts": {
-    "build": "component build",
-    "start": "component build && component serve",
-    "test": "jshint src && component build && component test",
-    "tdd": "component test tdd",
-    "bump": "component bump",
-    "release": "npm test && component release",
-    "coverage": "component serve test/coverage/phantomjs/"
+    "start": "npm run build && srvlr _site -R -l tiny",
+    "test": "jshint src && karma start test/karma.conf --single-run",
+    "watch-js": "./bin/build-js watchify _site",
+    "build-html": "mkdir -p _site && mustache package.json src/index.mustache > _site/index.html",
+    "build-js": "mkdir -p _site/scripts && ./bin/build-js browserify && uglifyjs _site/scripts/nightingale.js -c -o _site/scripts/nightingale.js",
+    "watch-css": "mkdir -p _site/styles && sass --style expanded --load-path=bower_components --watch src/styles/index.scss:_site/styles/nighingale.css",
+    "build-css": "mkdir -p _site/styles && sass --style compressed --load-path=bower_components src/styles/index.scss _site/styles/nighingale.css",
+    "watch-html": "mkdir -p _site && jade src --watch --pretty -p _site -o _site -O \"$(<package.json)\"",
+    "watch": "./bin/watch _site",
+    "build": "rm -rf _site && npm run build-css  && npm run build-js &&  npm run build-html"
   },
   "repository": {
     "type": "git",
@@ -20,13 +23,25 @@
   "license": "MIT",
   "devDependencies": {
     "brfs": "^1.4.0",
+    "browserify": "^9.0.3",
     "browserify-istanbul": "^0.2.1",
     "browserify-shim": "^3.8.3",
-    "component-helper": "git://github.com/peter-mouland/component-helper",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
-    "jshint": "^2.6.3"
+    "jshint": "^2.6.3",
+    "karma": "^0.12.31",
+    "karma-browserify": "^4.0.0",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-cli": "0.0.4",
+    "karma-coverage": "0.2.6",
+    "karma-html2js-preprocessor": "^0.1.0",
+    "karma-jasmine": "^0.3.3",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "mustache": "^1.2.0",
+    "node-sass": "^2.0.1",
+    "srvlr": "^0.4.0",
+    "uglifyjs": "^2.4.10"
   },
   "browserify": {
     "transform": [

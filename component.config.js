@@ -46,9 +46,7 @@ module.exports = {
         source: { //source files to build your component / site
             root: "./src"
         },
-        demo: {
-            root: "./src"
-        },
+        demo: false,
         dist : false,
         "site": { // Final build (Compiled demo + source) code pushed to your chosen release cloud i.e. AWS
             root: './_site'

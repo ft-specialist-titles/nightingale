@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dir=${1:-.tmp}
+dir=${1:-_site/scripts}
 mkdir -p $dir && \
 browserify \
   -r underscore \
