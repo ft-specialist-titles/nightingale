@@ -39,7 +39,8 @@ module.exports = function(config) {
             'src/**/*.txt',
             'src/**/*.csv',
             'src/**/*.hbs'
-        ]
+        ],
+        browserNoActivityTimeout: 30000//needed for slow connections
     };
     var pkg = require('../package.json');
     karmaConfig.browser = pkg.browser || {};
