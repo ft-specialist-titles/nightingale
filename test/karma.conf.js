@@ -8,6 +8,9 @@ module.exports = function(config) {
             'test/**/*.js': ['browserify'],
             '_site/*.html': ['html2js']
         },
+        plugins: [
+            'karma-browserify', 'karma-jasmine', 'karma-coverage', 'karma-phantomjs-launcher', 'karma-chrome-launcher', 'karma-html2js-preprocessor'
+        ],
         coverageReporter: {
             dir : 'test/coverage/',
             reporters: [
@@ -36,7 +39,8 @@ module.exports = function(config) {
             'src/**/*.txt',
             'src/**/*.csv',
             'src/**/*.hbs'
-        ]
+        ],
+        browserNoActivityTimeout: 30000//needed for slow connections
     };
     var pkg = require('../package.json');
     karmaConfig.browser = pkg.browser || {};
