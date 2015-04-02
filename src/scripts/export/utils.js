@@ -1,7 +1,12 @@
 /* globals unescape, MouseEvent, XMLSerializer */
 exports.createFilename = function createFilename(name, ext) {
-  ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
-  return (name || 'untitled').replace(/\s+/g,'-').replace(new RegExp('\\' + ext + '$', 'i'), '') + ext;
+    ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
+    return (name || 'untitled')
+        .replace(/\s+/g,'-')
+        .replace(/&/g,'and')
+        .replace(/[@£$%^!]/g,'')
+        .replace(new RegExp('\\' + ext + '$', 'i'), '') +
+        ext;
 };
 
 exports.fileDownloader = function fileDownloader(filename, href, target) {
