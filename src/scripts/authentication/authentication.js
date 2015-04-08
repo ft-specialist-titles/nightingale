@@ -1,3 +1,4 @@
+/* global gapi, ng*/
 var $ = require('jquery');
 
 var Authentication = function () {
