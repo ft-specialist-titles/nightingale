@@ -5,8 +5,15 @@
     <link rel=stylesheet href=styles/nightingale.css>
     <script src=scripts/vendor.js></script>
     <script src=scripts/nightingale.js></script>
+
+    <meta name="google-signin-client_id" content="863481143430-5ngavh8atbr2lcsuqhn20llb3bnksfhh.apps.googleusercontent.com">
 </html>
 <body>
+    <div id=login-overlay class="jumbotron">
+        <h1>Nightingale</h1>
+        <p>requires a login with your FT credentials</p>
+        <div id="my-signin2"></div>
+    </div>
     <div id=layout>
         <div id=controls></div>
         <div id=charts></div>
@@ -22,5 +29,9 @@
             d.innerHTML = e.stack, document.body.appendChild(d);
             throw e;
         }
+        function renderLogin(){
+            ng.renderSignInButton();
+        }
     </script>
+    <script src="https://apis.google.com/js/platform.js?onload=renderLogin" async defer></script>
 </body>

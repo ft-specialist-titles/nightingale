@@ -12,6 +12,8 @@ var LineControls = require('./charting/LineControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
+var authentication = require('./authentication/authentication.js');
+
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -167,7 +169,9 @@ var nightingale = function(){
         importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
     }
     return {
-        version: version
+        version: version,
+        renderSignInButton: authentication.renderButton,
+        onSignIn: authentication.onSignIn
     };
 };
 
