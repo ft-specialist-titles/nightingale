@@ -477,6 +477,17 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
   background-color: rgba(0,0,0,.1);
 }
 
+#login-container {
+  z-index:10000;
+  height:100%;
+  width:100%;
+  margin:0px;
+  padding:0px;
+  position:absolute;
+  display:block;
+  background: #C8C7C7;
+}
+
 #login-overlay {
   height:85%;
   width:90%;

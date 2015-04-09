@@ -9,11 +9,16 @@
     <meta name="google-signin-client_id" content="863481143430-5ngavh8atbr2lcsuqhn20llb3bnksfhh.apps.googleusercontent.com">
 </html>
 <body>
-    <div id=login-overlay class="jumbotron">
-        <h1>Nightingale</h1>
-        <p>requires a login with your FT credentials</p>
-        <div id="login-alert" class="alert alert-danger" role="alert">Please re-sign in with your @ft.com email address</div>
-        <div id="my-signin2"></div>
+    <div id=login-container>
+        <div class="feedback-details">
+          <a target="_blank" href="mailto:help.nightingale@ft.com" title="Report issues or get help">help.nightingale@ft.com</a>
+        </div>
+        <div id=login-overlay class="jumbotron">
+          <h1>Nightingale</h1>
+          <p>requires a login with your FT credentials</p>
+          <div id="login-alert" class="alert alert-danger" role="alert">Please re-sign in with your ft.com email address</div>
+          <div id="my-signin2"></div>
+        </div>
     </div>
     <div id=layout>
         <div id=controls></div>

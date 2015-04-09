@@ -21,13 +21,13 @@ Authentication.prototype.onSignIn = function (googleUser) {
     if (profile.getEmail().match(regexp)){
 
         var tracking_request = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(profile.getEmail());
-        $('#login-overlay').prepend('<img id="userlogintracking" src="'+tracking_request+'" />');
+        $('#login-container').prepend('<img id="userlogintracking" src="'+tracking_request+'" />');
 
-        $("#login-overlay").css('display', 'none');
+        $("#login-container").css('display', 'none');
         $("#layout").css('display', 'block');
 
     } else {
-        //if the user has multiple google accounts then calling disconnect ensures the user will be shown the login preferences box
+        //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
