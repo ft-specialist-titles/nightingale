@@ -3,12 +3,12 @@
 > This method relies on the version number being incremented manually before code is pushed to Git.
 
 **Submitting a PR**
- * Ensure all changes are made and pushed to feature branches
- * Once the feature/bug-fix is complete, rebase from master.
- * `npm test` : Run the tests
+ * Please read [Contributing.md](CONTRIBUTING.md)
 
 **Accepting a PR**
- * Switch to the PR branch and review code
+ * Review code within GitHub
+ * Checkout the PR branch
+ * Merge master
  * `npm test` : Run the tests
  * Merge the PR into master
  * `npm test` : Run the tests again
@@ -27,7 +27,7 @@ Your `circle.yml` should look something like:
 
 > To push an update to the demo pages in isolation
 
-`component release gh-pages`
+`npm run release -- gh-pages`
 
 This will push the current files within `_site` to gh-pages branch (making your demo available on github.io).
 
