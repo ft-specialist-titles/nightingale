@@ -12,14 +12,14 @@ var LineControls = require('./charting/LineControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
-var authentication = require('./authentication/authentication.js');
+var Authentication = require('./authentication/authentication.js');
 
 
 var _ =require('underscore');
 var $ = require('jquery');
 var version = require('./utils/version');
 
-var nightingale = function(){
+function init(){
 
     var graphic = new Graphic();
     var importdata = new DataImport();
@@ -168,10 +168,15 @@ var nightingale = function(){
         var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
         importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
     }
+}
+
+function nightingale(){
+    this.auth = new Authentication(this.init);
+    this.auth.renderButton();
+
     return {
         version: version,
-        renderSignInButton: authentication.renderButton,
-        onSignIn: authentication.onSignIn
+        init: init
     };
 };
 

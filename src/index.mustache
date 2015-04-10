@@ -25,19 +25,5 @@
         <div id=charts></div>
         <div id=selection></div>
     </div>
-    <script>
-        try {
-            var ng = window.nightingale();
-        } catch (e) {
-            var d = document.createElement('pre');
-            var s = d.style;
-            s.position = 'fixed', s.zIndex = 2, s.width = '100%';
-            d.innerHTML = e.stack, document.body.appendChild(d);
-            throw e;
-        }
-        function renderLogin(){
-            ng.renderSignInButton();
-        }
-    </script>
-    <script src="https://apis.google.com/js/platform.js?onload=renderLogin" async defer></script>
+    <script src="https://apis.google.com/js/platform.js?onload=nightingale" async defer></script>
 </body>
