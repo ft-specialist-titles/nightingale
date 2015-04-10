@@ -34,6 +34,7 @@ Authentication.prototype.onSignIn = function (googleUser) {
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
+        $("#login-alert").css('display', 'block');
     }
 };
 
