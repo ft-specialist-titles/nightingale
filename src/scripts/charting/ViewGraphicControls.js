@@ -2,7 +2,7 @@ var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
 var ViewDependantAxisControls = require('./ViewDependantAxisControls.js');
-var tracking = require('./../tracking/tracking.js');
+var tracking = require('./../utils/tracking.js');
 
 var ViewGraphicControls = RegionView.extend({
 

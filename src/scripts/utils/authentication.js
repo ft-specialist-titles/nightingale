@@ -13,38 +13,27 @@ Authentication.prototype.renderButton = function () {
             'longtitle': false,
             'theme': 'dark',
             'onsuccess': function(gu){
-                console.log('onSuccess');
-                console.log(gu);
                 self.onSignIn(gu);
-            },
-            'onfailure': console.log
+            }
         });
 };
 
 Authentication.prototype.onSignIn = function (googleUser) {
-    console.log('onSignIn');
     var profile = googleUser.getBasicProfile();
-
     var regexp = /^.*\@ft\.com$/gi;
-    console.log(profile.getEmail());
-    if (profile.getEmail().match(regexp)){
-
-        var tracking_request = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(profile.getEmail());
-        $('#login-container').prepend('<img id="userlogintracking" src="'+tracking_request+'" />');
-
-        $("#login-container").css('display', 'none');
-        $("#layout").css('display', 'block');
-
-        this.cb();
-
+    var email = profile.getEmail();
+    if (email.match(regexp)){
+        var container = document.getElementById("login-container");
+        var trackingImage = document.createElement('img');
+        trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
+        container.appendChild(trackingImage);
+        container.remove();
+        this.cb && typeof this.cb === 'function' && this.cb();
     } else {
-        console.log(gapi);
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
-
-        $("#login-alert").css('display', 'block');
     }
 };
 

@@ -5,7 +5,7 @@ var ViewLineControls = require('./ViewLineControls.js');
 var download = require('./../export/download.js');
 var util = require('util');
 var attributeStyler = require('o-charts').util.attributeStyler;
-var tracking = require('./../tracking/tracking.js');
+var tracking = require('./../utils/tracking.js');
 
 var ViewSelectedVariation = RegionView.extend({
 

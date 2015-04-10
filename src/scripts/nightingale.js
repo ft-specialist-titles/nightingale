@@ -12,8 +12,7 @@ var LineControls = require('./charting/LineControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
-var Authentication = require('./authentication/authentication.js');
-
+var Authentication = require('./utils/authentication.js');
 
 var _ =require('underscore');
 var $ = require('jquery');
@@ -171,13 +170,11 @@ function init(){
 }
 
 function nightingale(){
-    this.auth = new Authentication(this.init);
-    this.auth.renderButton();
-
+    var auth = new Authentication(init);
+    auth.renderButton();
     return {
-        version: version,
-        init: init
+        version: version
     };
-};
+}
 
 module.exports = window.nightingale = nightingale;
