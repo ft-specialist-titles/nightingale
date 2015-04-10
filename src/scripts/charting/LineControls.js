@@ -16,7 +16,7 @@ var LineControls = Backbone.Model.extend({
 
   overrideConfig: function(config) {
     config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
-    config.y.zeroOrigin = config.falseorigin = !this.attributes.startFromZero;
+    config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
     config.y.flip = this.attributes.flipYAxis;
     config.niceValue = this.attributes.nice;
     config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
