@@ -7,6 +7,7 @@ var Authentication = function (cb) {
 
 Authentication.prototype.renderButton = function () {
     var self = this;
+    if (! document.getElementById('my-signin2')) return;
     gapi.signin2.render('my-signin2', {
             'width': 200,
             'height': 50,

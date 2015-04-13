@@ -173,7 +173,8 @@ function nightingale(){
     var auth = new Authentication(init);
     auth.renderButton();
     return {
-        version: version
+        version: version,
+        oChartsVersion: require('o-charts').version
     };
 }
 
