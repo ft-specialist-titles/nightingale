@@ -2,6 +2,9 @@
 
 ## 0.0.x
 
+ * **0.0.4**
+    * Updated filename to remove 'unsafe' characters
+    * Added `google-auth` to force signin before use
  * **0.0.3**
     * Updated build dependencies
  * **0.0.1**
