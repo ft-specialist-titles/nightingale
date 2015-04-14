@@ -3,6 +3,7 @@ $popover-max-width: 360px;
 // @import "bootstrap-sass/lib/bootstrap";
 @import "../../bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
 @import "../../bower_components/o-charts/src/styles/main";
+@import "login";
 
 @font-face{
     font-family: "BentonSans";
@@ -477,34 +478,6 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
   background-color: rgba(0,0,0,.1);
 }
 
-#login-container {
-  z-index:10000;
-  height:100%;
-  width:100%;
-  margin:0px;
-  padding:0px;
-  position:absolute;
-  display:block;
-  background: #C8C7C7;
-}
-
-#login-overlay {
-  height:85%;
-  width:90%;
-  margin:5%;
-  position:relative;
-  z-index:10000;
-  display:block;
-  background: white;
-  border:5px solid #cccccc;
-  border-radius:10px;
-  padding: 50px;
-  background-color: #fff1e0;
-}
-
-#login-alert {
-  display: none;
-}
 
 html, body{
   height:100%;
