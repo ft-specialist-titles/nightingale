@@ -4,7 +4,7 @@ exports.createFilename = function createFilename(name, ext) {
     return (name || 'untitled')
         .replace(/\s+/g,'-')
         .replace(/&/g,'and')
-        .replace(/[@£$%^!]/g,'')
+        .replace(/[@£$%€^!]/g,'')
         .replace(new RegExp('\\' + ext + '$', 'i'), '') +
         ext;
 };

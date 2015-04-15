@@ -2,6 +2,8 @@
 
 ## 0.0.x
 
+ * **0.0.5**
+    * Added € to the list of unsafe characters for filenames
  * **0.0.4**
     * Updated filename to remove 'unsafe' characters
     * Added `google-auth` to force signin before use

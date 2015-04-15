@@ -13,7 +13,7 @@ describe('utils module ', function () {
     it('createFilename replaces unhealthy characters', function () {
 
         expect(utils.createFilename()).toBe('untitled.txt');
-        expect(utils.createFilename('naughty & nice !@£$%^& (yo)')).toBe('naughty-and-nice-and-(yo).txt');
+        expect(utils.createFilename('naughty & nice !@£$€%^& (yo)')).toBe('naughty-and-nice-and-(yo).txt');
 
     });
 
