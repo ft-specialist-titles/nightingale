@@ -31,7 +31,7 @@ function DateParts(value){
     this.parts = [];
     this.tokens = [];
     this.value = normalise(value);
-    this.match = this.matched()
+    this.match = this.matched();
 }
 
 DateParts.prototype.matched =function(){
