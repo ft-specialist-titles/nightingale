@@ -8,7 +8,7 @@ var Column = require('./../charting/Column.js');
 var Datatypes = require('./../charting/Datatypes.js');
 var Axis = require('./../charting/Axis.js');
 var transform = require('./../transform/index.js');
-var sniffDatatype = require('./sniffDatatype.js');
+var sniffDataType = require('./sniffDataType.js');
 var predictedDateFormat = require('./predictDateFormat.js');
 
 var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -201,7 +201,7 @@ var DataImport = Backbone.Model.extend({
                 values = values.concat(new Array(numCols - numValues));
             }
 
-            values.forEach(sniffDatatype, dataTypeCounters);
+            values.forEach(sniffDataType, dataTypeCounters);
             result = _.object(colNames, values);
 
             return result;

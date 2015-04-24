@@ -34,7 +34,7 @@ var toNumber = function (value) {
     return !m || m.length !== 1 ? NaN : Number(m[0]);
 };
 
-var sniffDatatype = function (value, colNum) {
+var sniffDataType = function (value, colNum) {
     // this is set as the context when the forEach invokes .
     var o = this[colNum];
     var isNumber = false;
@@ -74,4 +74,4 @@ var sniffDatatype = function (value, colNum) {
     }
 };
 
-module.exports = sniffDatatype;
+module.exports = sniffDataType;
