@@ -34,4 +34,11 @@ Tracking.prototype.trackEvent = function (eventName) {
     ga('send', 'event', 'button', 'click', eventName);
 };
 
+Tracking.prototype.user = function (container, email) {
+    if (!this.track) return;
+    var trackingImage = document.createElement('img');
+    trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
+    container.appendChild(trackingImage);
+};
+
 module.exports = new Tracking();
