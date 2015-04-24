@@ -27701,24 +27701,24 @@ var Backbone = require('./../core/backbone.js');
 var Datatypes = require('./Datatypes.js');
 
 var Axis = Backbone.Model.extend({
-  defaults: {
-    name: '',
-    label: '',
-    labelOverride: false,
-    suggestedLabel: '',
-    datatype: Datatypes.CATEGORICAL,
-    warningMessage: '',
-    dateFormat: '',
-    prefix: '',
-    suffix: ''
-  }
-},
-{
-  X: 'X',
-  Y: 'Y',
-  Z: 'Z',
-  NONE: null
-});
+        defaults: {
+            name: '',
+            label: '',
+            labelOverride: false,
+            suggestedLabel: '',
+            datatype: Datatypes.CATEGORICAL,
+            warningMessage: '',
+            dateFormat: '',
+            prefix: '',
+            suffix: ''
+        }
+    },
+    {
+        X: 'X',
+        Y: 'Y',
+        Z: 'Z',
+        NONE: null
+    });
 
 module.exports = Axis;
 
@@ -27731,101 +27731,101 @@ var Axis = require('./Axis.js');
 
 var Chart = Backbone.Model.extend({
 
-  initialize: function() {
-    this.xAxis = new IndependantAxis();
-    this.yAxis = new DependantAxis({
-      name: Axis.Y
-    });
-    this.zAxis = new DependantAxis({
-      name: Axis.Z
-    });
-    this.xAxis.chart = this.yAxis.chart = this.zAxis.chart = this;
-    this.unusedSeries = new Backbone.Collection();
+    initialize: function () {
+        this.xAxis = new IndependantAxis();
+        this.yAxis = new DependantAxis({
+            name: Axis.Y
+        });
+        this.zAxis = new DependantAxis({
+            name: Axis.Z
+        });
+        this.xAxis.chart = this.yAxis.chart = this.zAxis.chart = this;
+        this.unusedSeries = new Backbone.Collection();
 
-    var currentAxisCol;
+        var currentAxisCol;
 
-    this.listenTo(this.xAxis, 'change:property', function (model, property) {
-      var previousXCol = currentAxisCol;
+        this.listenTo(this.xAxis, 'change:property', function (model, property) {
+            var previousXCol = currentAxisCol;
 
-      currentAxisCol = !property ? null : this.xAxis.createColumn();
+            currentAxisCol = !property ? null : this.xAxis.createColumn();
 
-      function getCol(collection) {
-        return !property ? null : collection.findWhere({property: property});
-      }
+            function getCol(collection) {
+                return !property ? null : collection.findWhere({property: property});
+            }
 
-      var column = getCol(this.yAxis.columns);
+            var column = getCol(this.yAxis.columns);
 
-      if (column) {
+            if (column) {
 
-        this.yAxis.columns.remove(column);
+                this.yAxis.columns.remove(column);
 
-      } else {
+            } else {
 
-        column = getCol(this.zAxis.columns);
+                column = getCol(this.zAxis.columns);
 
-        if (column) {
-          this.zAxis.columns.remove(column);
-        } else {
-          column = getCol(this.unusedSeries);
+                if (column) {
+                    this.zAxis.columns.remove(column);
+                } else {
+                    column = getCol(this.unusedSeries);
 
-          if (column) {
-            this.unusedSeries.remove(column);
-          }
+                    if (column) {
+                        this.unusedSeries.remove(column);
+                    }
 
+                }
+            }
+
+            if (previousXCol) {
+                var typeInfo = previousXCol.get('typeInfo');
+                if (typeInfo && typeInfo.predictedAxis === Axis.Y) {
+                    this.yAxis.columns.add(previousXCol);
+                } else if (typeInfo && typeInfo.predictedAxis === Axis.Z) {
+                    this.zAxis.columns.add(previousXCol);
+                } else {
+                    this.unusedSeries.add(previousXCol);
+                }
+            }
+
+        });
+
+        function removeSeries(model) {
+
+            // todo: before doing the tasks below you need to remove the listeners
+            //          in the axis objects that set the model.collection
+            // todo: dont add if the model being moved from one axis to another
+            // todo: dont add if the model is being moved to the X Axis
+            // todo: dont add is it's already being added to the unused series
+            var isXAxis = currentAxisCol && (model.get('property') === this.xAxis.get('property'));
+
+            if (!isXAxis) {
+                model.collection = this.unusedSeries;
+                this.unusedSeries.add(model);
+            }
         }
-      }
 
-      if (previousXCol) {
-        var typeInfo = previousXCol.get('typeInfo');
-        if (typeInfo && typeInfo.predictedAxis === Axis.Y) {
-          this.yAxis.columns.add(previousXCol);
-        } else if (typeInfo && typeInfo.predictedAxis === Axis.Z) {
-          this.zAxis.columns.add(previousXCol);
-        } else {
-          this.unusedSeries.add(previousXCol);
+        function addSeries(model) {
+            this.unusedSeries.remove(model);
         }
-      }
 
-    });
+        function resetSeries(collection) {
+            var unused = this.unusedSeries;
+            collection.forEach(function (m) {
+                var d = unused.findWhere({property: m.get('property')});
+                d && unused.remove(d);
+            });
+        }
 
-    function removeSeries(model) {
+        this.listenTo(this.yAxis.columns, 'remove', removeSeries);
+        this.listenTo(this.zAxis.columns, 'remove', removeSeries);
 
-      // todo: before doing the tasks below you need to remove the listeners
-      //          in the axis objects that set the model.collection
-      // todo: dont add if the model being moved from one axis to another
-      // todo: dont add if the model is being moved to the X Axis
-      // todo: dont add is it's already being added to the unused series
-      var isXAxis = currentAxisCol && (model.get('property') === this.xAxis.get('property'));
+        this.listenTo(this.yAxis.columns, 'add', addSeries);
+        this.listenTo(this.zAxis.columns, 'add', addSeries);
 
-      if (!isXAxis) {
-        model.collection = this.unusedSeries;
-        this.unusedSeries.add(model);
-      }
+        this.listenTo(this.yAxis.columns, 'reset', resetSeries);
+        this.listenTo(this.zAxis.columns, 'reset', resetSeries);
+
+        this.dataset = new Dataset();
     }
-
-    function addSeries(model) {
-      this.unusedSeries.remove(model);
-    }
-
-    function resetSeries(collection) {
-      var unused = this.unusedSeries;
-      collection.forEach(function (m) {
-        var d = unused.findWhere({property: m.get('property')});
-        d && unused.remove(d);
-      });
-    }
-
-    this.listenTo(this.yAxis.columns, 'remove', removeSeries);
-    this.listenTo(this.zAxis.columns, 'remove', removeSeries);
-
-    this.listenTo(this.yAxis.columns, 'add', addSeries);
-    this.listenTo(this.zAxis.columns, 'add', addSeries);
-
-    this.listenTo(this.yAxis.columns, 'reset', resetSeries);
-    this.listenTo(this.zAxis.columns, 'reset', resetSeries);
-
-    this.dataset = new Dataset();
-  }
 
 });
 
@@ -27837,12 +27837,12 @@ var Axis = require('./Axis.js');
 
 module.exports = Backbone.Model.extend({
 
-  defaults: {
-    property: '',
-    label: '',
-    axis: Axis.NONE,
-    isOther: false
-  }
+    defaults: {
+        property: '',
+        label: '',
+        axis: Axis.NONE,
+        isOther: false
+    }
 
 });
 
@@ -27863,988 +27863,1001 @@ var aYearALongWayInTheFuture = 3000;
 var transform = require('./../transform/index.js');
 
 var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-var emptyheaderRows = [0,1,2,3,4,5,6,7,8,9,10].reduce(function (a, num) {
-  return a.concat(alphabet.map(function (h) {
-    return h + (num === 0 ? '' : num);
-  }));
+var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
+    return a.concat(alphabet.map(function (h) {
+        return h + (num === 0 ? '' : num);
+    }));
 }, []);
 
-var isPartDate = function(value) {
-  var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
-  if (isLikelyNumber) {return true;}
-  var isPartDate = partDateExp.test(value);
-  if (isPartDate) {return true;}
-  return false;
+var isPartDate = function (value) {
+    var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
+    if (isLikelyNumber) {
+        return true;
+    }
+    var isPartDate = partDateExp.test(value);
+    if (isPartDate) {
+        return true;
+    }
+    return false;
 };
 
-var isDateString = function(value) {
-  if (!value) return false;
-  var result = true;
-  var s = value.split(/[\:\/\-\ ]+/);
-  var i = s.length;
-  if (!s.length) return false;
-  while (result && i--) {
-    result = isPartDate(s[i]);
-  }
-  return result;
+var isDateString = function (value) {
+    if (!value) return false;
+    var result = true;
+    var s = value.split(/[\:\/\-\ ]+/);
+    var i = s.length;
+    if (!s.length) return false;
+    while (result && i--) {
+        result = isPartDate(s[i]);
+    }
+    return result;
 };
 
-var toNumber = function(value) {
+var toNumber = function (value) {
 
-  var s = value.trim()
-                .replace(/\,(?=\d{2,3})/g, '')
-                .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
-                .replace(/\ *%$/, '');
-  var m = s.match(/^\-?[\d\.Ee]+$/);
-  return !m || m.length !== 1 ? NaN : Number(m[0]);
+    var s = value.trim()
+        .replace(/\,(?=\d{2,3})/g, '')
+        .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
+        .replace(/\ *%$/, '');
+    var m = s.match(/^\-?[\d\.Ee]+$/);
+    return !m || m.length !== 1 ? NaN : Number(m[0]);
 };
 
-var sniffDatatype = function(value, colNum) {
-  // this is set as the context when the forEach invokes .
-  var o = this[colNum];
-  var isNumber = false;
-  var isDate = false;
+var sniffDatatype = function (value, colNum) {
+    // this is set as the context when the forEach invokes .
+    var o = this[colNum];
+    var isNumber = false;
+    var isDate = false;
 
-  if (value === '' || value === undefined || value === null) {
-    o.nulls++;
-    return;
-  }
+    if (value === '' || value === undefined || value === null) {
+        o.nulls++;
+        return;
+    }
 
-  value = value.trim();
+    value = value.trim();
 
-  if (value === '*') {
-    o.nulls++;
-    return;
-  }
+    if (value === '*') {
+        o.nulls++;
+        return;
+    }
 
-  var parsedNum = toNumber(value);
+    var parsedNum = toNumber(value);
 
-  if (!isNaN(parsedNum)) {
-    isNumber = true;
-    o.numbers++;
-    o.numberValues.push(value);
-  }
+    if (!isNaN(parsedNum)) {
+        isNumber = true;
+        o.numbers++;
+        o.numberValues.push(value);
+    }
 
-  if (isDateString(value)) {
-    isDate = true;
-    o.dates++;
-    o.dateValues.push(value);
-  }
+    if (isDateString(value)) {
+        isDate = true;
+        o.dates++;
+        o.dateValues.push(value);
+    }
 
-  var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
+    var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
 
-  if ((!isDate && !isNumber) || (isNumber && hasNonNumberChars)) {
-    o.strings++;
-    o.stringValues.push(value);
-  }
+    if ((!isDate && !isNumber) || (isNumber && hasNonNumberChars)) {
+        o.strings++;
+        o.stringValues.push(value);
+    }
 };
 
 
 function normalise(value) {
-  if (!value) return null;
+    if (!value) return null;
 
-  return value.toString()
-              .trim()
-              // make all regexp quicker and simpler by removing case
-              .toLowerCase()
-              // normalise separtators
-              .replace(/[\/\ ]/g, '-');
+    return value.toString()
+        .trim()
+        // make all regexp quicker and simpler by removing case
+        .toLowerCase()
+        // normalise separtators
+        .replace(/[\/\ ]/g, '-');
 }
 
 function gtDateThreshold(count, totalNonDateStrings) {
     return count * 100 / totalNonDateStrings > 95;
 }
 
-var predictedDateFormat = (function(){
+var predictedDateFormat = (function () {
 
-  var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
-  var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
-  var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
-  var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
-  var digit = /\d/;
-  var separator = /\/\-\ /;
-  // first letters of all months and days. ordered by amount of occurrences and then by months, days
-  var firstletters = /[jmsfatondw]/;
-  var typeNames = ['month', 'year', 'day', 'ampm', 'weekday', 'time'];
-  var types = {};
-  var abbreviatedFormats = {
-    '%m/%d/%Y': '%x',
-    '%H:%M:%S': '%X'
-  };
+    var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
+    var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
+    var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
+    var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
+    var digit = /\d/;
+    var separator = /\/\-\ /;
+    // first letters of all months and days. ordered by amount of occurrences and then by months, days
+    var firstletters = /[jmsfatondw]/;
+    var typeNames = ['month', 'year', 'day', 'ampm', 'weekday', 'time'];
+    var types = {};
+    var abbreviatedFormats = {
+        '%m/%d/%Y': '%x',
+        '%H:%M:%S': '%X'
+    };
 
-  function attachTypes(obj) {
-    typeNames.forEach(function (name) {
-      obj[name] = name;
-    });
-  }
+    function attachTypes(obj) {
+        typeNames.forEach(function (name) {
+            obj[name] = name;
+        });
+    }
 
-  attachTypes(types);
+    attachTypes(types);
 
-  function Part(d) {
+    function Part(d) {
 
-    var len = d.length;
-    var zeroPadded = len === 2;
-    this.num = NaN;
-    this.type = null;
-    this.format = null;
-    this.guessYear = false;
-    this.guessMonth = false;
-    this.guessDay = false;
-    this.twoDigit = false;
+        var len = d.length;
+        var zeroPadded = len === 2;
+        this.num = NaN;
+        this.type = null;
+        this.format = null;
+        this.guessYear = false;
+        this.guessMonth = false;
+        this.guessDay = false;
+        this.twoDigit = false;
 
-    this.guess = function() {
-      return this.guessYear || this.guessMonth || this.guessDay;
-    }.bind(this);
+        this.guess = function () {
+            return this.guessYear || this.guessMonth || this.guessDay;
+        }.bind(this);
 
-    if (/^\d{3,4}$/.test(d))  {
-      this.type = types.year;
-      this.format = '%Y';
-    } else if (/^\d{1,2}$/.test(d)) {
+        if (/^\d{3,4}$/.test(d)) {
+            this.type = types.year;
+            this.format = '%Y';
+        } else if (/^\d{1,2}$/.test(d)) {
 
-      this.twoDigit = zeroPadded;
-      this.num = parseInt(d);
+            this.twoDigit = zeroPadded;
+            this.num = parseInt(d);
 
-      if (zeroPadded && this.num > 31) {
-        this.type = types.year;
-        this.format = '%y';
-      } else if (this.num > 12 && this.num <= 31) {
-        this.guessYear = true;
-        this.guessDay = true;
-      } else if(this.num <= 12) {
-        this.guessYear = true;
-        this.guessMonth = true;
-        this.guessDay = true;
-      }
-
-    } else if (len >= 3 && len <= 9 && firstletters.test(d.charAt(0))) {
-
-      if (shortMonths.test(d)) {
-        this.format = '%b';
-        this.type = types.month;
-      } else if (longMonths.test(d)) {
-        this.format = '%B';
-        this.type = types.month;
-        } else if (shortDays.test(d)) {
-        this.format = '%a';
-        this.type = types.weekday;
-      } else if (longDays.test(d)) {
-        this.format = '%A';
-        this.type = types.weekday;
-      } else {
-        // could be GMT+0100 or T13:00:00
-        console.log('el', d);
-      }
-
-    } else if (/^(am|pm)$/.test(d)) {
-      this.format = '%p';
-      this.type = types.ampm;
-
-    } else if (d.indexOf(':') !== -1) {
-
-      var timeElements = d.split(':');
-      var num;
-      var timePart;
-      var timeStrings = [];
-      var ampm = false;
-
-      // it's only possible to have 4 components in a time format
-      // ie %H:%M:%S:%L
-      if (timeElements.length <= 4) {
-
-        timeElements.reduce(function(result, timePart, i) {
-
-          var len = timePart.length;
-          var zulu = timePart.substr(len - 1) === 'Z';
-          var lastTwo = timePart.substr(len - 2).toLowerCase();
-          var am = lastTwo === 'am';
-          var pm = lastTwo === 'pm'; 
-          var ampm = am || pm;
-          timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
-          var num = Number(timePart);
-          var format;
-
-          if (timePart === '' || isNaN(num)) {
-            format = undefined;
-          } else if (i === 0 && num >= 0 && num <= 23) {
-            format = '%H';
-          } else if (i === 1 && num >= 0 && num <= 59) {
-            format = '%M';
-
-          // How the hell can a minute have 61 seconds?!
-          // https://docs.python.org/2/library/time.html
-          } else if (i === 2 && num >= 0 && num <= 61) {
-            if (timePart.test(/\d{2}\.\d{3}$/)) {
-              format = '%S.%L';
-            } else {
-              format = '%S';
+            if (zeroPadded && this.num > 31) {
+                this.type = types.year;
+                this.format = '%y';
+            } else if (this.num > 12 && this.num <= 31) {
+                this.guessYear = true;
+                this.guessDay = true;
+            } else if (this.num <= 12) {
+                this.guessYear = true;
+                this.guessMonth = true;
+                this.guessDay = true;
             }
-          } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
-            format = '%L';
-          }
 
-          if (zulu) {
-            format += 'Z';
-          } else if (ampm) {
-            format += '%p';
-          }
+        } else if (len >= 3 && len <= 9 && firstletters.test(d.charAt(0))) {
 
-          timeStrings.push(format);
+            if (shortMonths.test(d)) {
+                this.format = '%b';
+                this.type = types.month;
+            } else if (longMonths.test(d)) {
+                this.format = '%B';
+                this.type = types.month;
+            } else if (shortDays.test(d)) {
+                this.format = '%a';
+                this.type = types.weekday;
+            } else if (longDays.test(d)) {
+                this.format = '%A';
+                this.type = types.weekday;
+            } else {
+                // could be GMT+0100 or T13:00:00
+                console.log('el', d);
+            }
 
-          return result;
+        } else if (/^(am|pm)$/.test(d)) {
+            this.format = '%p';
+            this.type = types.ampm;
 
-        }, timeStrings);
+        } else if (d.indexOf(':') !== -1) {
 
-      }
+            var timeElements = d.split(':');
+            var num;
+            var timePart;
+            var timeStrings = [];
+            var ampm = false;
 
-      if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
-        this.format = timeStrings.join(':');
-        this.type = types.time;
-        if (ampm && Number(timeElements[0]) <= 12) {
-          this.format.replace('%H', '%I');
+            // it's only possible to have 4 components in a time format
+            // ie %H:%M:%S:%L
+            if (timeElements.length <= 4) {
+
+                timeElements.reduce(function (result, timePart, i) {
+
+                    var len = timePart.length;
+                    var zulu = timePart.substr(len - 1) === 'Z';
+                    var lastTwo = timePart.substr(len - 2).toLowerCase();
+                    var am = lastTwo === 'am';
+                    var pm = lastTwo === 'pm';
+                    var ampm = am || pm;
+                    timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
+                    var num = Number(timePart);
+                    var format;
+
+                    if (timePart === '' || isNaN(num)) {
+                        format = undefined;
+                    } else if (i === 0 && num >= 0 && num <= 23) {
+                        format = '%H';
+                    } else if (i === 1 && num >= 0 && num <= 59) {
+                        format = '%M';
+
+                        // How the hell can a minute have 61 seconds?!
+                        // https://docs.python.org/2/library/time.html
+                    } else if (i === 2 && num >= 0 && num <= 61) {
+                        if (timePart.test(/\d{2}\.\d{3}$/)) {
+                            format = '%S.%L';
+                        } else {
+                            format = '%S';
+                        }
+                    } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
+                        format = '%L';
+                    }
+
+                    if (zulu) {
+                        format += 'Z';
+                    } else if (ampm) {
+                        format += '%p';
+                    }
+
+                    timeStrings.push(format);
+
+                    return result;
+
+                }, timeStrings);
+
+            }
+
+            if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
+                this.format = timeStrings.join(':');
+                this.type = types.time;
+                if (ampm && Number(timeElements[0]) <= 12) {
+                    this.format.replace('%H', '%I');
+                }
+            }
+
+        } else if (/^\([a-z]+\)$/.test(d)) {
+            console.log('this is part of the time zone info');
         }
-      }
-
-    } else if (/^\([a-z]+\)$/.test(d)) {
-      console.log('this is part of the time zone info');
-    }
-  }
-
-  return function (value) {
-
-    // only use one kind of token separator
-    value = normalise(value);
-
-    if (!value) return null;
-
-    // resolve quickly for simple year values
-    if (/^\d{1,4}$/.test(value)) {
-      return '%Y';
-
-    // resolve quickly for strings that
-    // look like numbers but definitely not years
-    // eg 12345 or 1.1 or 1,000
-    } else if (/^[\d\.\,]+$/.test(value)) {
-      return null;
     }
 
-    var tokens = value.split(/\-/g);
-    var numTokens = tokens.length;
+    return function (value) {
 
-    // resolve quickly with values like 00/00
-    if (numTokens === 2 && /^\d{2}-\d{2}$/.test(value)) {
-      // assume something like 12-12 means December 2012.
-      if (parseInt(tokens[0]) <= 12) {
-        return '%m/%y';
-      } else {
-        // this would mean we have a value like 14-14
-        // which we can never safely make a date from.
-        return null;
-      }
-    } else if (numTokens === 2) {
-      if (shortMonths.test(tokens[0])) {
-        if (/^\d{4}$/.test(tokens[1])) {
-          return '%b/%Y';
-        } else if (/^\d{2}$/.test(tokens[1])) {
-          return '%b/%y';
+        // only use one kind of token separator
+        value = normalise(value);
+
+        if (!value) return null;
+
+        // resolve quickly for simple year values
+        if (/^\d{1,4}$/.test(value)) {
+            return '%Y';
+
+            // resolve quickly for strings that
+            // look like numbers but definitely not years
+            // eg 12345 or 1.1 or 1,000
+        } else if (/^[\d\.\,]+$/.test(value)) {
+            return null;
         }
-      } else if (/^\d{4}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
-        return '%Y/%b';
-      } else if (/^\d{2}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
-        return '%y/%b';
-      }
-    }
 
-    // trick the parser into thinking the last
-    // token is a year if it matches the pattern 00-00-00
-    if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
-      tokens[2] = '99';
-    }
+        var tokens = value.split(/\-/g);
+        var numTokens = tokens.length;
 
-    var parts = [];
-    var token;
-    var part;
-    var i = 0;
-
-    for(i = 0; i < numTokens; i++) {
-      token = tokens[i];
-      part = new Part(token);
-      parts.push(part);
-    }
-
-    var hasYear = false;
-    var hasMonth = false;
-    var hasDay = false;
-    var numParts = parts.length;
-
-    for(i = 0; i < numParts; i++) {
-      part = parts[i];
-      if (part.type === types.year) {
-        if (hasYear) {
-          return null;
+        // resolve quickly with values like 00/00
+        if (numTokens === 2 && /^\d{2}-\d{2}$/.test(value)) {
+            // assume something like 12-12 means December 2012.
+            if (parseInt(tokens[0]) <= 12) {
+                return '%m/%y';
+            } else {
+                // this would mean we have a value like 14-14
+                // which we can never safely make a date from.
+                return null;
+            }
+        } else if (numTokens === 2) {
+            if (shortMonths.test(tokens[0])) {
+                if (/^\d{4}$/.test(tokens[1])) {
+                    return '%b/%Y';
+                } else if (/^\d{2}$/.test(tokens[1])) {
+                    return '%b/%y';
+                }
+            } else if (/^\d{4}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+                return '%Y/%b';
+            } else if (/^\d{2}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+                return '%y/%b';
+            }
         }
-        hasYear = true;
-      }
-      if (part.type === types.month) {
-        if (hasMonth) {
-          return null;
+
+        // trick the parser into thinking the last
+        // token is a year if it matches the pattern 00-00-00
+        if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+            tokens[2] = '99';
         }
-        hasMonth = true;
-      }
-      if (part.type === types.day) {
-        if (hasDay) {
-          return null;
+
+        var parts = [];
+        var token;
+        var part;
+        var i = 0;
+
+        for (i = 0; i < numTokens; i++) {
+            token = tokens[i];
+            part = new Part(token);
+            parts.push(part);
         }
-        hasDay = true;
-      }
-    }
 
-    var partsWithGuesses = [];
+        var hasYear = false;
+        var hasMonth = false;
+        var hasDay = false;
+        var numParts = parts.length;
 
-    for(i = 0; i < numParts; i++) {
-      part = parts[i];
-      if (part.guess()) {
-        partsWithGuesses.push(part);
-      }
-    }
+        for (i = 0; i < numParts; i++) {
+            part = parts[i];
+            if (part.type === types.year) {
+                if (hasYear) {
+                    return null;
+                }
+                hasYear = true;
+            }
+            if (part.type === types.month) {
+                if (hasMonth) {
+                    return null;
+                }
+                hasMonth = true;
+            }
+            if (part.type === types.day) {
+                if (hasDay) {
+                    return null;
+                }
+                hasDay = true;
+            }
+        }
 
-    var numGuesses = partsWithGuesses.length;
+        var partsWithGuesses = [];
 
-    for(i = 0; i < numGuesses; i++) {
-      part = partsWithGuesses[i];
-      if (hasYear && part.guessYear) {
-        part.guessYear = false;
-      }
-      if (hasMonth && part.guessMonth) {
-        part.guessMonth = false;
-      }
-      if (hasDay && part.guessDay) {
-        part.guessDay = false;
-      }
-    }
+        for (i = 0; i < numParts; i++) {
+            part = parts[i];
+            if (part.guess()) {
+                partsWithGuesses.push(part);
+            }
+        }
 
-    for(i = 0; i < numGuesses; i++) {
-      part = partsWithGuesses[i];
-      if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-        part.guessDay = false;
-        part.type === types.day;
-        hasDay = true;
-        part.format = part.twoDigit ? '%d' : '%e';
-      }
-      if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-        part.guessMonth = false;
-        part.type === types.month;
-        hasMonth = true;
-        part.format = '%m';
-      }
-      if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-        part.guessYear = false;
-        part.type === types.year;
-        hasYear = true;
-        part.format = '%y';
-      }
-    }
+        var numGuesses = partsWithGuesses.length;
 
-    for(i = 0; i < numGuesses; i++) {
-      part = partsWithGuesses[i];
-      if (hasYear && part.guessYear) {
-        part.guessYear = false;
-      }
-      if (hasMonth && part.guessMonth) {
-        part.guessMonth = false;
-      }
-      if (hasDay && part.guessDay) {
-        part.guessDay = false;
-      }
-    }
+        for (i = 0; i < numGuesses; i++) {
+            part = partsWithGuesses[i];
+            if (hasYear && part.guessYear) {
+                part.guessYear = false;
+            }
+            if (hasMonth && part.guessMonth) {
+                part.guessMonth = false;
+            }
+            if (hasDay && part.guessDay) {
+                part.guessDay = false;
+            }
+        }
+
+        for (i = 0; i < numGuesses; i++) {
+            part = partsWithGuesses[i];
+            if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+                part.guessDay = false;
+                part.type === types.day;
+                hasDay = true;
+                part.format = part.twoDigit ? '%d' : '%e';
+            }
+            if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+                part.guessMonth = false;
+                part.type === types.month;
+                hasMonth = true;
+                part.format = '%m';
+            }
+            if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+                part.guessYear = false;
+                part.type === types.year;
+                hasYear = true;
+                part.format = '%y';
+            }
+        }
+
+        for (i = 0; i < numGuesses; i++) {
+            part = partsWithGuesses[i];
+            if (hasYear && part.guessYear) {
+                part.guessYear = false;
+            }
+            if (hasMonth && part.guessMonth) {
+                part.guessMonth = false;
+            }
+            if (hasDay && part.guessDay) {
+                part.guessDay = false;
+            }
+        }
 
 //// 2
 
 
+        for (i = 0; i < numGuesses; i++) {
+            part = partsWithGuesses[i];
+            if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+                part.guessDay = false;
+                part.type === types.day;
+                hasDay = true;
+                part.format = part.twoDigit ? '%d' : '%e';
+            }
+            if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+                part.guessMonth = false;
+                part.type === types.month;
+                hasMonth = true;
+                part.format = '%m';
+            }
+            if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+                part.guessYear = false;
+                part.type === types.year;
+                hasYear = true;
+                part.format = '%y';
+            }
+        }
 
-    for(i = 0; i < numGuesses; i++) {
-      part = partsWithGuesses[i];
-      if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-        part.guessDay = false;
-        part.type === types.day;
-        hasDay = true;
-        part.format = part.twoDigit ? '%d' : '%e';
-      }
-      if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-        part.guessMonth = false;
-        part.type === types.month;
-        hasMonth = true;
-        part.format = '%m';
-      }
-      if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-        part.guessYear = false;
-        part.type === types.year;
-        hasYear = true;
-        part.format = '%y';
-      }
-    }
 
-
-    for(i = 0; i < numGuesses; i++) {
-      part = partsWithGuesses[i];
-      if (hasYear && part.guessYear) {
-        part.guessYear = false;
-      }
-      if (hasMonth && part.guessMonth) {
-        part.guessMonth = false;
-      }
-      if (hasDay && part.guessDay) {
-        part.guessDay = false;
-      }
-    }
+        for (i = 0; i < numGuesses; i++) {
+            part = partsWithGuesses[i];
+            if (hasYear && part.guessYear) {
+                part.guessYear = false;
+            }
+            if (hasMonth && part.guessMonth) {
+                part.guessMonth = false;
+            }
+            if (hasDay && part.guessDay) {
+                part.guessDay = false;
+            }
+        }
 
 
 //////////////////////////////
 
-    var format = [];
+        var format = [];
 
-    for(i = 0 ; i < numParts; i++) {
-      part = parts[i];
-      if (part.guess()) {
-        return null;
-      }
-      if (part.format) {
-        format.push(part.format);
-      }
-    }
+        for (i = 0; i < numParts; i++) {
+            part = parts[i];
+            if (part.guess()) {
+                return null;
+            }
+            if (part.format) {
+                format.push(part.format);
+            }
+        }
 
-    format = format.length ? format.join('/') : null;
+        format = format.length ? format.join('/') : null;
 
-    if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
-      format = format.replace('%H', '%I');
-    }
+        if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
+            format = format.replace('%H', '%I');
+        }
 
-    if (format in abbreviatedFormats) {
-      return abbreviatedFormats[format];
-    }
+        if (format in abbreviatedFormats) {
+            return abbreviatedFormats[format];
+        }
 
-    return format;
-  };
+        return format;
+    };
 
 })();
 
-var Threshold = function(numRows) {
-  var percent = 95;
-  var s = 100 / numRows;
-  var almost = numRows - 1;
-  this.isAbove = function(count) {
-    return (count >= almost) || (count * s > percent);
-  };
-  return this;
+var Threshold = function (numRows) {
+    var percent = 95;
+    var s = 100 / numRows;
+    var almost = numRows - 1;
+    this.isAbove = function (count) {
+        return (count >= almost) || (count * s > percent);
+    };
+    return this;
 };
 
 var DataImport = Backbone.Model.extend({
 
-  defaults: {
-    type: '',
-    hasHeaderRow: true,
-    dataAsString: '',
-    numRows: 0,
-    numCols: 0,
-    colNames: [],
-    pipelineOptions: null,
-    warning: {
-      message: null,
-      rows: []
+    defaults: {
+        type: '',
+        hasHeaderRow: true,
+        dataAsString: '',
+        numRows: 0,
+        numCols: 0,
+        colNames: [],
+        pipelineOptions: null,
+        warning: {
+            message: null,
+            rows: []
+        },
+        data: [],
+        originalData: []
     },
-    data: [],
-    originalData: []
-  },
 
-  columns: null,
+    columns: null,
 
-  initialize: function() {
-    this.columns = new Backbone.Collection();
-    this.listenTo(this, 'invalid', this.discardData);
-  },
+    initialize: function () {
+        this.columns = new Backbone.Collection();
+        this.listenTo(this, 'invalid', this.discardData);
+    },
 
-  validate: function(attributes, options) {
+    validate: function (attributes, options) {
 
-    var error = { message: '', details: []};
-    var method;
-    var data = [];
+        var error = {message: '', details: []};
+        var method;
+        var data = [];
 
-    // remove empty rows from the bottom
-    attributes.dataAsString = (attributes.dataAsString || '').trimRight();
-    
-    // we can't just trimLeft as then we would loose empty column headers
-    // so we must remove things that look like empty rows from the beginning
-    attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');
+        // remove empty rows from the bottom
+        attributes.dataAsString = (attributes.dataAsString || '').trimRight();
 
-    if (!attributes.dataAsString) {
-      error.message = 'No data found';
-      return error;
-    }
+        // we can't just trimLeft as then we would loose empty column headers
+        // so we must remove things that look like empty rows from the beginning
+        attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');
 
-    if (!attributes.type) {
-      attributes.type = DataImport.guessDataFormat(attributes.dataAsString);
-      if (!attributes.type) {
-        error.message = 'Unrecognised data format';
-        return error;
-      }
-    }
-
-    var isPipelineFormat = DataImport.isPipelineFormat(attributes.dataAsString);
-
-    // Special case allow .txt pipline files. So just change the type to TSV.
-    if (isPipelineFormat && attributes.type === 'text/plain') {
-      attributes.type = 'text/tsv';
-    }
-
-    var supportedFormat = DataImport.isValidType(attributes.type);
-
-    if (!supportedFormat) {
-      error.message = 'Unsupported file type';
-      return error;
-    }
-
-    if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values' ) {
-      method = 'TSV';
-    } else if (attributes.type === 'text/csv') {
-      method = 'CSV';
-    } else {
-      error.message = 'Unsupported import format';
-      return error;
-    }
-
-    var colNames;
-    var numCols;
-    var convertFn;
-    var warningRows = [];
-    var warningMessage = null;
-    var hasHeaderRow = true;
-    var dataTypeCounters = [];
-    var pipelineData;
-    var pipelineOptions = null;
-    var missingCols = 0;
-    var extraCols = 0;
-
-
-    // TODO: handle when the first row is not a header row.
-    //       ... need to work out a row on useful header row on the fly, using letters A-Z
-
-
-    try {
-      if (isPipelineFormat) {
-        pipelineData = DataImport.parsePipeline(attributes.dataAsString);
-        attributes.dataAsString = pipelineData.dataString;
-        pipelineOptions = pipelineData.options;
-      }
-    } catch (pipelineError) {
-      error.message = pipelineError.message;
-      return error;
-    }
-
-    var processRow = function(row, rowNum) {
-      var values = row.map(Function.prototype.call, String.prototype.trim);
-      var numValues = values.length;
-      var result;
-
-      if (hasHeaderRow && rowNum === 0) {
-        colNames = values;
-        numCols = numValues;
-
-        // TODO: ensure none of the values are null/undefined/empty-string
-        // if so throw an error
-
-        var names = {}, n;
-        
-        for (var i = 0; i < numCols; i++) {
-
-          // ensure no duplicate column names
-          n = colNames[i];
-
-          if (!n) {
-            n = emptyheaderRows[i];
-          }
-
-          if (n in names) {
-            names[n]++;
-            n = n + '-' + names[n];
-          } else {
-            names[n] = 1;
-          }
-
-          colNames[i] = n;
-
-          dataTypeCounters.push({
-            colName: n,
-            strings: 0,
-            stringValues: [],
-            nulls: 0,
-            numbers: 0,
-            numberValues: [],
-            dates: 0,
-            dateValues: []
-          });
+        if (!attributes.dataAsString) {
+            error.message = 'No data found';
+            return error;
         }
-        return;
-      } else if (numValues <= 1 && !values[0]) {
-        // empty row
-        return;
-      } else if (numValues > numCols) {
-        warningRows.push({rowNum: rowNum, numValues: numValues, values: values.slice(0), message: 'Too many values'});
-        extraCols += (numValues - numCols);
-        values = values.slice(0, numCols);
-      } else if (numValues < numCols) {
-        warningRows.push({rowNum: rowNum, numValues: numValues, values: values.slice(0), message: 'Not as many values as there are columns'});
-        missingCols += (numCols - numValues);
-        values = values.concat(new Array(numCols - numValues));
-      }
-      
-      values.forEach(sniffDatatype, dataTypeCounters);
-      result = _.object(colNames, values);
 
-      return result;
-    };
+        if (!attributes.type) {
+            attributes.type = DataImport.guessDataFormat(attributes.dataAsString);
+            if (!attributes.type) {
+                error.message = 'Unrecognised data format';
+                return error;
+            }
+        }
 
-    try {
-      data = d3[method.toLowerCase()].parseRows(attributes.dataAsString, processRow);
-    } catch (e) {
-      error.message = 'There was a problem with the ' + method + ' data';
-      return error;
-    }
+        var isPipelineFormat = DataImport.isPipelineFormat(attributes.dataAsString);
 
-    var numRows = data.length;
+        // Special case allow .txt pipline files. So just change the type to TSV.
+        if (isPipelineFormat && attributes.type === 'text/plain') {
+            attributes.type = 'text/tsv';
+        }
 
-    if (!numRows) {
-      error.message = 'No data found';
-      return error;
-    }
+        var supportedFormat = DataImport.isValidType(attributes.type);
 
-    if (numCols < 2) {
-      error.message = 'Your data needs 2 columns or more.';
-      return error;
-    }
+        if (!supportedFormat) {
+            error.message = 'Unsupported file type';
+            return error;
+        }
 
-    if (warningRows.length) {
-      if (!!missingCols && missingCols/numRows % 1 === 0) {
-        warningMessage = 'The data appears to be missing ' + (missingCols/numRows) + ' whole columns of data.';
-      } else if(!!extraCols && extraCols/numRows % 1 === 0) {
-        warningMessage = 'There  seems to be ' + (extraCols/numRows) + ' columns without headers. The data for these has been discarded.';
-      } else if(!missingCols && !!extraCols && extraCols < numRows) {
-        warningMessage = 'Some rows have too many values. These values have been discarded.';
-      } else if(!extraCols && !!missingCols && missingCols < numRows) {
-        // DO NOTHING - we assume the last (right-most) column has some null values.
-      } else {
-        warningMessage = 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';
-      }
-    }
-
-    var threshold = new Threshold(numRows);
-
-    dataTypeCounters.forEach(function (typeCounter) {
-      if (threshold.isAbove(typeCounter.nulls)) {
-        typeCounter.datatype = Datatypes.NONE;
-      } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-        typeCounter.datatype = Datatypes.NUMERIC;
-      } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
-        typeCounter.datatype = Datatypes.TIME;
-      } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
-        typeCounter.datatype = Datatypes.CATEGORICAL;
-      } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-        typeCounter.datatype = Datatypes.NUMERIC;
-      } else {
-        typeCounter.datatype = Datatypes.NONE;
-      }
-    });
-
-    var xAxis;
-
-    dataTypeCounters.forEach(function (counter) {
-      var type = counter.datatype;
-      if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {
-        if (!xAxis) {
-          xAxis = counter;
-          counter.predictedAxis = Axis.X;
+        if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values') {
+            method = 'TSV';
+        } else if (attributes.type === 'text/csv') {
+            method = 'CSV';
         } else {
-          counter.predictedAxis = Axis.NONE;
-        }
-      } else if (Datatypes.isNumeric(type)) {
-        counter.predictedAxis = Axis.Y;
-      } else {
-        counter.predictedAxis = Axis.NONE;
-      }
-    });
-
-    // second pass in case we predict wrongly the first time
-    // if !axes.y.length && !axes.x then error
-    // if !axes.y.length then look at axes.none and try to add some of them to axes.y
-
-    var newColumns = dataTypeCounters.map(function (counter, index) {
-      return new Column({
-        property: counter.colName,
-        label: counter.colName,
-        axis: counter.predictedAxis,
-        typeInfo: counter
-      });
-    });
-
-    var originalData = JSON.parse(JSON.stringify(data));
-    var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
-    var unsafeDateString = true;
-    var timeCols = [];
-    var typeInfo;
-    var colName;
-    var attemptedDate;
-    var val;
-    var dateFormat;
-    var countDateFormats;
-    var totalNonDateStrings;
-    var mostPopularDateFormatCount;
-    var mostPopularDateFormat;
-
-    for (var i = 0, x = newColumns.length; i < x; i++) {
-
-      typeInfo = newColumns[i].get('typeInfo');
-      colName = typeInfo.colName;
-      
-      if (typeInfo.datatype === Datatypes.TIME) {
-
-        typeInfo.dateFormats = [];
-        countDateFormats = {};
-        totalNonDateStrings = 0;
-
-        for (var j = 0; j < numRows; j++) {
-          val = data[j][colName];
-
-          if (!val) continue;
-
-          attemptedDate = NaN;
-          unsafeDateString = true;//isUnsafeDateString.test(val);
-
-          // Don't attempt to make a date object from an unsafe string. Javascript's date 
-          // constructor (esp in Chrome/V8) will happily parse ambiguous strings without understanding
-          // the difference between day and month when they appear first.
-          // Any will fill in the year if one isn't provied
-          if(typeof val === 'string' && !unsafeDateString) {
-            attemptedDate = new Date(val);
-          }
-          
-          if (isNaN(+attemptedDate)) {
-            dateFormat = predictedDateFormat(val);
-            totalNonDateStrings++;
-            if (dateFormat) {
-              typeInfo.dateFormats.push(dateFormat);
-              if (dateFormat in countDateFormats) {
-                countDateFormats[dateFormat]++;
-              } else {
-                countDateFormats[dateFormat] = 1;
-              }
-            }
-          } else {
-            data[j][colName] = attemptedDate;
-          }
+            error.message = 'Unsupported import format';
+            return error;
         }
 
-        mostPopularDateFormat = null;
-        mostPopularDateFormatCount = 0;
+        var colNames;
+        var numCols;
+        var convertFn;
+        var warningRows = [];
+        var warningMessage = null;
+        var hasHeaderRow = true;
+        var dataTypeCounters = [];
+        var pipelineData;
+        var pipelineOptions = null;
+        var missingCols = 0;
+        var extraCols = 0;
 
-        var formatKeys = Object.keys(countDateFormats);
-        var numKeys = formatKeys.length;
 
-        if (numKeys === 1) {
-          typeInfo.mostPopularDateFormat = formatKeys[0];
-        } else if (numKeys > 1) {
+        // TODO: handle when the first row is not a header row.
+        //       ... need to work out a row on useful header row on the fly, using letters A-Z
 
-          var containsLongMonths;
-          var containsShortMonths;
 
-          formatKeys.forEach(function (key) {
+        try {
+            if (isPipelineFormat) {
+                pipelineData = DataImport.parsePipeline(attributes.dataAsString);
+                attributes.dataAsString = pipelineData.dataString;
+                pipelineOptions = pipelineData.options;
+            }
+        } catch (pipelineError) {
+            error.message = pipelineError.message;
+            return error;
+        }
 
-            var count = countDateFormats[key];
-            if (count >= mostPopularDateFormatCount) {
-              // it's not good enough for the current format to be joint most-popular
-              mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;
-              mostPopularDateFormatCount = count;
+        var processRow = function (row, rowNum) {
+            var values = row.map(Function.prototype.call, String.prototype.trim);
+            var numValues = values.length;
+            var result;
+
+            if (hasHeaderRow && rowNum === 0) {
+                colNames = values;
+                numCols = numValues;
+
+                // TODO: ensure none of the values are null/undefined/empty-string
+                // if so throw an error
+
+                var names = {}, n;
+
+                for (var i = 0; i < numCols; i++) {
+
+                    // ensure no duplicate column names
+                    n = colNames[i];
+
+                    if (!n) {
+                        n = emptyheaderRows[i];
+                    }
+
+                    if (n in names) {
+                        names[n]++;
+                        n = n + '-' + names[n];
+                    } else {
+                        names[n] = 1;
+                    }
+
+                    colNames[i] = n;
+
+                    dataTypeCounters.push({
+                        colName: n,
+                        strings: 0,
+                        stringValues: [],
+                        nulls: 0,
+                        numbers: 0,
+                        numberValues: [],
+                        dates: 0,
+                        dateValues: []
+                    });
+                }
+                return;
+            } else if (numValues <= 1 && !values[0]) {
+                // empty row
+                return;
+            } else if (numValues > numCols) {
+                warningRows.push({
+                    rowNum: rowNum,
+                    numValues: numValues,
+                    values: values.slice(0),
+                    message: 'Too many values'
+                });
+                extraCols += (numValues - numCols);
+                values = values.slice(0, numCols);
+            } else if (numValues < numCols) {
+                warningRows.push({
+                    rowNum: rowNum,
+                    numValues: numValues,
+                    values: values.slice(0),
+                    message: 'Not as many values as there are columns'
+                });
+                missingCols += (numCols - numValues);
+                values = values.concat(new Array(numCols - numValues));
             }
 
-            if (key.indexOf('%B') !== -1) {
-              containsLongMonths = key;
-            } else if(key.indexOf('%b') !== -1) {
-              containsShortMonths = key;
-            }
+            values.forEach(sniffDatatype, dataTypeCounters);
+            result = _.object(colNames, values);
 
-          });
+            return result;
+        };
 
-          if (mostPopularDateFormatCount && totalNonDateStrings) {
-            
-            // the most popular date format found is more than 95%
-            // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
-            var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
+        try {
+            data = d3[method.toLowerCase()].parseRows(attributes.dataAsString, processRow);
+        } catch (e) {
+            error.message = 'There was a problem with the ' + method + ' data';
+            return error;
+        }
 
-            // handle the case when some of the dates are in the month of May
-            // we therefore have a mix of long and short month formats ie %B and %b
-            // We can gloss over this because either date format will correct parse the date on those strings
-            if (!greaterThanThreshold && containsShortMonths && containsLongMonths) {
-              if (mostPopularDateFormat === containsLongMonths) {
-                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%B', '%b')] || 0;
-              } else if (mostPopularDateFormat === containsShortMonths) {
-                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%b', '%B')] || 0;
-              }
-              // recalculate if the count is over the threshold
-              greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
-            }
+        var numRows = data.length;
 
-            if (greaterThanThreshold) {
-              typeInfo.mostPopularDateFormat = mostPopularDateFormat;
+        if (!numRows) {
+            error.message = 'No data found';
+            return error;
+        }
+
+        if (numCols < 2) {
+            error.message = 'Your data needs 2 columns or more.';
+            return error;
+        }
+
+        if (warningRows.length) {
+            if (!!missingCols && missingCols / numRows % 1 === 0) {
+                warningMessage = 'The data appears to be missing ' + (missingCols / numRows) + ' whole columns of data.';
+            } else if (!!extraCols && extraCols / numRows % 1 === 0) {
+                warningMessage = 'There  seems to be ' + (extraCols / numRows) + ' columns without headers. The data for these has been discarded.';
+            } else if (!missingCols && !!extraCols && extraCols < numRows) {
+                warningMessage = 'Some rows have too many values. These values have been discarded.';
+            } else if (!extraCols && !!missingCols && missingCols < numRows) {
+                // DO NOTHING - we assume the last (right-most) column has some null values.
             } else {
-              typeInfo.mostPopularDateFormat = null;
+                warningMessage = 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';
             }
-
-          } else {
-            typeInfo.mostPopularDateFormat = null;
-          }
-
         }
 
-        if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
-          transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));
-        } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
-          typeInfo.datatype = Datatypes.NUMERIC;
-          newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
+        var threshold = new Threshold(numRows);
+
+        dataTypeCounters.forEach(function (typeCounter) {
+            if (threshold.isAbove(typeCounter.nulls)) {
+                typeCounter.datatype = Datatypes.NONE;
+            } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
+                typeCounter.datatype = Datatypes.NUMERIC;
+            } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
+                typeCounter.datatype = Datatypes.TIME;
+            } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
+                typeCounter.datatype = Datatypes.CATEGORICAL;
+            } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
+                typeCounter.datatype = Datatypes.NUMERIC;
+            } else {
+                typeCounter.datatype = Datatypes.NONE;
+            }
+        });
+
+        var xAxis;
+
+        dataTypeCounters.forEach(function (counter) {
+            var type = counter.datatype;
+            if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {
+                if (!xAxis) {
+                    xAxis = counter;
+                    counter.predictedAxis = Axis.X;
+                } else {
+                    counter.predictedAxis = Axis.NONE;
+                }
+            } else if (Datatypes.isNumeric(type)) {
+                counter.predictedAxis = Axis.Y;
+            } else {
+                counter.predictedAxis = Axis.NONE;
+            }
+        });
+
+        // second pass in case we predict wrongly the first time
+        // if !axes.y.length && !axes.x then error
+        // if !axes.y.length then look at axes.none and try to add some of them to axes.y
+
+        var newColumns = dataTypeCounters.map(function (counter, index) {
+            return new Column({
+                property: counter.colName,
+                label: counter.colName,
+                axis: counter.predictedAxis,
+                typeInfo: counter
+            });
+        });
+
+        var originalData = JSON.parse(JSON.stringify(data));
+        var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
+        var unsafeDateString = true;
+        var timeCols = [];
+        var typeInfo;
+        var colName;
+        var attemptedDate;
+        var val;
+        var dateFormat;
+        var countDateFormats;
+        var totalNonDateStrings;
+        var mostPopularDateFormatCount;
+        var mostPopularDateFormat;
+
+        for (var i = 0, x = newColumns.length; i < x; i++) {
+
+            typeInfo = newColumns[i].get('typeInfo');
+            colName = typeInfo.colName;
+
+            if (typeInfo.datatype === Datatypes.TIME) {
+
+                typeInfo.dateFormats = [];
+                countDateFormats = {};
+                totalNonDateStrings = 0;
+
+                for (var j = 0; j < numRows; j++) {
+                    val = data[j][colName];
+
+                    if (!val) continue;
+
+                    attemptedDate = NaN;
+                    unsafeDateString = true;//isUnsafeDateString.test(val);
+
+                    // Don't attempt to make a date object from an unsafe string. Javascript's date
+                    // constructor (esp in Chrome/V8) will happily parse ambiguous strings without understanding
+                    // the difference between day and month when they appear first.
+                    // Any will fill in the year if one isn't provied
+                    if (typeof val === 'string' && !unsafeDateString) {
+                        attemptedDate = new Date(val);
+                    }
+
+                    if (isNaN(+attemptedDate)) {
+                        dateFormat = predictedDateFormat(val);
+                        totalNonDateStrings++;
+                        if (dateFormat) {
+                            typeInfo.dateFormats.push(dateFormat);
+                            if (dateFormat in countDateFormats) {
+                                countDateFormats[dateFormat]++;
+                            } else {
+                                countDateFormats[dateFormat] = 1;
+                            }
+                        }
+                    } else {
+                        data[j][colName] = attemptedDate;
+                    }
+                }
+
+                mostPopularDateFormat = null;
+                mostPopularDateFormatCount = 0;
+
+                var formatKeys = Object.keys(countDateFormats);
+                var numKeys = formatKeys.length;
+
+                if (numKeys === 1) {
+                    typeInfo.mostPopularDateFormat = formatKeys[0];
+                } else if (numKeys > 1) {
+
+                    var containsLongMonths;
+                    var containsShortMonths;
+
+                    formatKeys.forEach(function (key) {
+
+                        var count = countDateFormats[key];
+                        if (count >= mostPopularDateFormatCount) {
+                            // it's not good enough for the current format to be joint most-popular
+                            mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;
+                            mostPopularDateFormatCount = count;
+                        }
+
+                        if (key.indexOf('%B') !== -1) {
+                            containsLongMonths = key;
+                        } else if (key.indexOf('%b') !== -1) {
+                            containsShortMonths = key;
+                        }
+
+                    });
+
+                    if (mostPopularDateFormatCount && totalNonDateStrings) {
+
+                        // the most popular date format found is more than 95%
+                        // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
+                        var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
+
+                        // handle the case when some of the dates are in the month of May
+                        // we therefore have a mix of long and short month formats ie %B and %b
+                        // We can gloss over this because either date format will correct parse the date on those strings
+                        if (!greaterThanThreshold && containsShortMonths && containsLongMonths) {
+                            if (mostPopularDateFormat === containsLongMonths) {
+                                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%B', '%b')] || 0;
+                            } else if (mostPopularDateFormat === containsShortMonths) {
+                                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%b', '%B')] || 0;
+                            }
+                            // recalculate if the count is over the threshold
+                            greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
+                        }
+
+                        if (greaterThanThreshold) {
+                            typeInfo.mostPopularDateFormat = mostPopularDateFormat;
+                        } else {
+                            typeInfo.mostPopularDateFormat = null;
+                        }
+
+                    } else {
+                        typeInfo.mostPopularDateFormat = null;
+                    }
+
+                }
+
+                if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
+                    transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));
+                } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
+                    typeInfo.datatype = Datatypes.NUMERIC;
+                    newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
+                }
+            }
         }
-      }
+
+        transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);
+
+        console.table(dataTypeCounters);
+
+        this.set({
+            numCols: numCols,
+            data: data,
+            originalData: originalData,
+            colNames: colNames,
+            numRows: numRows,
+            pipelineOptions: pipelineOptions,
+            warning: {
+                message: warningMessage,
+                rows: warningRows
+            }
+        });
+        this.columns.reset(newColumns);
+
+    },
+
+    discardData: function () {
+        this.set(this.defaults);
+        this.columns.reset([]);
+    },
+
+    ignoreWarning: function () {
+        this.set('warning', this.defaults.warning);
     }
 
-    transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);
+}, {
 
-    console.table(dataTypeCounters);
+    isValidType: function (type) {
+        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
+    },
 
-    this.set({
-      numCols: numCols,
-      data: data,
-      originalData: originalData,
-      colNames: colNames,
-      numRows: numRows,
-      pipelineOptions: pipelineOptions,
-      warning: {
-        message: warningMessage,
-        rows: warningRows
-      }
-    });
-    this.columns.reset(newColumns);
+    isPipelineFormat: function (str) {
+        return str.substring(0, 2) === '&\t';
+    },
 
-  },
+    parsePipeline: function (str) {
+        /*jshint -W084 */
+        var lines = str.trim().split(/[\n\r]+/gm);
+        var line;
+        var options = {};
 
-  discardData: function() {
-    this.set(this.defaults);
-    this.columns.reset([]);
-  },
-
-  ignoreWarning: function() {
-    this.set('warning', this.defaults.warning);
-  }
-
-},{
-
-  isValidType: function(type) {
-    return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
-  },
-
-  isPipelineFormat: function(str) {
-    return str.substring(0, 2) === '&\t';
-  },
-
-  parsePipeline: function(str) {
-      /*jshint -W084 */
-    var lines = str.trim().split(/[\n\r]+/gm);
-    var line;
-    var options = {};
-
-    while(line = lines.pop()) {
-      if (!line) {
-        continue;
-      }
-      if (line.charAt(0) === '\t') {
-        throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
-      }
-      line = line.trim();
-      if (!line) {
-        continue;
-      }
-      if (line.charAt(0) !== '&') {
-        lines.push(line);
-        break;
-      }
-      var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);
-      var value = bits[1];
-      if (value || value !== 'delete if not required') {
-        options[bits[0].replace(/^&/, '')] = value;
-      }
-    }
-    str = lines.join('\n');
-    return {dataString: str, options: options};
-  },
-
-  guessDataFormat: function(dataAsString) {
-
-    if (dataAsString) {
-      var lines = dataAsString.split(/\n/g);
-      if (lines.length) {
-        var line = (lines[0]||'').replace(/"(.*?)"/g, '');
-        var tabs = (line.match(/\t/g)  || []).length;
-        var commas = (line.match(/\,/g) || []).length;
-        if (tabs > commas) {
-          return 'text/tsv';
-        } else if (commas > tabs) {
-          return 'text/csv';
+        while (line = lines.pop()) {
+            if (!line) {
+                continue;
+            }
+            if (line.charAt(0) === '\t') {
+                throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
+            }
+            line = line.trim();
+            if (!line) {
+                continue;
+            }
+            if (line.charAt(0) !== '&') {
+                lines.push(line);
+                break;
+            }
+            var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);
+            var value = bits[1];
+            if (value || value !== 'delete if not required') {
+                options[bits[0].replace(/^&/, '')] = value;
+            }
         }
-      }
-    }
+        str = lines.join('\n');
+        return {dataString: str, options: options};
+    },
 
-    return null;
-  } 
+    guessDataFormat: function (dataAsString) {
+
+        if (dataAsString) {
+            var lines = dataAsString.split(/\n/g);
+            if (lines.length) {
+                var line = (lines[0] || '').replace(/"(.*?)"/g, '');
+                var tabs = (line.match(/\t/g) || []).length;
+                var commas = (line.match(/\,/g) || []).length;
+                if (tabs > commas) {
+                    return 'text/tsv';
+                } else if (commas > tabs) {
+                    return 'text/csv';
+                }
+            }
+        }
+
+        return null;
+    }
 
 });
 
 var tests = {
-  '1.101': null,
-  '1,000': null,
-  '1,000,000': null,
-  '1': '%Y',
-  '11': '%Y',
-  '111': '%Y',
-  '1999': '%Y',
-  '11111': null,
-  '01-1999': '%m/%Y',
-  '12-1999': '%m/%Y',
-  '13-1999': null,
-  '32-1999': null,
-  'Jan 1999': '%b/%Y',
-  '31/01/2014': '%d/%m/%Y',
-  '31/01/14': '%d/%m/%y',
-  '01/31/2014': '%x',
-  '01/31/14': '%m/%d/%y',
-  '01 January 2014': '%d/%B/%Y',
-  '13/01/13': '%d/%m/%y',
-  '01/13/13': '%m/%d/%y',
-  '13/01/01': '%d/%m/%y',
-  '01/13/01': '%m/%d/%y',
-  '12/01/12': null,
-  '01/12/12': null,
-  '1/1/14': null,
-  '01-01-01': null,
-  '14/14': null,
-  '11/14': '%m/%y',
-  '01/13/2013': '%x',
-  '01 Jan 2014': '%d/%b/%Y',
-  '32 Jan 2014': null,
-  'Jan 01 2014': '%b/%d/%Y',
-  'Jan 32 2014': null,
-  'January 01 2014': '%B/%d/%Y',
-  '2014 January 01': '%Y/%B/%d',
+    '1.101': null,
+    '1,000': null,
+    '1,000,000': null,
+    '1': '%Y',
+    '11': '%Y',
+    '111': '%Y',
+    '1999': '%Y',
+    '11111': null,
+    '01-1999': '%m/%Y',
+    '12-1999': '%m/%Y',
+    '13-1999': null,
+    '32-1999': null,
+    'Jan 1999': '%b/%Y',
+    '31/01/2014': '%d/%m/%Y',
+    '31/01/14': '%d/%m/%y',
+    '01/31/2014': '%x',
+    '01/31/14': '%m/%d/%y',
+    '01 January 2014': '%d/%B/%Y',
+    '13/01/13': '%d/%m/%y',
+    '01/13/13': '%m/%d/%y',
+    '13/01/01': '%d/%m/%y',
+    '01/13/01': '%m/%d/%y',
+    '12/01/12': null,
+    '01/12/12': null,
+    '1/1/14': null,
+    '01-01-01': null,
+    '14/14': null,
+    '11/14': '%m/%y',
+    '01/13/2013': '%x',
+    '01 Jan 2014': '%d/%b/%Y',
+    '32 Jan 2014': null,
+    'Jan 01 2014': '%b/%d/%Y',
+    'Jan 32 2014': null,
+    'January 01 2014': '%B/%d/%Y',
+    '2014 January 01': '%Y/%B/%d',
 };
 
 Object.keys(tests).forEach(function (key) {
-  var date = key;
-  var format = tests[key];
-  var result = predictedDateFormat(date);
-  console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
+    var date = key;
+    var format = tests[key];
+    var result = predictedDateFormat(date);
+    console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
 });
 
 module.exports = DataImport;
@@ -28853,21 +28866,27 @@ module.exports = DataImport;
 var Backbone = require('./../core/backbone');
 
 module.exports = Backbone.Model.extend({
-  defaults: {
-    rows: []
-  }
+    defaults: {
+        rows: []
+    }
 });
 
 },{"./../core/backbone":75}],48:[function(require,module,exports){
 var Datatypes = module.exports = {
-  CATEGORICAL: 'categorical',
-  NUMERIC: 'numeric',
-  TIME: 'time',
-  NONE: '',
+    CATEGORICAL: 'categorical',
+    NUMERIC: 'numeric',
+    TIME: 'time',
+    NONE: '',
 
-  isCategorical: function(value) { return value === Datatypes.CATEGORICAL; },
-  isNumeric: function(value) { return value === Datatypes.NUMERIC; },
-  isTime: function(value) { return value === Datatypes.TIME; }
+    isCategorical: function (value) {
+        return value === Datatypes.CATEGORICAL;
+    },
+    isNumeric: function (value) {
+        return value === Datatypes.NUMERIC;
+    },
+    isTime: function (value) {
+        return value === Datatypes.TIME;
+    }
 };
 
 },{}],49:[function(require,module,exports){
@@ -28877,86 +28896,86 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 var Datatypes = require('./Datatypes.js');
 
 function captitalizeFirstLetter(str) {
-  if (!str || typeof str !== 'string') return str;
-  return str.replace(/^./, function (match) {
-    return match.toUpperCase();
-  });
+    if (!str || typeof str !== 'string') return str;
+    return str.replace(/^./, function (match) {
+        return match.toUpperCase();
+    });
 }
 
 var defaultDatatype = Datatypes.NUMERIC;
 
 var DependantAxis = Axis.extend({
-  initialize: function() {
-   this.columns = new Backbone.Collection();
+    initialize: function () {
+        this.columns = new Backbone.Collection();
 
-   var fn = (function (model) {
-      model.set('axis', this.get('name'));
-      model.collection = this.columns;
-   }).bind(this);
+        var fn = (function (model) {
+            model.set('axis', this.get('name'));
+            model.collection = this.columns;
+        }).bind(this);
 
-   this.listenTo(this.columns, 'remove', function(model){
-      model.set('axis', Axis.NONE);
-      model.collection = null;
-   });
-   this.listenTo(this.columns, 'add', fn);
-   this.listenTo(this.columns, 'reset', function(collection) {
-    collection.forEach(fn);
-   });
-   this.listenTo(this.columns, 'add remove reset', function(){
-      var numCols = this.columns.length;
-      var warning = '';
-      if (numCols === 0) {
-        this.set({
-          datatype: Datatypes.NONE,
-          suggestedLabel: ''
+        this.listenTo(this.columns, 'remove', function (model) {
+            model.set('axis', Axis.NONE);
+            model.collection = null;
         });
-      } else if (numCols === 1) {
-        var column = this.columns.at(0);
-        var typeInfo = column.get('typeInfo');
-        this.set({
-          datatype: typeInfo.datatype,
-          suggestedLabel: captitalizeFirstLetter(column.get('property'))
+        this.listenTo(this.columns, 'add', fn);
+        this.listenTo(this.columns, 'reset', function (collection) {
+            collection.forEach(fn);
         });
-      } else if (numCols > 1) {
-        var current;
-        var last;
-        var types = {};
-        for (var i = numCols;i--;) {
-          current = this.columns.at(i).get('typeInfo').datatype;
-          if (last && current && current !== last) {
-            warning = 'Mismatching datatypes';
-            break;
-          }
-          if (!types[current]) {
-            types[current] = 1;
-          } else {
-            types[current] += 1;
-          }
-          last = current;
-        }
-        types = _.pairs(types).sort(function (a, b) {
-          return a[1] < b[1];
+        this.listenTo(this.columns, 'add remove reset', function () {
+            var numCols = this.columns.length;
+            var warning = '';
+            if (numCols === 0) {
+                this.set({
+                    datatype: Datatypes.NONE,
+                    suggestedLabel: ''
+                });
+            } else if (numCols === 1) {
+                var column = this.columns.at(0);
+                var typeInfo = column.get('typeInfo');
+                this.set({
+                    datatype: typeInfo.datatype,
+                    suggestedLabel: captitalizeFirstLetter(column.get('property'))
+                });
+            } else if (numCols > 1) {
+                var current;
+                var last;
+                var types = {};
+                for (var i = numCols; i--;) {
+                    current = this.columns.at(i).get('typeInfo').datatype;
+                    if (last && current && current !== last) {
+                        warning = 'Mismatching datatypes';
+                        break;
+                    }
+                    if (!types[current]) {
+                        types[current] = 1;
+                    } else {
+                        types[current] += 1;
+                    }
+                    last = current;
+                }
+                types = _.pairs(types).sort(function (a, b) {
+                    return a[1] < b[1];
+                });
+                var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
+                this.set({
+                    suggestedLabel: '',
+                    datatype: mostPopularType
+                });
+            }
+            this.set('warningMessage', warning);
         });
-        var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
-        this.set({
-          suggestedLabel: '',
-          datatype: mostPopularType
+        this.listenTo(this.columns, 'all', function () {
+            var length = this.columns ? this.columns.length : 0;
+            this.set({hasSeries: !!length, multiseries: length > 1, numSeries: length});
         });
-      }
-      this.set('warningMessage', warning);
-    });
-    this.listenTo(this.columns, 'all', function(){
-      var length = this.columns ? this.columns.length : 0;
-      this.set({hasSeries: !!length, multiseries: length > 1, numSeries: length});
-    });
-  },
-  defaults: _.extend({}, Axis.prototype.defaults, {
-    name: Axis.Y,
-    datatype: defaultDatatype,
-    hasSeries: false,
-    multiseries: false,
-    numSeries: 0,
-  })
+    },
+    defaults: _.extend({}, Axis.prototype.defaults, {
+        name: Axis.Y,
+        datatype: defaultDatatype,
+        hasSeries: false,
+        multiseries: false,
+        numSeries: 0,
+    })
 });
 
 module.exports = DependantAxis;
@@ -28968,32 +28987,32 @@ var Chart = require('./Chart.js');
 
 var Graphic = Backbone.Model.extend({
 
-  initialize: function() {
-    this.chart = new Chart();
-  },
+    initialize: function () {
+        this.chart = new Chart();
+    },
 
-  defaults: {
-    title: 'Untitled chart',
-    subtitle: '',
-    source: '',
-    footnote: '',
-    noSource: false
-  },
+    defaults: {
+        title: 'Untitled chart',
+        subtitle: '',
+        source: '',
+        footnote: '',
+        noSource: false
+    },
 
-  subtitleSuggestion: function(save) {
-    var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
-    var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
-    var result;
+    subtitleSuggestion: function (save) {
+        var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
+        var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
+        var result;
 
-    if (label) {
-      result = !units ? label : label + ' (' + units + ')';
-      if (save) {
-        this.set('subtitle', result);
-      }
+        if (label) {
+            result = !units ? label : label + ' (' + units + ')';
+            if (save) {
+                this.set('subtitle', result);
+            }
+        }
+
+        return result;
     }
-
-    return result;
-  }
 });
 
 module.exports = Graphic;
@@ -29003,15 +29022,15 @@ var Backbone = require('./../core/backbone');
 
 var GraphicType = Backbone.Model.extend({
 
-  initialize: function(attributes, options) {
-    this.graphic = options.graphic;
-    this.variations = options.variations;
-    this.controls = options.controls;
-  },
+    initialize: function (attributes, options) {
+        this.graphic = options.graphic;
+        this.variations = options.variations;
+        this.controls = options.controls;
+    },
 
-  defaults: {
-    typeName: '' 
-  }
+    defaults: {
+        typeName: ''
+    }
 });
 
 module.exports = GraphicType;
@@ -29020,91 +29039,93 @@ module.exports = GraphicType;
 var Backbone = require('./../core/backbone.js');
 
 function getKeyLabel(d) {
-  var property = d.get('property');
-  var label = d.get('label') || property;
-  return {key: property, label: label};
+    var property = d.get('property');
+    var label = d.get('label') || property;
+    return {key: property, label: label};
 }
 
 var GraphicVariation = Backbone.Model.extend({
 
-  defaults: {
-    svg: null
-  },
+    defaults: {
+        svg: null
+    },
 
-  initialize: function(attributes, options) {
-    this.variation = options.variation;
-    this.graphic = options.graphic;
-    this.graphicType = options.graphicType;
-    this.errors = new Backbone.Collection([]);
-  },
+    initialize: function (attributes, options) {
+        this.variation = options.variation;
+        this.graphic = options.graphic;
+        this.graphicType = options.graphicType;
+        this.errors = new Backbone.Collection([]);
+    },
 
-  createConfig: function() {
-    // FIXME: is it still necessary to make a copy of the data?
-    var data = this.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d);});
+    createConfig: function () {
+        // FIXME: is it still necessary to make a copy of the data?
+        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
+            return Object.create(d);
+        });
 
-    if (!data.length) return;
+        if (!data.length) return;
 
-    var xAxisProperty = this.graphic.chart.xAxis.get('property');
-    var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
+        var xAxisProperty = this.graphic.chart.xAxis.get('property');
+        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
 
-    if (!xAxisProperty || !yAxisProperties.length) {
-      return;
-    }
-
-    var g = this.graphic.toJSON();
-
-    var config = {
-
-      width: this.variation.get('width'),
-      height: this.variation.get('height'),
-
-      title: g.title,
-      subtitle: g.subtitle,
-      source:  g.source,
-      hideSource: g.noSource,
-      footnote:  g.footnote,
-
-      data: data,
-      dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
-      x: {
-        series: {
-          key: xAxisProperty,
-          label: xAxisProperty
+        if (!xAxisProperty || !yAxisProperties.length) {
+            return;
         }
-      },
 
-      y: {
-        series: yAxisProperties
-      }
+        var g = this.graphic.toJSON();
 
-    };
+        var config = {
 
-    return this.graphicType.controls.overrideConfig(config);
-  },
+            width: this.variation.get('width'),
+            height: this.variation.get('height'),
 
-  toJSON: function() {
+            title: g.title,
+            subtitle: g.subtitle,
+            source: g.source,
+            hideSource: g.noSource,
+            footnote: g.footnote,
 
-    var d = Backbone.Model.prototype.toJSON.call(this);
+            data: data,
+            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
 
-    d.graphic = this.graphic.toJSON();
-    d.graphicType = this.graphicType.toJSON();
-    d.variation = this.variation.toJSON();
+            x: {
+                series: {
+                    key: xAxisProperty,
+                    label: xAxisProperty
+                }
+            },
 
-    var svg = this.attributes.svg;
+            y: {
+                series: yAxisProperties
+            }
 
-    if (!svg) {
-      d.svg = null;
-    } else {
-      var svgRect = svg.getBoundingClientRect();
-      d.svg = {
-        width: svgRect.width,
-        height: svgRect.height
-      };
+        };
+
+        return this.graphicType.controls.overrideConfig(config);
+    },
+
+    toJSON: function () {
+
+        var d = Backbone.Model.prototype.toJSON.call(this);
+
+        d.graphic = this.graphic.toJSON();
+        d.graphicType = this.graphicType.toJSON();
+        d.variation = this.variation.toJSON();
+
+        var svg = this.attributes.svg;
+
+        if (!svg) {
+            d.svg = null;
+        } else {
+            var svgRect = svg.getBoundingClientRect();
+            d.svg = {
+                width: svgRect.width,
+                height: svgRect.height
+            };
+        }
+
+        return d;
     }
-    
-    return d;
-  }
 });
 
 module.exports = GraphicVariation;
@@ -29117,61 +29138,61 @@ var Column = require('./Column.js');
 
 var defaultDatatype = Datatype.TIME;
 
-function convertPipelineIndexHeader (property, datatype) {
-  if (property === '&') {
-    if (Datatype.isCategorical(datatype)) {
-      return 'Category';
-    } else if (Datatype.isTime(datatype)) {
-      return 'Time';
+function convertPipelineIndexHeader(property, datatype) {
+    if (property === '&') {
+        if (Datatype.isCategorical(datatype)) {
+            return 'Category';
+        } else if (Datatype.isTime(datatype)) {
+            return 'Time';
+        }
     }
-  } 
-  return property;
+    return property;
 }
 
 var IndependantAxis = Axis.extend({
 
-  initialize: function() {
-    this.on('change:property', function (model, value) {
-      this.set({
-        suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
-        label: null
-      });
-    });
-  },
+    initialize: function () {
+        this.on('change:property', function (model, value) {
+            this.set({
+                suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
+                label: null
+            });
+        });
+    },
 
-  defaults: _.extend({}, Axis.prototype.defaults, {
-    name: Axis.X,
-    datatype: defaultDatatype
-  }),
+    defaults: _.extend({}, Axis.prototype.defaults, {
+        name: Axis.X,
+        datatype: defaultDatatype
+    }),
 
-  useColumn: function(column) {
+    useColumn: function (column) {
 
-    if (!column) {
-      this._column = null;
-      this.set('property', null);
-      return;
+        if (!column) {
+            this._column = null;
+            this.set('property', null);
+            return;
+        }
+
+        var typeInfo = column.get('typeInfo');
+        var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
+        var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        this._column = column;
+
+        this.set({
+            property: column.get('property'),
+            datatype: datatype,
+            dateFormat: dateFormat
+        });
+    },
+
+    createColumn: function () {
+        var attributes = _.extend({}, this._column.attributes);
+        attributes.property = this.attributes.property;
+        attributes.datatype = this.attributes.datatype;
+        attributes.label = this.attributes.label || this.attributes.property;
+        attributes.axis = Axis.X;
+        return new Column(attributes);
     }
-
-    var typeInfo = column.get('typeInfo');
-    var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
-    var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
-    this._column = column;
-
-    this.set({
-      property: column.get('property'),
-      datatype: datatype,
-      dateFormat: dateFormat
-    });
-  },
-
-  createColumn: function() {
-    var attributes = _.extend({}, this._column.attributes);
-    attributes.property = this.attributes.property;
-    attributes.datatype = this.attributes.datatype;
-    attributes.label = this.attributes.label || this.attributes.property;
-    attributes.axis = Axis.X;
-    return new Column(attributes);
-  }
 });
 
 module.exports = IndependantAxis;
@@ -29184,56 +29205,54 @@ var TickStyle = require('./TickStyle.js');
 
 var LineControls = Backbone.Model.extend({
 
-  defaults: {
-    thinLines: false,
-    flipYAxis: false,
-    startFromZero: false,
-    nice: false,
-    tickStyleX: TickStyle.AUTO,
-    tickStyleY: TickStyle.AUTO
-  },
+    defaults: {
+        thinLines: false,
+        flipYAxis: false,
+        startFromZero: false,
+        nice: false,
+        tickStyleX: TickStyle.AUTO,
+        tickStyleY: TickStyle.AUTO
+    },
 
-  overrideConfig: function(config) {
-    config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
-    config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
-    config.y.flip = this.attributes.flipYAxis;
-    config.niceValue = this.attributes.nice;
-    config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
-    return config;
-  }
+    overrideConfig: function (config) {
+        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
+        config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
+        config.y.flip = this.attributes.flipYAxis;
+        config.niceValue = this.attributes.nice;
+        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
+        return config;
+    }
 
 });
-
-
 
 
 module.exports = LineControls;
 
 },{"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./Chart.js":44,"./TickStyle.js":55}],55:[function(require,module,exports){
 module.exports = {
-  // works out best set of ticks to display
-  AUTO: 'auto', 
+    // works out best set of ticks to display
+    AUTO: 'auto',
 
-  // end of the domain round up/down to nearest unit
-  NICE: 'nice',
+    // end of the domain round up/down to nearest unit
+    NICE: 'nice',
 
-  // only 2 ticks. a tick at each end of the domain, no other ticks in between. no rounding
-  SIMPLE: 'simple',
+    // only 2 ticks. a tick at each end of the domain, no other ticks in between. no rounding
+    SIMPLE: 'simple',
 
-  // an amount of ticks to be display
-  AMOUNT: 'amount',
+    // an amount of ticks to be display
+    AMOUNT: 'amount',
 
-  //  uses array of values for ticks
-  ARRAY: 'array',
+    //  uses array of values for ticks
+    ARRAY: 'array',
 };
 
 },{}],56:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
-  {width: 300, height: null,  variationName: 'regular web inline'},
-  {width: 186, height: null,  variationName: 'small web inline'},
-  {width: 600, height: null,  variationName: 'large web inline'},
+    {width: 300, height: null, variationName: 'regular web inline'},
+    {width: 186, height: null, variationName: 'small web inline'},
+    {width: 600, height: null, variationName: 'large web inline'},
 ]);
 
 },{"./../core/backbone.js":75}],57:[function(require,module,exports){
@@ -29241,27 +29260,27 @@ var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
 
-  className: 'view-axis-label',
+    className: 'view-axis-label',
 
-  template: require('./../templates/axis-label.hbs'),
+    template: require('./../templates/axis-label.hbs'),
 
-  bindings: {
-    '[name="label"]': {
-      observe: ['label', 'suggestedLabel'],
-      onGet: function(values) {
-        return values[0] || values[1];
-      },
-      onSet: function(value) {
-        return [(value || '').trim(), this.model.get('suggestedLabel')];
-      }
+    bindings: {
+        '[name="label"]': {
+            observe: ['label', 'suggestedLabel'],
+            onGet: function (values) {
+                return values[0] || values[1];
+            },
+            onSet: function (value) {
+                return [(value || '').trim(), this.model.get('suggestedLabel')];
+            }
+        }
+    },
+
+    render: function () {
+        this.el.innerHTML = this.template();
+        this.stickit();
+        return this;
     }
-  },
-
-  render: function() {
-    this.el.innerHTML = this.template();
-    this.stickit();
-    return this;
-  }
 
 });
 
@@ -29273,28 +29292,28 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 
 var ViewDatatype = Backbone.View.extend({
 
-  initialize: function(options) {
-    options = options || {};
-    this.show = _.defaults(options.show, {
-      categorical: true,
-      time: true,
-      numeric: true
-    });
-  },
+    initialize: function (options) {
+        options = options || {};
+        this.show = _.defaults(options.show, {
+            categorical: true,
+            time: true,
+            numeric: true
+        });
+    },
 
-  className: 'view-datatype',
+    className: 'view-datatype',
 
-  template: require('./../templates/datatype.hbs'),
+    template: require('./../templates/datatype.hbs'),
 
-  bindings: {
-    '[name="datatype"]': 'datatype'
-  },
+    bindings: {
+        '[name="datatype"]': 'datatype'
+    },
 
-  render: function(){
-    this.el.innerHTML = this.template({show: this.show});
-    this.stickit();
-    return this;
-  }
+    render: function () {
+        this.el.innerHTML = this.template({show: this.show});
+        this.stickit();
+        return this;
+    }
 
 });
 
@@ -29304,64 +29323,64 @@ module.exports = ViewDatatype;
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
-  {value: '', label: 'Pick a date format'},
-  {value: '%d/%m/%Y', label: 'DD/MM/YYYY - eg 31/01/2015'},
-  {value: '%x', label: 'MM/DD/YYYY - eg 01/31/2015'},
-  {value: '%Y', label: 'YYYY - eg 2015'},
-  {value: '%m/%Y', label: 'MM/YYYY - eg 01 2015'},
-  {value: '%b/%Y', label: 'Month YYYY - eg Jan 2015'},
-  {value: '%b/%y', label: 'Month YY - eg Jan 14'},
-  {value: '%d/%m/%y', label: 'DD/MM/YY - eg 31/01/14'},
-  {value: '%m/%d/%y', label: 'MM/DD/YY - eg 01/31/14'},
-  {value: '%d/%B/%Y', label: 'Date Month YYYY (long) - eg 01 January 2015'},
-  {value: '%d/%b/%Y', label: 'Date Month YYYY (short) - eg 01 Jan 2015'},
-  {value: '%B/%d/%Y', label: 'Month Date YYYY (long) - eg January 01 2015'},
-  {value: '%b/%d/%Y', label: 'Month Date YYYY (short) - eg Jan 01 2015'},
-  {value: '%d/%m/%Y/%H:%M', label: 'Date Time (Short) - eg 31/01/2015 23:00'},
-  {value: '%d/%m/%Y/%H:%M:%S', label: 'Date Time with seconds - eg 31/01/2015 23:00:59'},
-  {value: '%H:%M', label: 'Time only - 23:00'},
-  {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2015 23:00:00 GMT+0000 (GMT)'},
-  {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'}
+    {value: '', label: 'Pick a date format'},
+    {value: '%d/%m/%Y', label: 'DD/MM/YYYY - eg 31/01/2015'},
+    {value: '%x', label: 'MM/DD/YYYY - eg 01/31/2015'},
+    {value: '%Y', label: 'YYYY - eg 2015'},
+    {value: '%m/%Y', label: 'MM/YYYY - eg 01 2015'},
+    {value: '%b/%Y', label: 'Month YYYY - eg Jan 2015'},
+    {value: '%b/%y', label: 'Month YY - eg Jan 14'},
+    {value: '%d/%m/%y', label: 'DD/MM/YY - eg 31/01/14'},
+    {value: '%m/%d/%y', label: 'MM/DD/YY - eg 01/31/14'},
+    {value: '%d/%B/%Y', label: 'Date Month YYYY (long) - eg 01 January 2015'},
+    {value: '%d/%b/%Y', label: 'Date Month YYYY (short) - eg 01 Jan 2015'},
+    {value: '%B/%d/%Y', label: 'Month Date YYYY (long) - eg January 01 2015'},
+    {value: '%b/%d/%Y', label: 'Month Date YYYY (short) - eg Jan 01 2015'},
+    {value: '%d/%m/%Y/%H:%M', label: 'Date Time (Short) - eg 31/01/2015 23:00'},
+    {value: '%d/%m/%Y/%H:%M:%S', label: 'Date Time with seconds - eg 31/01/2015 23:00:59'},
+    {value: '%H:%M', label: 'Time only - 23:00'},
+    {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2015 23:00:00 GMT+0000 (GMT)'},
+    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'}
 ]);
 
 var ViewDateFormat = Backbone.View.extend({
 
-  className: 'view-dateformat',
+    className: 'view-dateformat',
 
-  initialize: function() {
-    this.formats = formats;
-  },
-
-  template: function() {
-    return '<label>Date format</label><select name="dateFormat" class="form-control pull"></select>';
-  },
-
-  bindings: {
-    ':el': {
-      observe: 'dateFormat',
-      update: function($el, val, model, options){
-        if (val) {
-          $el.removeClass('has-error');
-        } else {
-          $el.addClass('has-error');
-        }
-      }
+    initialize: function () {
+        this.formats = formats;
     },
-    '[name="dateFormat"]': {
-      observe: 'dateFormat',
-      selectOptions: {
-        collection: 'this.formats',
-        labelPath: 'label',
-        valuePath: 'value'
-      }
-    }
-  },
 
-  render: function() {
-    this.el.innerHTML = this.template();
-    this.stickit();
-    return this;
-  }
+    template: function () {
+        return '<label>Date format</label><select name="dateFormat" class="form-control pull"></select>';
+    },
+
+    bindings: {
+        ':el': {
+            observe: 'dateFormat',
+            update: function ($el, val, model, options) {
+                if (val) {
+                    $el.removeClass('has-error');
+                } else {
+                    $el.addClass('has-error');
+                }
+            }
+        },
+        '[name="dateFormat"]': {
+            observe: 'dateFormat',
+            selectOptions: {
+                collection: 'this.formats',
+                labelPath: 'label',
+                valuePath: 'value'
+            }
+        }
+    },
+
+    render: function () {
+        this.el.innerHTML = this.template();
+        this.stickit();
+        return this;
+    }
 });
 
 module.exports = ViewDateFormat;
@@ -29375,75 +29394,75 @@ var ViewSeriesControls = require('./ViewSeriesControls.js');
 
 var ViewDependantAxisControls = RegionView.extend({
 
-  initialize: function(options) {
-    RegionView.prototype.initialize.apply(this, arguments);
-    this.listenTo(this.model, 'change:warningMessage', this.render);
-    this.dataImport = options.dataImport;
-    if (this.dataImport) {
-      this.listenTo(this.dataImport.columns, 'change:axis', function(column, axis){
-        if (axis === 'X') {
-          this.render();
+    initialize: function (options) {
+        RegionView.prototype.initialize.apply(this, arguments);
+        this.listenTo(this.model, 'change:warningMessage', this.render);
+        this.dataImport = options.dataImport;
+        if (this.dataImport) {
+            this.listenTo(this.dataImport.columns, 'change:axis', function (column, axis) {
+                if (axis === 'X') {
+                    this.render();
+                }
+            });
+            this.listenTo(this.dataImport.columns, 'reset', this.render);
         }
-      });
-      this.listenTo(this.dataImport.columns, 'reset', this.render);
+    },
+
+    className: 'view-single-axis',
+
+    template: require('./../templates/axis.hbs'),
+
+    regions: {
+        '[data-region="series"]': function () {
+            return new ViewSeriesControls({
+                model: this.model,
+                dataImport: this.dataImport
+            });
+        },
+        '[data-region="datatype"]': function () {
+            return new ViewDatatype({
+                model: this.model,
+                show: {categorical: false}
+            });
+        },
+        '[data-region="highlight"]': function () {
+            return new ViewHighlight({model: this.model});
+        }
+    },
+
+    events: {
+        submit: function (event) {
+            event.preventDefault();
+        }
+    },
+
+    bindings: {
+        '[name="label"]': {
+            observe: ['label', 'suggestedLabel'],
+            onGet: function (values) {
+                return values[0] || values[1];
+            },
+            onSet: function (value) {
+                return [(value || '').trim(), this.model.get('suggestedLabel')];
+            }
+        },
+        '[data-section-name="forecast"]': {
+            observe: 'datatype',
+            visible: Datatypes.isTime
+        },
+        '[data-section-name="label-format"]': {
+            observe: 'datatype',
+            visible: Datatypes.isNumeric
+        },
+        '[name="prefix"]': 'prefix',
+        '[name="suffix"]': 'suffix'
+    },
+
+    render: function () {
+        RegionView.prototype.render.apply(this, arguments);
+        this.stickit();
+        return this;
     }
-  },
-
-  className: 'view-single-axis',
-
-  template: require('./../templates/axis.hbs'),
-
-  regions: {
-    '[data-region="series"]': function () {
-      return new ViewSeriesControls({
-        model: this.model,
-        dataImport: this.dataImport
-      });
-    },
-    '[data-region="datatype"]': function () {
-      return new ViewDatatype({
-        model: this.model,
-        show: {categorical: false}
-      });
-    },
-    '[data-region="highlight"]': function () {
-      return new ViewHighlight({model: this.model});
-    }
-  },
-
-  events: {
-    submit: function (event) {
-      event.preventDefault();
-    }
-  },
-
-  bindings: {
-    '[name="label"]': {
-      observe: ['label', 'suggestedLabel'],
-      onGet: function(values) {
-        return values[0] || values[1];
-      },
-      onSet: function(value) {
-        return [(value || '').trim(), this.model.get('suggestedLabel')];
-      }
-    },
-    '[data-section-name="forecast"]': {
-      observe: 'datatype',
-      visible: Datatypes.isTime
-    },
-    '[data-section-name="label-format"]': {
-      observe: 'datatype',
-      visible: Datatypes.isNumeric
-    },
-    '[name="prefix"]': 'prefix',
-    '[name="suffix"]': 'suffix'
-  },
-
-  render: function() {
-    RegionView.prototype.render.apply(this, arguments);
-    this.stickit();
-    return this;
-  }
 
 });
 
@@ -29458,93 +29477,93 @@ var tracking = require('./../utils/tracking.js');
 
 var ViewGraphicControls = RegionView.extend({
 
-  initialize: function(options) {
-    RegionView.prototype.initialize.apply(this, arguments);
-    this.dataImport = options.dataImport;
-    this.listenTo(Backbone, 'selectChartElement', this.selectInput);
-  },
-
-  template: require('./../templates/graphic-controls.hbs'),
-
-  className: 'view-graphic-controls',
-
-  bindings: {
-    '[name="title"]':     'title',
-    '[name="subtitle"]':  'subtitle',
-    '[name="footnote"]':  'footnote',
-    '[name="source"]':    'source',
-    '[name="noSource"]':  'noSource',
-  },
-
-  events: {
-    'click [name="suggest-subtitle"]': 'subtitleSuggestion',
-    'click [name="discard"]': 'discard',
-    'click .popular-source': 'usePopularSource'
-  },
-
-  regions: {
-    '[data-region="xAxis"]': function () {
-      return new ViewIndependantAxisControls({
-        model: this.model.chart.xAxis,
-        dataImport: this.dataImport
-      });
+    initialize: function (options) {
+        RegionView.prototype.initialize.apply(this, arguments);
+        this.dataImport = options.dataImport;
+        this.listenTo(Backbone, 'selectChartElement', this.selectInput);
     },
-    '[data-region="yAxis"]': function () {
-      return new ViewDependantAxisControls({
-        model: this.model.chart.yAxis,
-        dataImport: this.dataImport
-      });
+
+    template: require('./../templates/graphic-controls.hbs'),
+
+    className: 'view-graphic-controls',
+
+    bindings: {
+        '[name="title"]': 'title',
+        '[name="subtitle"]': 'subtitle',
+        '[name="footnote"]': 'footnote',
+        '[name="source"]': 'source',
+        '[name="noSource"]': 'noSource',
     },
-    '[data-region="zAxis"]': function () {
-      return new ViewDependantAxisControls({
-        model: this.model.chart.zAxis,
-        dataImport: this.dataImport
-      });
+
+    events: {
+        'click [name="suggest-subtitle"]': 'subtitleSuggestion',
+        'click [name="discard"]': 'discard',
+        'click .popular-source': 'usePopularSource'
+    },
+
+    regions: {
+        '[data-region="xAxis"]': function () {
+            return new ViewIndependantAxisControls({
+                model: this.model.chart.xAxis,
+                dataImport: this.dataImport
+            });
+        },
+        '[data-region="yAxis"]': function () {
+            return new ViewDependantAxisControls({
+                model: this.model.chart.yAxis,
+                dataImport: this.dataImport
+            });
+        },
+        '[data-region="zAxis"]': function () {
+            return new ViewDependantAxisControls({
+                model: this.model.chart.zAxis,
+                dataImport: this.dataImport
+            });
+        }
+    },
+
+    usePopularSource: function (event) {
+        event.preventDefault();
+
+        var textToAdd = event.target.textContent;
+        var oldValue = this.model.get('source');
+
+        if (oldValue && oldValue.indexOf(textToAdd) !== -1) {
+            return;
+        }
+
+        var newValue;
+
+        if (event.metaKey) {
+            newValue = textToAdd;
+        } else {
+            newValue = !oldValue && !oldValue.trim() ? textToAdd : (oldValue + ', ' + textToAdd);
+        }
+
+        this.model.set('source', newValue);
+    },
+
+    selectInput: function (name) {
+        var e = this.$('[name="' + name + '"]')[0];
+        if (!e) return;
+        e.focus();
+    },
+
+    subtitleSuggestion: function () {
+        this.model.subtitleSuggestion(true);
+    },
+
+    discard: function () {
+        this.dataImport.discardData();
+        // on discarding data the app will show data import view
+        tracking.trackPage('DataImport');
+    },
+
+    render: function () {
+        RegionView.prototype.render.apply(this, arguments);
+        this.stickit();
+        return this;
     }
-  },
-
-  usePopularSource: function(event) {
-    event.preventDefault();
-
-    var textToAdd = event.target.textContent;
-    var oldValue = this.model.get('source');
-
-    if (oldValue && oldValue.indexOf(textToAdd) !== -1) {
-      return;
-    }
-
-    var newValue;
-
-    if(event.metaKey) {
-      newValue = textToAdd;
-    } else {
-      newValue = !oldValue && !oldValue.trim() ? textToAdd : (oldValue + ', ' + textToAdd);
-    }
-
-    this.model.set('source', newValue);
-  },
-
-  selectInput: function(name) {
-    var e = this.$('[name="'+ name +'"]')[0];
-    if (!e) return;
-    e.focus();
-  },
-
-  subtitleSuggestion: function() {
-    this.model.subtitleSuggestion(true);
-  },
-
-  discard: function() {
-    this.dataImport.discardData();
-    // on discarding data the app will show data import view
-    tracking.trackPage('DataImport');
-  },
-
-  render: function() {
-    RegionView.prototype.render.apply(this, arguments);
-    this.stickit();
-    return this;
-  }
 });
 
 module.exports = ViewGraphicControls;
@@ -29554,15 +29573,15 @@ var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
 
-  className: 'view-graphic-type-controls',
+    className: 'view-graphic-type-controls',
 
-  template: require('./../templates/graphic-type-controls.hbs'),
+    template: require('./../templates/graphic-type-controls.hbs'),
 
-  render: function() {
-    console.log(this.model);
-    this.el.innerHTML = this.template();
-    return this;
-  }
+    render: function () {
+        console.log(this.model);
+        this.el.innerHTML = this.template();
+        return this;
+    }
 
 });
 
@@ -29577,51 +29596,51 @@ var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypes = CollectionView.extend({
 
-  className: 'view-graphic-type-collection',
+    className: 'view-graphic-type-collection',
 
-  itemView: CollectionView.extend({
+    itemView: CollectionView.extend({
 
-    className: 'view-graphic-variation-collection',
+        className: 'view-graphic-variation-collection',
 
-    template: require('./../templates/graphic-type.hbs'),
+        template: require('./../templates/graphic-type.hbs'),
 
-    itemContainer: '[data-region="variations"]',
+        itemContainer: '[data-region="variations"]',
 
-    createView: function(variation, index) {
+        createView: function (variation, index) {
 
-      var gv = new GraphicVariation({}, {
-        graphic: this.model.graphic,
-        variation: variation,
-        graphicType: this.model
-      });
+            var gv = new GraphicVariation({}, {
+                graphic: this.model.graphic,
+                variation: variation,
+                graphicType: this.model
+            });
 
-      return new this._ItemClass({model: gv});
+            return new this._ItemClass({model: gv});
 
+        },
+
+        itemView: ViewGraphicVariation
+
+    }),
+
+    events: {
+        'click svg .chart-title, svg .chart-subtitle, svg .chart-footnote, svg .chart-source': 'selectElement'
     },
 
-    itemView: ViewGraphicVariation
+    selectElement: function (event) {
+        var matches = event.currentTarget.className && event.currentTarget.className.baseVal.match(/\bchart\-(.+)/);
+        if (matches && matches.length === 2) {
+            Backbone.trigger('selectChartElement', matches[1]);
+        }
+    },
 
-  }),
+    createView: function (model, index) {
 
-  events: {
-    'click svg .chart-title, svg .chart-subtitle, svg .chart-footnote, svg .chart-source': 'selectElement'
-  },
+        return new this._ItemClass({
+            model: model,
+            collection: model.variations
+        });
 
-  selectElement: function(event) {
-    var matches = event.currentTarget.className && event.currentTarget.className.baseVal.match(/\bchart\-(.+)/);
-    if (matches && matches.length === 2) {
-      Backbone.trigger('selectChartElement', matches[1]);
-    }
-  },
-
-  createView: function(model, index) {
-
-    return new this._ItemClass({
-      model: model,
-      collection: model.variations
-    });
-
-  },
+    },
 
 });
 
@@ -29637,74 +29656,74 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 //todo: variation -- to variant
 var ViewGraphicVariation = Backbone.View.extend({
 
-  initialize: function(options) {
-    this.chart = linechart();
-    var debounced = _.bind(_.debounce(this.render, 50), this);
-    this.listenTo(this.model.graphic, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
-    this.listenTo(this.model.graphicType.controls, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
-    this.listenTo(this.model.errors, 'reset', this.renderErrors);
-    _.bindAll(this, 'reportErrors');
-  },
+    initialize: function (options) {
+        this.chart = linechart();
+        var debounced = _.bind(_.debounce(this.render, 50), this);
+        this.listenTo(this.model.graphic, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
+        this.listenTo(this.model.graphicType.controls, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
+        this.listenTo(this.model.errors, 'reset', this.renderErrors);
+        _.bindAll(this, 'reportErrors');
+    },
 
-  className: 'view-graphic-variation',
+    className: 'view-graphic-variation',
 
-  template: require('./../templates/graphic.hbs'),
+    template: require('./../templates/graphic.hbs'),
 
-  events: {
-    'click .graphic-container>svg.graphic': 'select'
-  },
+    events: {
+        'click .graphic-container>svg.graphic': 'select'
+    },
 
-  select: function(event) {
-    Backbone.trigger('selectVariation', this.model, event.currentTarget);
-  },
+    select: function (event) {
+        Backbone.trigger('selectVariation', this.model, event.currentTarget);
+    },
 
-  empty: function() {
-    this.el.innerHTML = '';
-    this.el.style.display = 'none';
-  },
+    empty: function () {
+        this.el.innerHTML = '';
+        this.el.style.display = 'none';
+    },
 
-  renderErrors: function(errors) {
-    if (!this.svg) return;
-    if (!errors || !errors.length) {
-      this.svg.classList.remove('error');
-    } else {
-      this.svg.classList.add('error');
+    renderErrors: function (errors) {
+        if (!this.svg) return;
+        if (!errors || !errors.length) {
+            this.svg.classList.remove('error');
+        } else {
+            this.svg.classList.add('error');
+        }
+    },
+
+    reportErrors: function (errors) {
+        this.model.errors.reset(Array.isArray(errors) ? errors : [errors]);
+    },
+
+    render: function () {
+
+        var config = this.model.createConfig();
+
+        if (!config) {
+            this.empty();
+            return;
+        }
+
+        this.el.innerHTML = this.template();
+        this.svg = this.el.querySelector('.graphic-container');
+        var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
+
+        this.el.style.width = (config.width + selectionBorderWidth) + 'px';
+        this.el.style.display = 'block';
+        this.svg.style.width = config.width + 'px';
+
+        config.error = this.reportErrors;
+
+        d3.select(this.svg).data([config]).call(this.chart);
+
+        this.model.set('svg', this.el.querySelector('.graphic-container>svg.graphic'));
+
+        return this;
     }
-  },
-
-  reportErrors: function(errors) {
-    this.model.errors.reset(Array.isArray(errors) ? errors : [errors]);
-  },
-
-  render: function(){
-
-    var config = this.model.createConfig();
-
-    if (!config) {
-      this.empty();
-      return;
-    }
-
-    this.el.innerHTML = this.template();
-    this.svg = this.el.querySelector('.graphic-container');
-    var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
-
-    this.el.style.width = (config.width + selectionBorderWidth) + 'px';
-    this.el.style.display = 'block';
-    this.svg.style.width = config.width + 'px';
-
-    config.error = this.reportErrors;
-
-    d3.select(this.svg).data([config]).call(this.chart);
-
-    this.model.set('svg', this.el.querySelector('.graphic-container>svg.graphic'));
-
-    return this;
-  }
 
 });
 
@@ -29716,31 +29735,31 @@ var Datatypes = require('./Datatypes.js');
 
 var ViewHighlight = Backbone.View.extend({
 
-  className: 'view-highlight',
+    className: 'view-highlight',
 
-  template: require('./../templates/highlight.hbs'),
+    template: require('./../templates/highlight.hbs'),
 
-  bindings: {
-    '[data-section-name="categorical"]': {
-      observe: 'datatype',
-      visible: Datatypes.isCategorical
+    bindings: {
+        '[data-section-name="categorical"]': {
+            observe: 'datatype',
+            visible: Datatypes.isCategorical
+        },
+        '[data-section-name="numeric"]': {
+            observe: 'datatype',
+            visible: Datatypes.isNumeric
+        },
+        '[data-section-name="time"]': {
+            observe: 'datatype',
+            visible: Datatypes.isTime
+        }
     },
-    '[data-section-name="numeric"]': {
-      observe: 'datatype',
-      visible: Datatypes.isNumeric
-    },
-    '[data-section-name="time"]': {
-      observe: 'datatype',
-      visible: Datatypes.isTime
+
+    render: function () {
+        var data = this.model ? this.model.toJSON() : {};
+        this.el.innerHTML = this.template(data);
+        this.stickit();
+        return this;
     }
-  },
-
-  render: function() {
-    var data = this.model ? this.model.toJSON() : {};
-    this.el.innerHTML = this.template(data);
-    this.stickit();
-    return this;
-  }
 
 });
 
@@ -29755,189 +29774,190 @@ var tracking = require('./../utils/tracking.js');
 
 var ViewImportData = Backbone.View.extend({
 
-  className: 'view-importdata',
+    className: 'view-importdata',
 
-  initialize: function() {
-    this.listenTo(this.model, 'invalid', function (model) {
-      this.showError(model.validationError);
-    });
-    this.listenTo(this.model, 'change:data', this.clearError);
-    this.listenTo(this.model, 'change:data', this.hide);
-    this.listenTo(this.model, 'change:warning', this.renderWarning);
-  },
+    initialize: function () {
+        this.listenTo(this.model, 'invalid', function (model) {
+            this.showError(model.validationError);
+        });
+        this.listenTo(this.model, 'change:data', this.clearError);
+        this.listenTo(this.model, 'change:data', this.hide);
+        this.listenTo(this.model, 'change:warning', this.renderWarning);
+    },
 
-  delegateEvents: function() {
-    Backbone.View.prototype.delegateEvents.apply(this, arguments);
-    this.__dragover = (function(e){ e.preventDefault(); 
-      //console.log('over', e.dataTransfer.files);
-      // TODO: show rejection cursor if wrong file type.
-      //e.dataTransfer.effectAllowed = "none";
-      //this.$el.addClass('dropzone');
-    }).bind(this);
-    this.__dropFile = (function (event) {
-      var dt = event.dataTransfer;
-      if (!dt || !dt.files || !dt.files.length) return;
-      event.preventDefault();
-      this.$el.removeClass('dropzone');
-      this.readFile(dt.files[0]);
-    }).bind(this);
-    this.__paste = (function (event) {
-      var clipboardData = event.clipboardData;
-      if (!clipboardData) return;
-      var types = clipboardData.types;
-      var data;
-      if (types && types.length && /^text\/[A-Za-z\-]+/.test(types[0]) && types[1] !== 'Files') {
-        data = (clipboardData.getData('text/plain') || '');
-        if (data) {
-          this.model.set({dataAsString: data}, {validate: true});
+    delegateEvents: function () {
+        Backbone.View.prototype.delegateEvents.apply(this, arguments);
+        this.__dragover = (function (e) {
+            e.preventDefault();
+            //console.log('over', e.dataTransfer.files);
+            // TODO: show rejection cursor if wrong file type.
+            //e.dataTransfer.effectAllowed = "none";
+            //this.$el.addClass('dropzone');
+        }).bind(this);
+        this.__dropFile = (function (event) {
+            var dt = event.dataTransfer;
+            if (!dt || !dt.files || !dt.files.length) return;
+            event.preventDefault();
+            this.$el.removeClass('dropzone');
+            this.readFile(dt.files[0]);
+        }).bind(this);
+        this.__paste = (function (event) {
+            var clipboardData = event.clipboardData;
+            if (!clipboardData) return;
+            var types = clipboardData.types;
+            var data;
+            if (types && types.length && /^text\/[A-Za-z\-]+/.test(types[0]) && types[1] !== 'Files') {
+                data = (clipboardData.getData('text/plain') || '');
+                if (data) {
+                    this.model.set({dataAsString: data}, {validate: true});
+                }
+            }
+        }).bind(this);
+        window.addEventListener('dragover', this.__dragover, false);
+        var self = this;
+        window.addEventListener('dragenter', function (event) {
+            //console.log(event.type, event);
+            self.$el.addClass('dropzone');
+        }, false);
+        window.addEventListener('dragleave', function (event) {
+            // console.log(event.type, event);
+            // self.$el.removeClass('dropzone');
+        }, false);
+        window.addEventListener('dragend', function (event) {
+            // console.log(event.type, event);
+            self.$el.removeClass('dropzone');
+        }, false);
+        window.addEventListener('drop', this.__dropFile, false);
+        window.addEventListener('paste', this.__paste, false);
+    },
+
+    undelegateEvents: function () {
+        Backbone.View.prototype.undelegateEvents.apply(this, arguments);
+        window.removeEventListener('dragover', this.__dragover, false);
+        window.removeEventListener('drop', this.__dropFile, false);
+        window.removeEventListener('paste', this.__paste, false);
+    },
+
+    events: {
+        'change [name="file"]': 'file',
+        'click [name="select-file"]': 'selectFile',
+        'click [name="ignore-warning"]': 'ignoreWarning'
+    },
+
+    file: function (event) {
+        var fileList = event.target.files;
+        var file;
+
+        if (!fileList || !fileList.length) {
+            return;
         }
-      }
-    }).bind(this);
-    window.addEventListener('dragover', this.__dragover, false);
-    var self = this;
-    window.addEventListener('dragenter', function(event){ 
-      //console.log(event.type, event);
-      self.$el.addClass('dropzone');
-    }, false);
-    window.addEventListener('dragleave', function(event){ 
-     // console.log(event.type, event);
-      // self.$el.removeClass('dropzone');
-    }, false);
-    window.addEventListener('dragend', function(event){ 
-     // console.log(event.type, event);
-      self.$el.removeClass('dropzone');
-    }, false);
-    window.addEventListener('drop', this.__dropFile, false);
-    window.addEventListener('paste', this.__paste, false);
-  },
 
-  undelegateEvents: function() {
-    Backbone.View.prototype.undelegateEvents.apply(this, arguments);
-    window.removeEventListener('dragover', this.__dragover, false);
-    window.removeEventListener('drop', this.__dropFile, false);
-    window.removeEventListener('paste', this.__paste, false);
-  },
+        file = fileList[0];
 
-  events: {
-    'change [name="file"]': 'file',
-    'click [name="select-file"]': 'selectFile',
-    'click [name="ignore-warning"]': 'ignoreWarning'
-  },
+        this.readFile(file);
+    },
 
-  file: function(event) {
-    var fileList = event.target.files;
-      var file;
+    selectFile: function (event) {
+        this.$('[name="file"]')[0].click();
+        event.preventDefault();
+        event.stopPropagation();
+    },
 
-      if (!fileList || !fileList.length) {
-        return;
-      }
+    remove: function () {
+        this.undelegateEvents();
+        return Backbone.View.prototype.remove.apply(this, arguments);
+    },
 
-    file = fileList[0];
+    readFile: function (file) {
+        if (!DataImport.isValidType(file.type)) {
+            this.showError({message: 'Invalid file type.'});
+            return;
+        }
 
-    this.readFile(file);
-  },
+        var reader = new FileReader();
+        var self = this;
+        reader.onload = function () {
+            if (reader.readyState === FileReader.DONE) {
+                self.model.set({dataAsString: reader.result, type: file.type}, {validate: true});
+            }
+        };
+        reader.error = function (evt) {
+            // TODO : this is just a placeholder implementation
+            // Needs testing and better error messages
+            var msg = '';
+            var error = evt.target.error;
+            var code = error.code;
+            switch (code) {
+                case error.NOT_FOUND_ERR:
+                    msg = 'File Not Found!';
+                    break;
+                case error.NOT_READABLE_ERR:
+                    msg = 'File is not readable';
+                    break;
+                case error.ABORT_ERR:
+                    msg = 'Import aborted';
+                    break;
+                default:
+                    msg = 'An error occurred reading this file.';
+            }
 
-  selectFile: function(event) {
-    this.$('[name="file"]')[0].click();
-    event.preventDefault();
-    event.stopPropagation();
-  },
+            self.showError({message: msg});
+        };
 
-  remove: function() {
-    this.undelegateEvents();
-    return Backbone.View.prototype.remove.apply(this, arguments);
-  },
+        reader.readAsText(file);
+    },
 
-  readFile: function(file) {
-    if (!DataImport.isValidType(file.type)) {
-      this.showError({message: 'Invalid file type.'});
-      return;
+    template: require('./../templates/import.hbs'),
+
+    hide: function () {
+        var numRows = this.model.get('numRows');
+        var warning = this.model.get('warning');
+        var hasWarnings = !!warning && !!warning.message;
+        if (!numRows || hasWarnings) {
+            window.addEventListener('paste', this.__paste, false);
+            this.$el.delay(50).fadeIn(100);
+        } else {
+            window.removeEventListener('paste', this.__paste, false);
+            this.$el.delay(200).fadeOut(100);
+            //track that the data collection view has been removed and graphic view will be seen
+            tracking.trackPage('GraphicsPreview');
+        }
+    },
+
+    renderWarning: function () {
+        var warning = this.model.get('warning');
+        var show = (!!warning && !!warning.message);
+        var el = this.$('.warning-message');
+        if (show) {
+            el.fadeIn('fast').html(warningMessageTemplate(warning));
+        } else {
+            el.hide();
+        }
+    },
+
+    ignoreWarning: function () {
+        this.model.ignoreWarning();
+        this.hide();
+    },
+
+    clearError: function () {
+        this.showError(null);
+    },
+
+    showError: function (error) {
+        var show = (error && error.message);
+        var message = show ? error.message : '&nbsp;';
+        this.$('.error-message').css('opacity', (show ? 1 : 0)).html(message);
+    },
+
+    render: function () {
+        var data = {};
+        this.el.innerHTML = this.template(data);
+        this.clearError();
+        this.renderWarning();
+        var self = this;
+        return this;
     }
-
-    var reader = new FileReader();
-    var self = this;
-    reader.onload = function() {
-      if (reader.readyState === FileReader.DONE) {
-        self.model.set({dataAsString: reader.result, type: file.type}, {validate: true});
-      }
-    };
-    reader.error = function(evt) {
-      // TODO : this is just a placeholder implementation
-      // Needs testing and better error messages
-      var msg = '';
-      var error = evt.target.error;
-      var code = error.code;
-      switch(code) {
-        case error.NOT_FOUND_ERR:
-          msg = 'File Not Found!';
-          break;
-        case error.NOT_READABLE_ERR:
-          msg = 'File is not readable';
-          break;
-        case error.ABORT_ERR:
-          msg = 'Import aborted';
-          break;
-        default:
-          msg = 'An error occurred reading this file.';
-      }
-
-      self.showError({message: msg});
-    };
-
-    reader.readAsText(file);
-  },
-
-  template: require('./../templates/import.hbs'),
-
-  hide: function() {
-    var numRows = this.model.get('numRows');
-    var warning = this.model.get('warning');
-    var hasWarnings = !!warning && !!warning.message;
-    if (!numRows || hasWarnings) {
-      window.addEventListener('paste', this.__paste, false);
-      this.$el.delay(50).fadeIn(100);
-    } else {
-      window.removeEventListener('paste', this.__paste, false);
-      this.$el.delay(200).fadeOut(100);
-      //track that the data collection view has been removed and graphic view will be seen
-      tracking.trackPage('GraphicsPreview');
-    }
-  },
-
-  renderWarning: function() {
-    var warning = this.model.get('warning');
-    var show = (!!warning && !!warning.message);
-    var el = this.$('.warning-message');
-    if (show) {
-      el.fadeIn('fast').html(warningMessageTemplate(warning));
-    } else {
-      el.hide();
-    }
-  },
-
-  ignoreWarning: function() {
-    this.model.ignoreWarning();
-    this.hide();
-  },
-
-  clearError: function() {
-    this.showError(null);
-  },
-
-  showError: function(error) {
-    var show = (error && error.message);
-    var message = show ? error.message : '&nbsp;';
-    this.$('.error-message').css('opacity', (show ? 1 : 0)).html(message);
-  },
-
-  render: function() {
-    var data = {};
-    this.el.innerHTML = this.template(data);
-    this.clearError();
-    this.renderWarning();
-    var self = this;
-    return this;
-  }
 
 });
 
@@ -29955,71 +29975,71 @@ var Datatypes = require('./Datatypes.js');
 
 var ViewIndependantAxisControls = RegionView.extend({
 
-  className: 'view-independant-axis-controls',
+    className: 'view-independant-axis-controls',
 
-  template: require('./../templates/independant-axis-control.hbs'),
+    template: require('./../templates/independant-axis-control.hbs'),
 
-  initialize: function(options) {
-    RegionView.prototype.initialize.apply(this, arguments);
-    this.dataImport = options.dataImport;
-    this.listenTo(this.dataImport.columns, 'change:axis', function(column, axis) {
-      if (axis === 'X') {
-        this.render();
-      }
-    });
-    this.listenTo(this.dataImport.columns, 'reset', this.render);
-  },
-
-  regions: {
-    '[data-region="label"]': function () {
-      return new ViewAxisLabel({
-        model: this.model
-      });
+    initialize: function (options) {
+        RegionView.prototype.initialize.apply(this, arguments);
+        this.dataImport = options.dataImport;
+        this.listenTo(this.dataImport.columns, 'change:axis', function (column, axis) {
+            if (axis === 'X') {
+                this.render();
+            }
+        });
+        this.listenTo(this.dataImport.columns, 'reset', this.render);
     },
-    '[data-region="datatype"]': function () {
-      return new ViewDatatype({
-        model: this.model,
-        show: {
-          numeric: false
+
+    regions: {
+        '[data-region="label"]': function () {
+            return new ViewAxisLabel({
+                model: this.model
+            });
+        },
+        '[data-region="datatype"]': function () {
+            return new ViewDatatype({
+                model: this.model,
+                show: {
+                    numeric: false
+                }
+            });
+        },
+        '[data-region="highlight"]': function () {
+            return new ViewHighlight({model: this.model});
+        },
+        '[data-region="dateFormat"]': function () {
+            return new ViewDateFormat({model: this.model});
         }
-      });
     },
-    '[data-region="highlight"]': function () {
-      return new ViewHighlight({model: this.model});
-    },
-    '[data-region="dateFormat"]': function() {
-      return new ViewDateFormat({model: this.model});
-    }
-  },
 
-  bindings: {
-    '[name="columns"]': {
-      observe: 'property',
-      selectOptions: {
-        collection: 'this.dataImport.columns',
-        labelPath: 'property',
-        valuePath: 'property',
-        defaultOption: {
-          label: '-- Pick a column for the X axis --',
-          value: null
+    bindings: {
+        '[name="columns"]': {
+            observe: 'property',
+            selectOptions: {
+                collection: 'this.dataImport.columns',
+                labelPath: 'property',
+                valuePath: 'property',
+                defaultOption: {
+                    label: '-- Pick a column for the X axis --',
+                    value: null
+                }
+            },
+            updateModel: function (value) {
+                var column = this.dataImport.columns.findWhere({property: value});
+                this.model.useColumn(column);
+                return false;
+            }
+        },
+        '[data-region="dateFormat"]': {
+            observe: 'datatype',
+            visible: Datatypes.isTime
         }
-      },
-      updateModel: function(value) {
-        var column = this.dataImport.columns.findWhere({property: value});
-        this.model.useColumn(column);
-        return false;
-      }
     },
-    '[data-region="dateFormat"]': {
-      observe: 'datatype',
-      visible: Datatypes.isTime
-    }
-  },
 
-  render: function() {
-    RegionView.prototype.render.apply(this, arguments);
-    this.stickit();
-  }
+    render: function () {
+        RegionView.prototype.render.apply(this, arguments);
+        this.stickit();
+    }
 
 });
 
@@ -30030,39 +30050,39 @@ var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
 var ViewInlineHelp = Backbone.View.extend({
-  render: function() {
-    this.$el.popover({ 
-      selector: '[data-help]',
-      html: true,
-      trigger: 'hover',
-      content: function(el) {
-        var dataset = this.dataset;
-        var msg;
-        if (dataset && dataset.help && dataset.help in Help) {
-          msg = Help[dataset.help];
-          if (typeof msg !== 'function') {
-            return  msg;
-          }
-          try{
-            return msg(dataset);
-          } catch(tmplError) {
-            console.log('Error parsing Help template', dataset.help, msg);
-            return null;
-          }
-        }
-        return null;
-      }
-    });
+    render: function () {
+        this.$el.popover({
+            selector: '[data-help]',
+            html: true,
+            trigger: 'hover',
+            content: function (el) {
+                var dataset = this.dataset;
+                var msg;
+                if (dataset && dataset.help && dataset.help in Help) {
+                    msg = Help[dataset.help];
+                    if (typeof msg !== 'function') {
+                        return msg;
+                    }
+                    try {
+                        return msg(dataset);
+                    } catch (tmplError) {
+                        console.log('Error parsing Help template', dataset.help, msg);
+                        return null;
+                    }
+                }
+                return null;
+            }
+        });
 
-    this.$el.tooltip({ 
-      selector: '[rel="tooltip"]'
-    });
-    return this;
-  }
+        this.$el.tooltip({
+            selector: '[rel="tooltip"]'
+        });
+        return this;
+    }
 });
 
-ViewInlineHelp.init = function() {
-  (new ViewInlineHelp({el: document.body})).render();
+ViewInlineHelp.init = function () {
+    (new ViewInlineHelp({el: document.body})).render();
 };
 
 module.exports = ViewInlineHelp;
@@ -30075,22 +30095,22 @@ var Backbone = require('./../core/backbone.js');
 
 var ViewLineControls = Backbone.View.extend({
 
-  className: 'view-graphic-type-controls',
+    className: 'view-graphic-type-controls',
 
-  template: require('./../templates/type-controls-line.hbs'),
+    template: require('./../templates/type-controls-line.hbs'),
 
-  bindings: {
-    '[name="startFromZero"]': 'startFromZero',
-    '[name="thinLines"]': 'thinLines',
-    '[name="flipYAxis"]': 'flipYAxis',
-    '[name="nice"]': 'nice'
-  },
+    bindings: {
+        '[name="startFromZero"]': 'startFromZero',
+        '[name="thinLines"]': 'thinLines',
+        '[name="flipYAxis"]': 'flipYAxis',
+        '[name="nice"]': 'nice'
+    },
 
-  render: function() {
-    this.el.innerHTML = this.template();
-    this.stickit(this.model.controls);
-    return this;
-  }
+    render: function () {
+        this.el.innerHTML = this.template();
+        this.stickit(this.model.controls);
+        return this;
+    }
 
 });
 
@@ -30108,94 +30128,94 @@ var tracking = require('./../utils/tracking.js');
 
 var ViewSelectedVariation = RegionView.extend({
 
-  initialize: function(options) {
-    RegionView.prototype.initialize.apply(this, arguments);
-    var debounced = _.bind(_.debounce(this.render, 50), this);
-    this.listenTo(this.model.graphic, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
-    this.listenTo(this.model.graphicType.controls, 'change', debounced);
-    this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
-    this.listenTo(this.model.errors, 'reset', this.renderErrors);
-  },
+    initialize: function (options) {
+        RegionView.prototype.initialize.apply(this, arguments);
+        var debounced = _.bind(_.debounce(this.render, 50), this);
+        this.listenTo(this.model.graphic, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.yAxis.columns, 'change add', debounced);
+        this.listenTo(this.model.graphicType.controls, 'change', debounced);
+        this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
+        this.listenTo(this.model.errors, 'reset', this.renderErrors);
+    },
 
-  className: 'view-selected-variation',
+    className: 'view-selected-variation',
 
-  template: require('./../templates/selected-variation.hbs'),
+    template: require('./../templates/selected-variation.hbs'),
 
-  events: {
-    'click [name="save"]': 'save',
-  },
+    events: {
+        'click [name="save"]': 'save',
+    },
 
-  regions: {
-    '[data-region="graphic-type-controls"]': function() {
-      return new ViewLineControls({model: this.model.graphicType});
+    regions: {
+        '[data-region="graphic-type-controls"]': function () {
+            return new ViewLineControls({model: this.model.graphicType});
 
-      // TODO: once we have more chart types then we'll
-      // need to be able to switch between different views here
-      // return new ViewGraphicTypeControls({model: this.model.graphicType});
-    }
-  },
+            // TODO: once we have more chart types then we'll
+            // need to be able to switch between different views here
+            // return new ViewGraphicTypeControls({model: this.model.graphicType});
+        }
+    },
 
-  save: function(event) {
+    save: function (event) {
 
-    event.preventDefault();
-    event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
-    var svg = this.model.get('svg');
-    var el = event.target;
-    var format = event.altKey ? 'svg' : 'png';
+        var svg = this.model.get('svg');
+        var el = event.target;
+        var format = event.altKey ? 'svg' : 'png';
 
-    el.setAttribute('disabled', 'disabled');
+        el.setAttribute('disabled', 'disabled');
 
-    function removeDisabledState() {
-      el.removeAttribute('disabled');
-    }
+        function removeDisabledState() {
+            el.removeAttribute('disabled');
+        }
 
-    var d = this.model.toJSON();
+        var d = this.model.toJSON();
 
-    // TODO: check it's possible to make the image.
-    //         - dont allow the user to download a chart with validation errors
-    //         - dont allow a user to download an empty image
+        // TODO: check it's possible to make the image.
+        //         - dont allow the user to download a chart with validation errors
+        //         - dont allow a user to download an empty image
 
-    var filename = util.format('%s-%s-%s-%sx%s',
-                            (d.graphic.title ? d.graphic.title.replace(/\s/g, '_') : 'Untitled'),
-                            d.graphicType.typeName.toLowerCase() + '_chart',
-                            d.variation.variationName,
-                            d.svg.width,
-                            d.svg.height
-                            ).replace(/\s/g, '');
+        var filename = util.format('%s-%s-%s-%sx%s',
+            (d.graphic.title ? d.graphic.title.replace(/\s/g, '_') : 'Untitled'),
+            d.graphicType.typeName.toLowerCase() + '_chart',
+            d.variation.variationName,
+            d.svg.width,
+            d.svg.height
+        ).replace(/\s/g, '');
 
-    // TODO: allow transparent and specified colour backgrounds
-    // set this to null for transparent backgrounds
-    var bgColor = '#fff1e0';
+        // TODO: allow transparent and specified colour backgrounds
+        // set this to null for transparent backgrounds
+        var bgColor = '#fff1e0';
 
-    // FIXME: this is a hack, we shouldn't need this.
-    attributeStyler();
+        // FIXME: this is a hack, we shouldn't need this.
+        attributeStyler();
 
-    download(filename, svg, format, bgColor, function(){
-      // TODO: alert the user when there's an error creating the image
+        download(filename, svg, format, bgColor, function () {
+            // TODO: alert the user when there's an error creating the image
 
-      // prevent doubleclick
-      setTimeout(removeDisabledState, 200);
-    });
-    tracking.trackEvent('saveImage-'+format);
-  },
+            // prevent doubleclick
+            setTimeout(removeDisabledState, 200);
+        });
+        tracking.trackEvent('saveImage-' + format);
+    },
 
-  render: function() {
+    render: function () {
 
-    if (!this.model.get('svg')) {
-      this.el.innerHTML = '';
-      return this;
-    }
+        if (!this.model.get('svg')) {
+            this.el.innerHTML = '';
+            return this;
+        }
 
-    var data = this.model.toJSON();
-    this.el.innerHTML = this.template(data);
-    this.renderRegions();
-    return this;
+        var data = this.model.toJSON();
+        this.el.innerHTML = this.template(data);
+        this.renderRegions();
+        return this;
 
-  },
+    },
 
 });
 
@@ -30213,37 +30233,37 @@ var ViewSeriesList = require('./ViewSeriesList.js');
 
 var ViewSeriesControls = RegionView.extend({
 
-  initialize: function(options) {
-    RegionView.prototype.initialize.apply(this, arguments);
-    this.dataImport = options.dataImport;
-  },
-
-  template: function() {
-    return '<div data-region="added"></div><div data-region="not-added"></div>';
-  },
-
-  events: {
-    'click [name="add-column"]': 'addColumn'
-  },
-
-  addColumn: function(event) {
-    console.log('add column');
-    var property = event.target.dataset.property;
-    var model = this.model.chart.unusedSeries.findWhere({property: property});
-    this.model.columns.add(model);
-  },
-
-  regions: {
-    '[data-region="added"]': function() {
-      return new ViewSeriesList({collection: this.model.columns});
+    initialize: function (options) {
+        RegionView.prototype.initialize.apply(this, arguments);
+        this.dataImport = options.dataImport;
     },
-    '[data-region="not-added"]': function() {
-      return new ViewSeriesList({
-        collection: this.model.chart.unusedSeries,
-        isUnusedCollection: true
-      });
+
+    template: function () {
+        return '<div data-region="added"></div><div data-region="not-added"></div>';
+    },
+
+    events: {
+        'click [name="add-column"]': 'addColumn'
+    },
+
+    addColumn: function (event) {
+        console.log('add column');
+        var property = event.target.dataset.property;
+        var model = this.model.chart.unusedSeries.findWhere({property: property});
+        this.model.columns.add(model);
+    },
+
+    regions: {
+        '[data-region="added"]': function () {
+            return new ViewSeriesList({collection: this.model.columns});
+        },
+        '[data-region="not-added"]': function () {
+            return new ViewSeriesList({
+                collection: this.model.chart.unusedSeries,
+                isUnusedCollection: true
+            });
+        }
     }
-  }
 
 });
 
@@ -30259,274 +30279,274 @@ var dragging;
 var placeholder = $('<div class="sortablelist-placeholder"/>');
 var dragElement;
 
-function sortablelist(view){
+function sortablelist(view) {
 
-  return {
-    dragstart: function(e) {
-      if (!e.target.draggable) return false;
-      var dataTransfer = e.originalEvent.dataTransfer;
-      dataTransfer.effectAllowed = 'move';
-      dataTransfer.setData('Text', 'dummy');
-      dragging = {
-        $el: $(e.currentTarget),
-        view: view,
-      };
-      dragElement = $(e.currentTarget.cloneNode(true));
-      dragElement.addClass('drag-image').css({
-        width: dragging.$el.width()
-      });
-      dragElement.find('.series-num').html('');
-      dragElement.find('.series-item-controls').html('');
-      dragElement.appendTo(document.body);
-      dataTransfer.setDragImage(dragElement[0], 0, 0);
-      
-      dragging.index = dragging.$el.addClass('sortable-dragging').index();
-      var copy = $(e.currentTarget.innerHTML);
-      copy.find('.series-num').html('');
-      copy.find('.series-item-controls').html('');
-      placeholder.empty().append(copy);
-    },
-    dragend: function(e) {
-      if (!dragging) return;
-      dragging.$el.removeClass('sortable-dragging').show();
-      placeholder.detach();
-      if (dragElement) {
-        dragElement.detach();
-        dragElement = null;
-      }
-      // if (index !== dragging.index()) {
-      //   var t = $(e.target);
-      //   var newIndex = t.index();
-      //   t.trigger({type: 'reorder', item: dragging, oldIndex: index, newIndex: newIndex});
-      // }
+    return {
+        dragstart: function (e) {
+            if (!e.target.draggable) return false;
+            var dataTransfer = e.originalEvent.dataTransfer;
+            dataTransfer.effectAllowed = 'move';
+            dataTransfer.setData('Text', 'dummy');
+            dragging = {
+                $el: $(e.currentTarget),
+                view: view,
+            };
+            dragElement = $(e.currentTarget.cloneNode(true));
+            dragElement.addClass('drag-image').css({
+                width: dragging.$el.width()
+            });
+            dragElement.find('.series-num').html('');
+            dragElement.find('.series-item-controls').html('');
+            dragElement.appendTo(document.body);
+            dataTransfer.setDragImage(dragElement[0], 0, 0);
 
-      // no-cancel behaviour
-      if (dragging.index !== dragging.tempIndex || view !== dragging.view) {
-        var t = $(e.currentTarget);
-        t.trigger({
-          type: 'reorder',
-          view: dragging.view,
-          item: dragging.$el,
-          oldIndex: dragging.index,
-          newIndex: dragging.tempIndex
-        });
-      }
-      dragging = null;
-    },
-    dragover: function(e) {
-      if (e.type === 'drop') {
-        e.stopPropagation();
-        if (placeholder.is(':visible')) {
-          placeholder.after(dragging);
+            dragging.index = dragging.$el.addClass('sortable-dragging').index();
+            var copy = $(e.currentTarget.innerHTML);
+            copy.find('.series-num').html('');
+            copy.find('.series-item-controls').html('');
+            placeholder.empty().append(copy);
+        },
+        dragend: function (e) {
+            if (!dragging) return;
+            dragging.$el.removeClass('sortable-dragging').show();
+            placeholder.detach();
+            if (dragElement) {
+                dragElement.detach();
+                dragElement = null;
+            }
+            // if (index !== dragging.index()) {
+            //   var t = $(e.target);
+            //   var newIndex = t.index();
+            //   t.trigger({type: 'reorder', item: dragging, oldIndex: index, newIndex: newIndex});
+            // }
+
+            // no-cancel behaviour
+            if (dragging.index !== dragging.tempIndex || view !== dragging.view) {
+                var t = $(e.currentTarget);
+                t.trigger({
+                    type: 'reorder',
+                    view: dragging.view,
+                    item: dragging.$el,
+                    oldIndex: dragging.index,
+                    newIndex: dragging.tempIndex
+                });
+            }
+            dragging = null;
+        },
+        dragover: function (e) {
+            if (e.type === 'drop') {
+                e.stopPropagation();
+                if (placeholder.is(':visible')) {
+                    placeholder.after(dragging);
+                }
+                dragging.$el.trigger('dragend');
+                return false;
+            }
+            e.preventDefault();
+            e.originalEvent.dataTransfer.dropEffect = 'move';
+            if (e.target.draggable) {
+                dragging.$el.hide();
+                var t = $(e.currentTarget);
+                var after = placeholder.index() < t.index();
+                var p = t[after ? 'after' : 'before'](placeholder);
+
+                // no-cancel behaviour
+                dragging.tempIndex = view.$('>*:visible').index(placeholder);
+                dragging.view = view;
+            } else if (e.currentTarget === view.el && !view.collection.length) {
+                dragging.$el.hide();
+                $(e.currentTarget).append(placeholder);
+                dragging.view = view;
+                dragging.tempIndex = 0;
+            }
+            return false;
         }
-        dragging.$el.trigger('dragend');
-        return false;
-      }
-      e.preventDefault();
-      e.originalEvent.dataTransfer.dropEffect = 'move';
-      if (e.target.draggable) {
-        dragging.$el.hide();
-        var t = $(e.currentTarget);
-        var after = placeholder.index() < t.index();
-        var p = t[after ? 'after' : 'before'](placeholder);
-
-        // no-cancel behaviour
-        dragging.tempIndex = view.$('>*:visible').index(placeholder);
-        dragging.view = view;
-      } else if (e.currentTarget === view.el && !view.collection.length) {
-        dragging.$el.hide();
-        $(e.currentTarget).append(placeholder);
-        dragging.view = view;
-        dragging.tempIndex = 0;
-      }
-      return false;
-    }
-  };
+    };
 }
 
 var instances = 0;
 
 var ViewSeriesList = CollectionView.extend({
 
-  className: function() {
-    return 'view-series-list' + (this.isUnusedCollection ? ' unused ' : '');
-  },
-
-  constructor: function (options) {
-    options = options || {};
-    this.isUnusedCollection = !!options.isUnusedCollection;
-    return CollectionView.prototype.constructor.apply(this, arguments);
-  },
-
-  initialize: function() {
-    CollectionView.prototype.initialize.apply(this, arguments);
-    this._sortablelist = sortablelist(this);
-    if (this.isUnusedCollection) {
-      this.listenTo(this.collection, 'reset add remove', function() {
-        this.el.style.display = !!this.collection.length ? 'block' : 'none';
-      });
-    }
-  },
-
-  events: {
-    'dragstart .view-series-list-item': function(event){
-      return this._sortablelist.dragstart(event);
-    },
-    'dragend .view-series-list-item': function(event) {
-      return this._sortablelist.dragend(event);
-    },
-    'dragover .view-series-list-item' : 'dragover',
-    'dragenter .view-series-list-item' : 'dragover',
-    'drop .view-series-list-item' : 'dragover',
-    reorder: function(event) {
-      var model;
-      if (this === event.view) {
-        model = this.collection.at(event.oldIndex);
-        this.collection.remove(model, {silent:true});
-        this.collection.add(model, {at: event.newIndex});
-      } else {
-        model = this.collection.at(event.oldIndex);
-        this.collection.remove(model);
-        event.view.collection.add(model, {at: event.newIndex});
-      }
-    }
-  },
-
-  dragover: function(event) {
-    return this._sortablelist.dragover(event);
-  },
-
-  createView: function(model, index) {
-    var  o = {
-      model: model,
-      index: index,
-      isLast: index >= this.collection.length - 1,
-      isUnusedCollection: this.isUnusedCollection
-    };
-    return new this._ItemClass(o);
-  },
-
-  itemView: Backbone.View.extend({
-
-    constructor: function(options) {
-      options = options || {};
-      this.index = options.index || 0;
-      return Backbone.View.prototype.constructor.apply(this, arguments);
+    className: function () {
+        return 'view-series-list' + (this.isUnusedCollection ? ' unused ' : '');
     },
 
-    initialize: function(o) {
-      this.isUnusedCollection = !!o.isUnusedCollection;
-      this.isLast = o.isLast;
-      this.listenTo(this.model, 'change:isOther', this.updateClassName);
+    constructor: function (options) {
+        options = options || {};
+        this.isUnusedCollection = !!options.isUnusedCollection;
+        return CollectionView.prototype.constructor.apply(this, arguments);
     },
 
-    className: function() {
-      return 'view-series-list-item series-' + (this.model.get('isOther') ? 'other' : this.index + 1);
+    initialize: function () {
+        CollectionView.prototype.initialize.apply(this, arguments);
+        this._sortablelist = sortablelist(this);
+        if (this.isUnusedCollection) {
+            this.listenTo(this.collection, 'reset add remove', function () {
+                this.el.style.display = !!this.collection.length ? 'block' : 'none';
+            });
+        }
     },
 
     events: {
-      'mousedown [name="label"]': function(event) {
-        if (event.target == document.activeElement) return;
-        event.preventDefault();
-      },
-      'click [name="label"]': function(event) {
-        if (event.target == document.activeElement) return;
-        event.target.focus();
-      },
-      'focus [name="label"]': 'selectText',
-      'blur [name="label"]': 'blurLabelField',
-      'keydown [name="label"]': 'keydownLabelField',
-      'input [name="label"]': 'blurLabelField',
-      'click [name="remove-series"]': 'removeSeries'
-    },
-
-    bindings: {
-      '[name="label"]': {
-        observe: 'label',
-        update: function($el, val, model, options) {
-          if (document.activeElement !== $el[0]) {
-            $el[0].textContent = val;
-          }
+        'dragstart .view-series-list-item': function (event) {
+            return this._sortablelist.dragstart(event);
+        },
+        'dragend .view-series-list-item': function (event) {
+            return this._sortablelist.dragend(event);
+        },
+        'dragover .view-series-list-item': 'dragover',
+        'dragenter .view-series-list-item': 'dragover',
+        'drop .view-series-list-item': 'dragover',
+        reorder: function (event) {
+            var model;
+            if (this === event.view) {
+                model = this.collection.at(event.oldIndex);
+                this.collection.remove(model, {silent: true});
+                this.collection.add(model, {at: event.newIndex});
+            } else {
+                model = this.collection.at(event.oldIndex);
+                this.collection.remove(model);
+                event.view.collection.add(model, {at: event.newIndex});
+            }
         }
-      },
-      '[name="isOther"]': 'isOther'
     },
 
-    template: require('./../templates/ordered-column.hbs'),
-
-    keydownLabelField: function(event) {
-      var esc = event.which === 27;
-      var newline = event.which === 13;
-      if (esc) {
-        document.execCommand('undo');
-        event.target.blur();
-      } else if (!event.altKey && newline) {
-        event.preventDefault();
-        event.target.blur();
-      }
+    dragover: function (event) {
+        return this._sortablelist.dragover(event);
     },
 
-    updateClassName: function() {
-      this.el.className = this.className();
+    createView: function (model, index) {
+        var o = {
+            model: model,
+            index: index,
+            isLast: index >= this.collection.length - 1,
+            isUnusedCollection: this.isUnusedCollection
+        };
+        return new this._ItemClass(o);
     },
 
-    blurLabelField: function(event) {
-      // FIXME: allow line breaks in the value
-      var value = event.target.textContent;
-      var isBlurring = event.type === 'focusout';
-      var isEmptyField = !value.trim();
-      if (isBlurring && isEmptyField) {
-        value = event.target.textContent = this.model.get('property');
-      }
-      this.model.set('label', value);
-      if (isBlurring) {
-        console.log('isBlurring');
-        this.deselectText();
-      }
-    },
+    itemView: Backbone.View.extend({
 
-    selectText: function(event) {
-      window.requestAnimationFrame(function() {
-        var range = document.createRange();
-        range.selectNodeContents(event.target);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      });
-    },
+        constructor: function (options) {
+            options = options || {};
+            this.index = options.index || 0;
+            return Backbone.View.prototype.constructor.apply(this, arguments);
+        },
 
-    deselectText: function() {
-      window.requestAnimationFrame(function() {
-        if (document.selection) {
-          document.selection.empty();
-        } else if (window.getSelection) {
-          window.getSelection().removeAllRanges();
+        initialize: function (o) {
+            this.isUnusedCollection = !!o.isUnusedCollection;
+            this.isLast = o.isLast;
+            this.listenTo(this.model, 'change:isOther', this.updateClassName);
+        },
+
+        className: function () {
+            return 'view-series-list-item series-' + (this.model.get('isOther') ? 'other' : this.index + 1);
+        },
+
+        events: {
+            'mousedown [name="label"]': function (event) {
+                if (event.target == document.activeElement) return;
+                event.preventDefault();
+            },
+            'click [name="label"]': function (event) {
+                if (event.target == document.activeElement) return;
+                event.target.focus();
+            },
+            'focus [name="label"]': 'selectText',
+            'blur [name="label"]': 'blurLabelField',
+            'keydown [name="label"]': 'keydownLabelField',
+            'input [name="label"]': 'blurLabelField',
+            'click [name="remove-series"]': 'removeSeries'
+        },
+
+        bindings: {
+            '[name="label"]': {
+                observe: 'label',
+                update: function ($el, val, model, options) {
+                    if (document.activeElement !== $el[0]) {
+                        $el[0].textContent = val;
+                    }
+                }
+            },
+            '[name="isOther"]': 'isOther'
+        },
+
+        template: require('./../templates/ordered-column.hbs'),
+
+        keydownLabelField: function (event) {
+            var esc = event.which === 27;
+            var newline = event.which === 13;
+            if (esc) {
+                document.execCommand('undo');
+                event.target.blur();
+            } else if (!event.altKey && newline) {
+                event.preventDefault();
+                event.target.blur();
+            }
+        },
+
+        updateClassName: function () {
+            this.el.className = this.className();
+        },
+
+        blurLabelField: function (event) {
+            // FIXME: allow line breaks in the value
+            var value = event.target.textContent;
+            var isBlurring = event.type === 'focusout';
+            var isEmptyField = !value.trim();
+            if (isBlurring && isEmptyField) {
+                value = event.target.textContent = this.model.get('property');
+            }
+            this.model.set('label', value);
+            if (isBlurring) {
+                console.log('isBlurring');
+                this.deselectText();
+            }
+        },
+
+        selectText: function (event) {
+            window.requestAnimationFrame(function () {
+                var range = document.createRange();
+                range.selectNodeContents(event.target);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            });
+        },
+
+        deselectText: function () {
+            window.requestAnimationFrame(function () {
+                if (document.selection) {
+                    document.selection.empty();
+                } else if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+            });
+        },
+
+        removeSeries: function (event) {
+            var model = this.model;
+            var collection = model.collection;
+            if (collection) {
+                this.$el.animate({opacity: 0}, 160).delay(80).hide(0, function () {
+                    collection.remove(model);
+                });
+            }
+        },
+
+        render: function () {
+            var d = this.model.toJSON();
+            d.index = this.index + 1;
+            d.primary = d.index === 1;
+            d.isLast = this.isLast;
+            d.unused = this.isUnusedCollection;
+            this.el.innerHTML = this.template(d);
+            this.stickit();
+            return this;
         }
-      });
-    },
 
-    removeSeries: function(event) {
-      var model = this.model;
-      var collection = model.collection;
-      if (collection) {
-        this.$el.animate({opacity:0}, 160).delay(80).hide(0, function(){
-          collection.remove(model);
-        });
-      }
-    },
-
-    render: function() {
-      var d = this.model.toJSON();
-      d.index = this.index + 1;
-      d.primary = d.index === 1;
-      d.isLast = this.isLast;
-      d.unused = this.isUnusedCollection;
-      this.el.innerHTML = this.template(d);
-      this.stickit();
-      return this;
-    }
-
-  })
+    })
 
 });
 
@@ -30538,83 +30558,83 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 
 var CollectionView = Backbone.View.extend({
 
-  _views: [],
+    _views: [],
 
-  initialize: function(options) {
-    Backbone.View.prototype.initialize.apply(this, arguments);
-    var itemView = options.itemView || this.itemView || {};
-    this.itemContainer = options.itemContainer || this.itemContainer || null;
-    this.template = options.template || this.template || null;
-    if (_.isFunction(itemView)) {
-      this._ItemClass = itemView;
-    } else {
-      if (itemView.template && !itemView.render) {
-        if (!!itemView.bindings) {
-          itemView.render = function(){
-            this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
-            this.stickit();
-            return this;
-          };
+    initialize: function (options) {
+        Backbone.View.prototype.initialize.apply(this, arguments);
+        var itemView = options.itemView || this.itemView || {};
+        this.itemContainer = options.itemContainer || this.itemContainer || null;
+        this.template = options.template || this.template || null;
+        if (_.isFunction(itemView)) {
+            this._ItemClass = itemView;
         } else {
-          itemView.render = function(){
-            this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
-            return this;
-          };
+            if (itemView.template && !itemView.render) {
+                if (!!itemView.bindings) {
+                    itemView.render = function () {
+                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
+                        this.stickit();
+                        return this;
+                    };
+                } else {
+                    itemView.render = function () {
+                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
+                        return this;
+                    };
+                }
+            }
+            this._ItemClass = Backbone.View.extend(itemView);
         }
-      }
-      this._ItemClass = Backbone.View.extend(itemView);
+
+        this.listenTo(this.collection, 'add remove reset sort', function (e) {
+            this.itemsDirty = true;
+            this.render();
+        });
+    },
+
+    itemsDirty: false,
+
+    removeViews: function () {
+        this._views.forEach(function (view) {
+            view.remove();
+        });
+        this._views = [];
+        this.itemsDirty = false;
+    },
+
+    createView: function (model, index) {
+        var o = model instanceof Backbone.Collection ? {collection: model} : {model: model};
+        return new this._ItemClass(o);
+    },
+
+    createViews: function () {
+        if (!this.collection) return [];
+        return this.collection.map(function (model, index) {
+            return this.createView.call(this, model, index, this._ItemClass);
+        }, this);
+    },
+
+    renderItems: function () {
+        var isDirty = this.itemsDirty;
+        if (isDirty) {
+            this.removeViews();
+        }
+        var el = this.itemContainer ? this.$(this.itemContainer)[0] : this.el;
+        if (!el) return;
+        var render = isDirty || !this._views.length;
+        if (render) {
+            this._views = this.createViews();
+        }
+        this._views.forEach(function (view) {
+            if (render) view.render();
+            el.appendChild(view.el);
+        });
+    },
+
+    render: function () {
+        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
+        this.renderItems();
+        return this;
     }
-
-    this.listenTo(this.collection, 'add remove reset sort', function(e){
-      this.itemsDirty = true;
-      this.render();
-    });
-  },
-
-  itemsDirty: false, 
-
-  removeViews : function(){
-    this._views.forEach(function (view) {
-      view.remove();
-    });
-    this._views = [];
-    this.itemsDirty = false;
-  },
-
-  createView: function(model, index) {
-    var  o = model instanceof Backbone.Collection ? {collection: model} : {model: model};
-    return new this._ItemClass(o);
-  },
-
-  createViews: function() {
-    if (!this.collection) return [];
-    return this.collection.map(function (model, index) {
-      return this.createView.call(this, model, index, this._ItemClass);
-    }, this);
-  },
-
-  renderItems: function() {
-    var isDirty = this.itemsDirty;
-    if (isDirty) {
-      this.removeViews();
-    }
-    var el = this.itemContainer ? this.$(this.itemContainer)[0] : this.el;
-    if (!el) return;
-    var render = isDirty || !this._views.length;
-    if (render) {
-      this._views = this.createViews();
-    }
-    this._views.forEach(function (view) {
-      if (render) view.render();
-      el.appendChild(view.el);
-    });
-  },
-
-  render: function() {
-    this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
-    this.renderItems();
-    return this;
-  }
 });
 
 module.exports = CollectionView;
@@ -30626,64 +30646,67 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 var last;
 var RegionView = Backbone.View.extend({
 
-  initRegions: function(){
-    this.regions = _.extend({}, this.regions);
-    _.each(this.regions, function (region, selector) {
-        region = _.isFunction(region) ? {factory: region} : (!!region ? region : {factory: function(){}});
-        region._dirty = false;
-        region._view = null;
-        this.regions[selector] = region;
-    }, this);
-  },
+    initRegions: function () {
+        this.regions = _.extend({}, this.regions);
+        _.each(this.regions, function (region, selector) {
+            region = _.isFunction(region) ? {factory: region} : (!!region ? region : {
+                factory: function () {
+                }
+            });
+            region._dirty = false;
+            region._view = null;
+            this.regions[selector] = region;
+        }, this);
+    },
 
-  initialize: function() {
-    Backbone.View.prototype.initialize.apply(this, arguments);
-    this.initRegions();
-  },
+    initialize: function () {
+        Backbone.View.prototype.initialize.apply(this, arguments);
+        this.initRegions();
+    },
 
-  renderRegions: function() {
-    _.each(this.regions, function (region, selector) {
-      var el = this.findRegionContainer(selector);
-      if (!!region._view && (this.regionsDirty || !el)) {
-        region._view.remove();
-        region._view = null;
-      }
-      if (!el) return;
-      if (!region._view) {
-        region._view = this.createRegion(selector);
-        region._view.render();
-      }
-      el.appendChild(region._view.el);
-    }, this);
-    this.regionsDirty = false;
-  },
+    renderRegions: function () {
+        _.each(this.regions, function (region, selector) {
+            var el = this.findRegionContainer(selector);
+            if (!!region._view && (this.regionsDirty || !el)) {
+                region._view.remove();
+                region._view = null;
+            }
+            if (!el) return;
+            if (!region._view) {
+                region._view = this.createRegion(selector);
+                region._view.render();
+            }
+            el.appendChild(region._view.el);
+        }, this);
+        this.regionsDirty = false;
+    },
 
-  createRegion: function(selector) {
-    return this.regions[selector].factory.call(this);
-  },
+    createRegion: function (selector) {
+        return this.regions[selector].factory.call(this);
+    },
 
-  findRegionContainer: function(selector) {
-    return selector === ':el' ? this.el : this.$el.find(selector)[0]; 
-  },
+    findRegionContainer: function (selector) {
+        return selector === ':el' ? this.el : this.$el.find(selector)[0];
+    },
 
-  removeRegions : function(){
-    _.each(this.regions, function (region) {
-      region._view.remove();
-      // TODO: remove from the DOM too?
-    });
-  },
+    removeRegions: function () {
+        _.each(this.regions, function (region) {
+            region._view.remove();
+            // TODO: remove from the DOM too?
+        });
+    },
 
-  remove: function() {
-    this.removeRegions();
-    Backbone.View.prototype.remove.apply(this, arguments);
-  },
+    remove: function () {
+        this.removeRegions();
+        Backbone.View.prototype.remove.apply(this, arguments);
+    },
 
-  render: function() {
-    Backbone.View.prototype.render.apply(this, arguments);
-    this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
-    this.renderRegions();
-    return this;
-  }
+    render: function () {
+        Backbone.View.prototype.render.apply(this, arguments);
+        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
+        this.renderRegions();
+        return this;
+    }
 });
 
 module.exports = RegionView;
@@ -30700,14 +30723,14 @@ window.jQuery = Backbone.$ = $;
 var Stickit = require("./../../../bower_components/backbone.stickit/backbone.stickit.js");
 require("./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js");
 
-$(document.body).tooltip({ selector: '.has-tooltip[title]' });
+$(document.body).tooltip({selector: '.has-tooltip[title]'});
 
 var handlers = [
-  require('./stickit-handlers/btn-group-radio.js')
+    require('./stickit-handlers/btn-group-radio.js')
 ];
 
 handlers.forEach(function (handler) {
-  Backbone.Stickit.addHandler(handler);
+    Backbone.Stickit.addHandler(handler);
 });
 
 module.exports = Backbone;
@@ -30717,48 +30740,48 @@ var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
 
 module.exports = {
 
-  selector: '.btn-group-radio',
+    selector: '.btn-group-radio',
 
-  events: ['click'],
+    events: ['click'],
 
-  update: function($el, val) {
-    $el.find('.btn.active').removeClass('active');
-    $el.find('.btn[value="' + val + '"]').addClass('active');
-  },
+    update: function ($el, val) {
+        $el.find('.btn.active').removeClass('active');
+        $el.find('.btn[value="' + val + '"]').addClass('active');
+    },
 
-  getVal: function($el, event, options) {
-    var $target = $(event.target);
-    var val = $target.val();
-    var currentVal = options.view.model.get(options.observe);
-    if (val !== currentVal) {
-      options.update($el, val, options.view.model, options);
+    getVal: function ($el, event, options) {
+        var $target = $(event.target);
+        var val = $target.val();
+        var currentVal = options.view.model.get(options.observe);
+        if (val !== currentVal) {
+            options.update($el, val, options.view.model, options);
+        }
+        return val;
+    },
+
+    onSet: function (val, options) {
+        var v;
+
+        if (!options.type) {
+            return val;
+        }
+
+        switch (options.type.toLowerCase()) {
+            case 'number':
+                v = Number(val.replace(/(^[^\d]+|\,|[^\d]+$)/g, ''));
+                v = isNaN(v) ? val : v;
+                break;
+            case 'string':
+                v = String(val);
+                break;
+            case 'boolean':
+                v = /^true$/i.test(val);
+                break;
+            default:
+                v = val;
+        }
+        return v;
     }
-    return val;
-  },
-
-  onSet: function(val, options) {
-    var v;
-
-    if (!options.type) {
-      return val;
-    }
-
-    switch(options.type.toLowerCase()) {
-      case 'number':
-        v = Number(val.replace(/(^[^\d]+|\,|[^\d]+$)/g, ''));
-        v = isNaN(v) ? val : v;
-        break;
-      case 'string':
-        v = String(val);
-        break;
-      case 'boolean':
-        v = /^true$/i.test(val);
-        break;
-      default:
-        v = val;
-    }
-    return v;
-  }
 };
 
 },{"./../../../../bower_components/jquery/dist/jquery.js":5}],77:[function(require,module,exports){
@@ -30766,28 +30789,32 @@ var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
 module.exports = function download(name, svg, types, bgColor, callback) {
-  callback = callback || function(){};
-  window.requestAnimationFrame(function() {
-    types = types instanceof Array ? types : [types];
-    types.forEach(function (type) {
-      var filename = util.createFilename(name, type);
-      var download = util.fileDownloader(filename);
-      if (type === 'svg') {
-        download.dataURI(svgDataURI.elementToDataURI(svg, {encoding:'utf8', bgColor: bgColor})).start(callback);
-      } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
-        svgDataURI.elementToImageDataURI(svg, {type:type, bgColor:bgColor}, function (err, datauri) {
-          if (err) {
-            console.error(err.message);
-            return;
-          }
-          download.dataURI(datauri).start(callback);
+    callback = callback || function () {
+        };
+    window.requestAnimationFrame(function () {
+        types = types instanceof Array ? types : [types];
+        types.forEach(function (type) {
+            var filename = util.createFilename(name, type);
+            var download = util.fileDownloader(filename);
+            if (type === 'svg') {
+                download.dataURI(svgDataURI.elementToDataURI(svg, {
+                    encoding: 'utf8',
+                    bgColor: bgColor
+                })).start(callback);
+            } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
+                svgDataURI.elementToImageDataURI(svg, {type: type, bgColor: bgColor}, function (err, datauri) {
+                    if (err) {
+                        console.error(err.message);
+                        return;
+                    }
+                    download.dataURI(datauri).start(callback);
+                });
+            } else {
+                console.error('Unsupported format:', type);
+                callback();
+            }
         });
-      } else {
-        console.error('Unsupported format:', type);
-        callback();
-      }
     });
-  });
 };
 
 },{"./svgDataURI.js":78,"./utils.js":79}],78:[function(require,module,exports){
@@ -30798,157 +30825,157 @@ var bentonFontDataURI = "data:application/font-woff;charset=utf-8;base64,d09GRgA
 var svgSchema = 'http://www.w3.org/2000/svg';
 
 function svgStyleElement(stylesheet) {
-  return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
+    return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
 }
 
 function fontFace(name, fontDataURI) {
-  return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
+    return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
 }
 
 
-exports.fontFix = function() {
-  var svg = document.createElementNS(svgSchema, 'svg');
+exports.fontFix = function () {
+    var svg = document.createElementNS(svgSchema, 'svg');
 
-  svg.setAttribute('version', '1.1');
-  svg.setAttribute('width', 11);
-  svg.setAttribute('height', 11);
-  svg.style.position = 'fixed';
-  svg.style.top = '-20px';
+    svg.setAttribute('version', '1.1');
+    svg.setAttribute('width', 11);
+    svg.setAttribute('height', 11);
+    svg.style.position = 'fixed';
+    svg.style.top = '-20px';
 
-  var fontface = fontFace('BentonSans', bentonFontDataURI);
-  var style = svgStyleElement(fontface);
+    var fontface = fontFace('BentonSans', bentonFontDataURI);
+    var style = svgStyleElement(fontface);
 
-  svg.insertAdjacentHTML('afterbegin', '<defs>'+ style +'</defs>');
-  var text = document.createElementNS(svgSchema, 'text');
-  text.setAttributeNS(null, 'font-family', 'BentonSans');
-  text.setAttributeNS(null, 'font-weight', 'normal');
-  text.setAttributeNS(null, 'font-style', 'normal');
-  text.setAttributeNS(null, 'font-size', 11);
-  text.setAttributeNS(null, 'x', 0);
-  text.setAttributeNS(null, 'y', 11);
-  text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
+    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
+    var text = document.createElementNS(svgSchema, 'text');
+    text.setAttributeNS(null, 'font-family', 'BentonSans');
+    text.setAttributeNS(null, 'font-weight', 'normal');
+    text.setAttributeNS(null, 'font-style', 'normal');
+    text.setAttributeNS(null, 'font-size', 11);
+    text.setAttributeNS(null, 'x', 0);
+    text.setAttributeNS(null, 'y', 11);
+    text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
 
-  svg.appendChild(text);
+    svg.appendChild(text);
 
-  return svg;
+    return svg;
 };
 
 var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
 
-  opts = opts || {};
-  opts.encoding = opts.encoding || 'base64';
+    opts = opts || {};
+    opts.encoding = opts.encoding || 'base64';
 
-  // we're about to modify the SVG with export hacks 
-  // and background color etc so we need to make a copy
-  svg = svg.cloneNode(true);
+    // we're about to modify the SVG with export hacks
+    // and background color etc so we need to make a copy
+    svg = svg.cloneNode(true);
 
-  svg.setAttribute('version', '1.1');
+    svg.setAttribute('version', '1.1');
 
-  var fontface = fontFace('BentonSans', bentonFontDataURI);
-  var style = svgStyleElement(fontface);
+    var fontface = fontFace('BentonSans', bentonFontDataURI);
+    var style = svgStyleElement(fontface);
 
-  svg.insertAdjacentHTML('afterbegin', '<defs>'+ style +'</defs>');
+    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
 
-  var transparent = !opts.bgColor || opts.bgColor === 'transparent';
+    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
 
-  if (!transparent) {
-    var rect = document.createElementNS(svgSchema, 'rect');
-    rect.id = 'backgroundFill';
-    rect.setAttribute('x', 0);
-    rect.setAttribute('y', 0);
-    rect.setAttribute('width', svg.getAttribute('width'));
-    rect.setAttribute('height', svg.getAttribute('height'));
-    rect.setAttribute('fill', opts.bgColor);
-    svg.insertBefore(rect, svg.firstChild);
-  }
+    if (!transparent) {
+        var rect = document.createElementNS(svgSchema, 'rect');
+        rect.id = 'backgroundFill';
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', 0);
+        rect.setAttribute('width', svg.getAttribute('width'));
+        rect.setAttribute('height', svg.getAttribute('height'));
+        rect.setAttribute('fill', opts.bgColor);
+        svg.insertBefore(rect, svg.firstChild);
+    }
 
-  var xmlSrc = utils.svgToString(svg);
+    var xmlSrc = utils.svgToString(svg);
 
-  // 2. Ensure the SVG can make a picture.
-  //    TODO: do we also need to check
-  //          - the svg has child nodes
-  //          - has visibility and size (w & h)
+    // 2. Ensure the SVG can make a picture.
+    //    TODO: do we also need to check
+    //          - the svg has child nodes
+    //          - has visibility and size (w & h)
 
-  // 3. Modify XML exporting so it is more portable
-  //    TODO: modify SVG XML acording to all the Hacks we'll need to suuport
-  //          eg when SVGs get imported into Adobe Illustrator and Inkscape
+    // 3. Modify XML exporting so it is more portable
+    //    TODO: modify SVG XML acording to all the Hacks we'll need to suuport
+    //          eg when SVGs get imported into Adobe Illustrator and Inkscape
 
-  return utils.toDataURI(xmlSrc, 'image/svg+xml', opts.encoding);
+    return utils.toDataURI(xmlSrc, 'image/svg+xml', opts.encoding);
 };
 
 exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callback) {
-  opts = opts || {};
-  opts.type = 'image/' + (opts.type || 'png').toLowerCase();
-  opts.quality = Math.max(0, Math.min(1, opts.quality || 1));
+    opts = opts || {};
+    opts.type = 'image/' + (opts.type || 'png').toLowerCase();
+    opts.quality = Math.max(0, Math.min(1, opts.quality || 1));
 
-  if (opts.type === 'image/jpg') {
-    // although jpg is a recognised file extension
-    // it's not the correct mime type
-    opts.type = opts.type.replace('jpg', 'jpeg');
-  }
+    if (opts.type === 'image/jpg') {
+        // although jpg is a recognised file extension
+        // it's not the correct mime type
+        opts.type = opts.type.replace('jpg', 'jpeg');
+    }
 
-  var noTransparencySupport = opts.type === 'image/jpeg';
-  var transparent = !opts.bgColor || opts.bgColor === 'transparent';
+    var noTransparencySupport = opts.type === 'image/jpeg';
+    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
 
-  if (noTransparencySupport && !transparent) {
-    opts.bgColor = '#ffffff';
-  }
+    if (noTransparencySupport && !transparent) {
+        opts.bgColor = '#ffffff';
+    }
 
-  // NOTE: this technique of using Canvas to save an image of an SVG
-  //       is known to not work in some cases: mostly when some
-  //       of the funkier SVG features are in use.
-  //       If this becomes a problem look into using CanVG
-  //            - https://code.google.com/p/canvg/
-  //       Here's an example of it being used
-  //            - https://github.com/sampumon/SVG.toDataURL/blob/master/svg_todataurl.js
+    // NOTE: this technique of using Canvas to save an image of an SVG
+    //       is known to not work in some cases: mostly when some
+    //       of the funkier SVG features are in use.
+    //       If this becomes a problem look into using CanVG
+    //            - https://code.google.com/p/canvg/
+    //       Here's an example of it being used
+    //            - https://github.com/sampumon/SVG.toDataURL/blob/master/svg_todataurl.js
 
-  var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
-  var image = new Image();
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    var image = new Image();
 
-  function drawIntoContext(element, width, height) {
-    // TODO: understand more about canvas dimensions. read this.
-    //        - http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5
+    function drawIntoContext(element, width, height) {
+        // TODO: understand more about canvas dimensions. read this.
+        //        - http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5
 
-    var w = canvas.width = width;
-    var h = canvas.height = height;
-    var s = canvas.style;
-    s.width = w + 'px';
-    s.height = h + 'px';
+        var w = canvas.width = width;
+        var h = canvas.height = height;
+        var s = canvas.style;
+        s.width = w + 'px';
+        s.height = h + 'px';
 
-    context.drawImage(element, 0, 0);
-    var datauri = canvas.toDataURL(opts.type, opts.quality);
-    
-    // TODO: Research use of canvas.toDataURLHD.
-    //       Is canvas.toBlob/canvas.toBlobHD more
-    //       performant than canvas.toDataURL ?
-    //       - https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement
+        context.drawImage(element, 0, 0);
+        var datauri = canvas.toDataURL(opts.type, opts.quality);
 
-    callback(null, datauri);
-    document.body.removeChild(image);
-  } 
+        // TODO: Research use of canvas.toDataURLHD.
+        //       Is canvas.toBlob/canvas.toBlobHD more
+        //       performant than canvas.toDataURL ?
+        //       - https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement
 
-  image.onload = function() {
-    drawIntoContext(image, image.width, image.height);
-  };
+        callback(null, datauri);
+        document.body.removeChild(image);
+    }
 
-  image.onerror = function() {
-    callback(new Error('Error creating image'));
-  };
+    image.onload = function () {
+        drawIntoContext(image, image.width, image.height);
+    };
 
-  image.style.display = 'none';
-  document.body.appendChild(image);
+    image.onerror = function () {
+        callback(new Error('Error creating image'));
+    };
 
-  var src = elementToDataURI(svg, {bgColor: opts.bgColor});
-  image.src = src;
+    image.style.display = 'none';
+    document.body.appendChild(image);
 
-  // var o = document.createElement('object');
-  // o.setAttribute('type', 'image/svg+xml');
-  // o.setAttribute('data', src);
-  // o.style.position = 'fixed';
-  // o.style.zIndex = 5;
-  // document.body.appendChild(o);
-  // drawIntoContext(o, 200, 200);
+    var src = elementToDataURI(svg, {bgColor: opts.bgColor});
+    image.src = src;
+
+    // var o = document.createElement('object');
+    // o.setAttribute('type', 'image/svg+xml');
+    // o.setAttribute('data', src);
+    // o.style.position = 'fixed';
+    // o.style.zIndex = 5;
+    // document.body.appendChild(o);
+    // drawIntoContext(o, 200, 200);
 
 };
 
@@ -30957,44 +30984,44 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
 exports.createFilename = function createFilename(name, ext) {
     ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
     return (name || 'untitled')
-        .replace(/\s+/g,'-')
-        .replace(/&/g,'and')
-        .replace(/[@£$%€^!]/g,'')
-        .replace(new RegExp('\\' + ext + '$', 'i'), '') +
+            .replace(/\s+/g, '-')
+            .replace(/&/g, 'and')
+            .replace(/[@£$%€^!]/g, '')
+            .replace(new RegExp('\\' + ext + '$', 'i'), '') +
         ext;
 };
 
 exports.fileDownloader = function fileDownloader(filename, href, target) {
-  var a = document.createElement('a');
-  a.style.display = 'none';
-  a.target = target || '_top';
-  a.download = true;
-  var me = {
-    filename: function(name)  {
-      a.setAttribute('download', name);
-      return me;
-    },
-    dataURI: function (datauri) {
-      a.setAttribute('href',  datauri || '');
-      return me;
-    },
-    start: function(callback) {
-      document.body.appendChild(a);
-      var evt = new MouseEvent('click', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      });
-      a.dispatchEvent(evt);
-      document.body.removeChild(a);
-      if (callback) {
-        setTimeout(callback,0);
-      }
-      return me;
-    }
-  };
-  me.dataURI(href).filename(filename);
-  return me;
+    var a = document.createElement('a');
+    a.style.display = 'none';
+    a.target = target || '_top';
+    a.download = true;
+    var me = {
+        filename: function (name) {
+            a.setAttribute('download', name);
+            return me;
+        },
+        dataURI: function (datauri) {
+            a.setAttribute('href', datauri || '');
+            return me;
+        },
+        start: function (callback) {
+            document.body.appendChild(a);
+            var evt = new MouseEvent('click', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            a.dispatchEvent(evt);
+            document.body.removeChild(a);
+            if (callback) {
+                setTimeout(callback, 0);
+            }
+            return me;
+        }
+    };
+    me.dataURI(href).filename(filename);
+    return me;
 };
 
 
@@ -31006,54 +31033,54 @@ var svgDTDElement = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.
 
 exports.svgToString = function svgToString(svg) {
 
-  if (svg.nodeName.toLowerCase() !== 'svg') {
-    throw new Error('A root SVG element is required');
-  }
+    if (svg.nodeName.toLowerCase() !== 'svg') {
+        throw new Error('A root SVG element is required');
+    }
 
-  if (!svg.hasAttribute('xmlns')) {
-    svg.setAttribute('xmlns', svgSchema);
-  }
+    if (!svg.hasAttribute('xmlns')) {
+        svg.setAttribute('xmlns', svgSchema);
+    }
 
-  if (!svg.hasAttribute('xmlns:xlink')) {
-    svg.setAttributeNS(xmlnsSchema, 'xmlns:xlink', xlinkSchema);
-  }
+    if (!svg.hasAttribute('xmlns:xlink')) {
+        svg.setAttributeNS(xmlnsSchema, 'xmlns:xlink', xlinkSchema);
+    }
 
-  //var source = svg.outerHTML; // although it's fast, not sure using outerHTML is completely safe
-  var source = (new XMLSerializer()).serializeToString(svg); // this may break when SVG elements are not strictly XML because they follow HTML validation rules instead
+    //var source = svg.outerHTML; // although it's fast, not sure using outerHTML is completely safe
+    var source = (new XMLSerializer()).serializeToString(svg); // this may break when SVG elements are not strictly XML because they follow HTML validation rules instead
 
-  return svgProcessingInstruction + svgDTDElement + source;
+    return svgProcessingInstruction + svgDTDElement + source;
 };
 
 var utf8ToBase64 = exports.utf8ToBase64 = function utf8ToBase64(str) {
-  // unescape and encodeURIComponent are used when unicode characters appear
-  // in the SVG. Othewise the SVG -> PNG/JPG wont work.
+    // unescape and encodeURIComponent are used when unicode characters appear
+    // in the SVG. Othewise the SVG -> PNG/JPG wont work.
 
-  // This method of converting to Base64 should suffice for now.
-  // If it proves not to be robust enough or slow then read these articles
-  //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8
-  //   - https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
+    // This method of converting to Base64 should suffice for now.
+    // If it proves not to be robust enough or slow then read these articles
+    //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8
+    //   - https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
 
-  return window.btoa(unescape(encodeURIComponent(str)));
+    return window.btoa(unescape(encodeURIComponent(str)));
 };
 
 exports.toDataURI = function toDataURI(data, type, encoding) {
 
-  if (!type) throw new Error('Content MIME type required');
+    if (!type) throw new Error('Content MIME type required');
 
-  encoding = encoding.toLowerCase();
+    encoding = encoding.toLowerCase();
 
-  var isPixelImage = /^image\/(jpg|png|gif|jpeg)$/.test(type); // dont include SVG and other text based image formats
-  var encodedData;
+    var isPixelImage = /^image\/(jpg|png|gif|jpeg)$/.test(type); // dont include SVG and other text based image formats
+    var encodedData;
 
-  if (isPixelImage) {
-    encodedData = window.btoa(data);
-  } else if (encoding === 'base64') {
-    encodedData = utf8ToBase64(data);
-  } else {
-    encodedData = data;
-  }
+    if (isPixelImage) {
+        encodedData = window.btoa(data);
+    } else if (encoding === 'base64') {
+        encodedData = utf8ToBase64(data);
+    } else {
+        encodedData = data;
+    }
 
-  return 'data:' + type + ';' + encoding + ',' + encodedData;
+    return 'data:' + type + ';' + encoding + ',' + encodedData;
 };
 
 
@@ -31061,29 +31088,30 @@ exports.toDataURI = function toDataURI(data, type, encoding) {
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
 _.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
+    interpolate: /\{\{(.+?)\}\}/g
 };
 
 module.exports = {
-  WHAT_IS_CSV: '<p>Comma Separated Values (CSV) files are used to store tabular data in plain text form.<p><p>Most spreadsheet applications can "save as" CSV.<p>Here\'s an example:<pre>Countries,      GDP Per Captia<span class="pilcrow">\n</span>United States,  "53,142"<span class="pilcrow">\n</span>United Kingdom, "39,351"<span class="pilcrow">\n</span>Germany,        "45,085"</pre>',
-  WHAT_IS_TSV: '<p>Tab Separated Values (TSV) files are similar to CSV files. They are used to store tabular data in plain text form.<p><p>When you copy and paste cells from Excel the format used is TSV.<p><p>Here\'s an example:<pre>Countries<span class="tsv-tab">\t</span>GDP Per Captia<span class="pilcrow">\n</span>United States<span class="tsv-tab">\t</span>"53,142"<span class="pilcrow">\n</span>United Kingdom<span class="tsv-tab">\t</span>"39,351"<span class="pilcrow">\n</span>Germany<span class="tsv-tab">\t</span>        "45,085"</pre>',
-  LINE_SERIES: _.template('<p>Line data series&nbsp;{{ index }}</p>'),
-  BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
+    WHAT_IS_CSV: '<p>Comma Separated Values (CSV) files are used to store tabular data in plain text form.<p><p>Most spreadsheet applications can "save as" CSV.<p>Here\'s an example:<pre>Countries,      GDP Per Captia<span class="pilcrow">\n</span>United States,  "53,142"<span class="pilcrow">\n</span>United Kingdom, "39,351"<span class="pilcrow">\n</span>Germany,        "45,085"</pre>',
+    WHAT_IS_TSV: '<p>Tab Separated Values (TSV) files are similar to CSV files. They are used to store tabular data in plain text form.<p><p>When you copy and paste cells from Excel the format used is TSV.<p><p>Here\'s an example:<pre>Countries<span class="tsv-tab">\t</span>GDP Per Captia<span class="pilcrow">\n</span>United States<span class="tsv-tab">\t</span>"53,142"<span class="pilcrow">\n</span>United Kingdom<span class="tsv-tab">\t</span>"39,351"<span class="pilcrow">\n</span>Germany<span class="tsv-tab">\t</span>        "45,085"</pre>',
+    LINE_SERIES: _.template('<p>Line data series&nbsp;{{ index }}</p>'),
+    BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
 };
 
 },{"./../../../bower_components/underscore/underscore.js":31}],81:[function(require,module,exports){
 if (!Function.prototype.bind) {
-    Function.prototype.bind = function(oThis) {
+    Function.prototype.bind = function (oThis) {
         if (typeof this !== 'function') {
             // closest thing possible to the ECMAScript 5
             // internal IsCallable function
             throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
         }
 
-        var aArgs   = Array.prototype.slice.call(arguments, 1),
+        var aArgs = Array.prototype.slice.call(arguments, 1),
             fToBind = this,
-            fNOP    = function() {},
-            fBound  = function() {
+            fNOP = function () {
+            },
+            fBound = function () {
                 return fToBind.apply(this instanceof fNOP ? this : oThis,
                     aArgs.concat(Array.prototype.slice.call(arguments)));
             };
@@ -31094,11 +31122,12 @@ if (!Function.prototype.bind) {
         return fBound;
     };
 }
+
 },{}],82:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\" />\n";
+    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],83:[function(require,module,exports){
@@ -31107,28 +31136,28 @@ var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
     var helper;
 
-  return "<span class=\"pull-right alert alert-warning\">"
+  return "<span\n            class=\"pull-right alert alert-warning\">"
     + this.escapeExpression(((helper = (helper = helpers.warningMessage || (depth0 != null ? depth0.warningMessage : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"warningMessage","hash":{},"data":data}) : helper)))
     + "</span>";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, helper;
 
-  return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
+  return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
     + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
     + ")</span>"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <!--\n      <div class=\"form-group\">\n        <label>Label</label>\n        <input name=\"label\" class=\"form-control\" />\n      </div>\n      <div data-region=\"datatype\" class=\"form-group\"></div>\n    -->\n      <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n        <label>Series</label>\n        <div data-region=\"series\"></div>\n      </div>\n      <!--\n      <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n        <label>Format</label>\n        <div class=\"row\">\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n          </div>\n          <div class=\"col-xs-3\">\n            <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n          </div>\n        </div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n        <label>Highlight</label>\n        <div data-region=\"highlight\"></div>\n      </div>\n      <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n        <label>Forecast</label>\n        <select class=\"form-control\">\n          <option>Pick a date</option>\n        </select>\n        <span class=\"help-block\">When does the forecast begin?</span>\n      </div>\n          -->\n    </form>\n  </div>\n</div>\n";
+    + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"datatype\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],84:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n  </div>\n";
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n        </div>\n";
 },"3":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n  </div>\n";
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n        </div>\n";
 },"5":function(depth0,helpers,partials,data) {
-    return "  <div class=\"btn-group\">\n    <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n  </div>\n";
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n        </div>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
@@ -31143,7 +31172,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Description\n<button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\nDiscard data\n</button>\n  </div>\n  <div class=\"panel-body\">\n    <form role=\"form\">\n      <div class=\"form-group\">\n        <label>Title</label>\n        <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n        <p class=\"help-block\">What question does the chart answer?</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Subtitle</label>\n          <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also helps.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Footnote</label>\n        <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n        <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n      </div>\n      <div class=\"form-group\">\n        <label>Source</label>\n        <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\" list=\"common-sources-list\"/>\n        <datalist id=\"common-sources-list\">\n          <option value=\"Thomson Reuters Datastream\"></option> \n          <option value=\"Bloomberg\"></option> \n          <option value=\"World Bank\"></option>\n          <option value=\"IMF\"></option>\n          <option value=\"ONS\"></option>\n          <option value=\"Eurostat\"></option>\n          <option value=\"US Census Bureau\"></option>\n          <option value=\"US Bureau of Labor Statistics\"></option>\n        </datalist>\n        <p class=\"help-block popular-sources\">Popular sources: <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>, <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics</button>.</p>\n      </div>\n    </form>\n  </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
+    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],86:[function(require,module,exports){
@@ -31171,7 +31200,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-section-name=\"categorical\">\n  <select class=\"form-control\">\n  <option>Select a categories from the series</option>\n  </select>\n</div>\n<div data-section-name=\"numeric\">\n  <select class=\"form-control\">\n  <option>None</option>\n  </select>\n</div>\n<div data-section-name=\"time\">\n  <select class=\"form-control\">\n  <option>Select a date from the series</option>\n  </select>\n</div>\n";
+    return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],90:[function(require,module,exports){
@@ -31180,23 +31209,23 @@ var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, helper;
 
-  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n  <h4>Warning</h4>\n  <p>"
+  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n    <h4>Warning</h4>\n\n    <p>"
     + ((stack1 = ((helper = (helper = helpers.message || (depth0 != null ? depth0.message : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"message","hash":{},"data":data}) : helper))) != null ? stack1 : "")
-    + "</p>\n  <p><button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button></p>\n</div>\n";
+    + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],91:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"view-importdata__content\">\n  <h1 class=\"text-center import-data-title\">Import data</h1>\n    <div class=\"warning-message\"></div>\n  <div class=\"fake-field\">\n    <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n  </div>\n  <div class=\"form-group\">\n    <input type=\"file\" style=\"display:none\" name=\"file\" accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\" />\n    <p class=\"text-center help-block\">You may also drag and drop or <button name=\"select-file\" class=\"btn btn-link\">pick a file</button> too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\" href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.</p>\n  </div>\n  <div class=\"form-group\">\n    <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n  </div>\n  <div class=\"feedback-details\">\n  <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n  </div>\n  <!--\n  <div class=\"text-center\">\n      <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n      <div class=\"btn-group\">\n        <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n        <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n          <span class=\"caret\"></span>\n          <span class=\"sr-only\">Toggle Dropdown</span>\n        </button>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li><a href=\"#\">GDP per capita</a></li>\n          <li><a href=\"#\">Something else</a></li>\n        </ul>\n      </div>\n    </div>\n    -->\n</div>\n";
+    return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],92:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n  <div class=\"panel-heading\">Independent axis (X)</div>\n  <div class=\"panel-body\">\n    <div class=\"form-group\">\n      <label>Column (in the imported data table)</label>\n      <select name=\"columns\" class=\"form-control pull\"></select>\n    </div>\n    <div class=\"form-group\" data-region=\"datatype\"></div>\n    <div class=\"form-group\" data-region=\"dateFormat\"></div>\n    <!--\n    <div class=\"form-group\" data-region=\"label\"></div>\n    <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n      <label>Highlight</label>\n      <div data-region=\"highlight\"></div>\n    </div>\n  -->\n  </div>\n</div>\n";
+    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"datatype\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],93:[function(require,module,exports){
@@ -31208,27 +31237,27 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
   return this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
     + ".";
 },"3":function(depth0,helpers,partials,data) {
-    return "  <span name=\"label\" class=\"series-name\"></span>\n";
+    return "        <span name=\"label\" class=\"series-name\"></span>\n";
 },"5":function(depth0,helpers,partials,data) {
     var helper;
 
-  return "  <span title=\"click to edit the series "
+  return "        <span title=\"click to edit the series "
     + this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\" contenteditable></span>\n";
+    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\"\n              contenteditable></span>\n";
 },"7":function(depth0,helpers,partials,data) {
     var helper;
 
-  return "    <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
+  return "        <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
     + this.escapeExpression(((helper = (helper = helpers.property || (depth0 != null ? depth0.property : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"property","hash":{},"data":data}) : helper)))
     + "\">Add series</button>\n";
 },"9":function(depth0,helpers,partials,data) {
     var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
-  return "  <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
+  return "        <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
     + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
     + "\" data-help=\"LINE_SERIES\"></span>\n  <!--\n  <span class=\"swatch swatch-bar\" data-placement=\"top\" data-index=\""
     + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n";
+    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span\n          class=\"sr-only\">Close</span></button>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
@@ -31247,30 +31276,30 @@ var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
-  return "<div>\n  <table class=\"table table-bordered table-condensed\">\n    <tbody>\n      <tr>\n        <th class=\"property-name\">Chart type</th>\n        <td class=\"property-value\">"
+  return "<div>\n    <table class=\"table table-bordered table-condensed\">\n        <tbody>\n        <tr>\n            <th class=\"property-name\">Chart type</th>\n            <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
-    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Variation</th>\n        <td class=\"property-value\">"
+    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Variation</th>\n            <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
-    + "</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Width</th>\n        <td class=\"property-value\">"
+    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Width</th>\n            <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
-    + "px</td>\n      </tr>\n      <tr>\n        <th class=\"property-name\">Height</th>\n        <td class=\"property-value\">"
+    + "px</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Height</th>\n            <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
-    + "px</td>\n      </tr>\n    </tbody>\n  </table>\n  <hr>\n  <div data-region=\"graphic-type-controls\"></div>\n  <div class=\"view-export-controls\">\n    <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n  </div>\n</div>\n";
+    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],95:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero \n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"nice\">Nice\n  </label>\n</div>\n<div class=\"checkbox\">\n  <label>\n    <input type=\"checkbox\" name=\"thinLines\">Thin lines\n  </label>\n</div>\n";
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Nice\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":42}],96:[function(require,module,exports){
 module.exports = {
-  number: require('./number.js'),
-  time: require('./time.js'),
-  series: require('./series.js'),
-  table: require('./table.js')
+    number: require('./number.js'),
+    time: require('./time.js'),
+    series: require('./series.js'),
+    table: require('./table.js')
 };
 
 },{"./number.js":97,"./series.js":98,"./table.js":99,"./time.js":100}],97:[function(require,module,exports){
@@ -31280,54 +31309,54 @@ var percent = /(\%)$/;
 
 module.exports = createNumberTransformer;
 
-function createNumberTransformer (options) {
+function createNumberTransformer(options) {
 
-  options = options || {};
+    options = options || {};
 
-  function transformNumber(d) {
+    function transformNumber(d) {
 
-    var _NaN = options.interpolateNulls ? null : NaN;
- 
-    if (d === null || d === undefined) return _NaN;
+        var _NaN = options.interpolateNulls ? null : NaN;
 
-    var type = typeof d;
+        if (d === null || d === undefined) return _NaN;
 
-    if (type === 'number') return d;
+        var type = typeof d;
 
-    if (type !== 'string') return _NaN;
+        if (type === 'number') return d;
 
-    d = d.trim()
-        .replace(allCommas, '')
-        .replace(currencySymbol, '')
-        .replace(percent, '');
+        if (type !== 'string') return _NaN;
 
-    if (d === '') return _NaN;
+        d = d.trim()
+            .replace(allCommas, '')
+            .replace(currencySymbol, '')
+            .replace(percent, '');
 
-    if (d === '*') return null;
+        if (d === '') return _NaN;
 
-    return Number(d);
+        if (d === '*') return null;
 
-  }
+        return Number(d);
 
-  return transformNumber;
+    }
+
+    return transformNumber;
 }
 
 },{}],98:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
-  var oldValue;
-  var newValue;
-  var hasCustomLogic = typeof customLogic === 'function';
-  var customValue;
-  for (var i = 0, x = array.length; i < x; i++) {
-    oldValue = array[i][property];
-    newValue = transformer(oldValue);
-    if (newValue === undefined) newValue = null;
-    customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
-    if (customValue === undefined) customValue = newValue;
-    array[i][property] = customValue;
-  }
+    var oldValue;
+    var newValue;
+    var hasCustomLogic = typeof customLogic === 'function';
+    var customValue;
+    for (var i = 0, x = array.length; i < x; i++) {
+        oldValue = array[i][property];
+        newValue = transformer(oldValue);
+        if (newValue === undefined) newValue = null;
+        customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
+        if (customValue === undefined) customValue = newValue;
+        array[i][property] = customValue;
+    }
 }
 
 },{}],99:[function(require,module,exports){
@@ -31338,38 +31367,40 @@ module.exports = transformTable;
 
 function transformTable(data, columns, transform, type, customLogic) {
 
-  if (typeof type === 'string') {
-    if (type === Datatypes.TIME) {
-      type = Datatypes.isTime;
-    } else if (type === Datatypes.NUMERIC) {
-      type = Datatypes.isNumeric;
-    } else if (type === Datatypes.isCategorical) {
-      type = Datatypes.isCategorical;
+    if (typeof type === 'string') {
+        if (type === Datatypes.TIME) {
+            type = Datatypes.isTime;
+        } else if (type === Datatypes.NUMERIC) {
+            type = Datatypes.isNumeric;
+        } else if (type === Datatypes.isCategorical) {
+            type = Datatypes.isCategorical;
+        }
     }
-  }
 
-  if (type === null) {
-    type = function() { return true; };
-  }
-
-  if (typeof type !== 'function') {
-    return;
-  }
-
-  var typeInfo;
-  var colName;
-  var transformFn;
-
-  for (var i = 0, x = columns.length; i < x; i++) {
-    typeInfo = columns[i].get('typeInfo');
-    colName = typeInfo.colName;
-    if (type(typeInfo.datatype)) {
-      transformFn = transform(typeInfo);
-      if (transformFn) {
-        series(data, colName, transformFn, customLogic);
-      }
+    if (type === null) {
+        type = function () {
+            return true;
+        };
     }
-  }
+
+    if (typeof type !== 'function') {
+        return;
+    }
+
+    var typeInfo;
+    var colName;
+    var transformFn;
+
+    for (var i = 0, x = columns.length; i < x; i++) {
+        typeInfo = columns[i].get('typeInfo');
+        colName = typeInfo.colName;
+        if (type(typeInfo.datatype)) {
+            transformFn = transform(typeInfo);
+            if (transformFn) {
+                series(data, colName, transformFn, customLogic);
+            }
+        }
+    }
 }
 
 },{"../charting/Datatypes.js":48,"./series.js":98}],100:[function(require,module,exports){
@@ -31377,67 +31408,67 @@ var d3 = require("./../../../bower_components/d3/d3.js");
 
 module.exports = createTimeTransformer;
 
-function createTimeTransformer (format) {
+function createTimeTransformer(format) {
 
-  var parser = createDateParser(format);
-  var today = new Date();
-  var year = today.getFullYear();
-  var day = today.getDate();
-  var month = today.getMonth();
-  var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
+    var parser = createDateParser(format);
+    var today = new Date();
+    var year = today.getFullYear();
+    var day = today.getDate();
+    var month = today.getMonth();
+    var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
 
-  function transformTime (d) {
-    var type = typeof d;
+    function transformTime(d) {
+        var type = typeof d;
 
-    if (!d) return null;
+        if (!d) return null;
 
-    if (isValidDate(d)) return d;
+        if (isValidDate(d)) return d;
 
-    if (type !== 'string') return null;
+        if (type !== 'string') return null;
 
-    var parseValue = parser(d.trim());
+        var parseValue = parser(d.trim());
 
-    if (isValidDate(parseValue)) {
-      if (timeOnlyFormat) {
-        parseValue.setDate(day);
-        parseValue.setMonth(month);
-        parseValue.setFullYear(year);
-      }
-      return parseValue;
+        if (isValidDate(parseValue)) {
+            if (timeOnlyFormat) {
+                parseValue.setDate(day);
+                parseValue.setMonth(month);
+                parseValue.setFullYear(year);
+            }
+            return parseValue;
+        }
+
+        return null;
     }
 
-    return null;
-  }
-
-  return transformTime;
+    return transformTime;
 
 }
 
 function isValidDate(d) {
-  return d && d instanceof Date && !isNaN(+d);
+    return d && d instanceof Date && !isNaN(+d);
 }
 
 function createDate(value) {
-  return new Date(value);
+    return new Date(value);
 }
 
 function useJavascriptDateFn(format) {
-  return format === 'ISO' || format === 'JAVASCRIPT';
+    return format === 'ISO' || format === 'JAVASCRIPT';
 }
 
 var datePartSeparators = /[\-\ ]/g;
 
 function createDateParser(format) {
-  var useJs = useJavascriptDateFn(format);
-  if (useJs) {
-    return createDate;
-  } else {
-    var parser = d3.time.format(format).parse;
-    return function(value) {
-      var normalizedString = value.replace(datePartSeparators, '/');
-      return parser(normalizedString);
-    };
-  }
+    var useJs = useJavascriptDateFn(format);
+    if (useJs) {
+        return createDate;
+    } else {
+        var parser = d3.time.format(format).parse;
+        return function (value) {
+            var normalizedString = value.replace(datePartSeparators, '/');
+            return parser(normalizedString);
+        };
+    }
 }
 
 },{"./../../../bower_components/d3/d3.js":4}],101:[function(require,module,exports){
@@ -31450,23 +31481,23 @@ var Authentication = function (cb) {
 
 Authentication.prototype.renderButton = function () {
     var self = this;
-    if (! document.getElementById('my-signin2')) return;
+    if (!document.getElementById('my-signin2')) return;
     gapi.signin2.render('my-signin2', {
-            'width': 200,
-            'height': 50,
-            'longtitle': false,
-            'theme': 'dark',
-            'onsuccess': function(gu){
-                self.onSignIn(gu);
-            }
-        });
+        'width': 200,
+        'height': 50,
+        'longtitle': false,
+        'theme': 'dark',
+        'onsuccess': function (gu) {
+            self.onSignIn(gu);
+        }
+    });
 };
 
 Authentication.prototype.onSignIn = function (googleUser) {
     var profile = googleUser.getBasicProfile();
     var regexp = /^.*\@ft\.com$/gi;
     var email = profile.getEmail();
-    if (email.match(regexp)){
+    if (email.match(regexp)) {
         var container = document.getElementById("login-container");
         var trackingImage = document.createElement('img');
         trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
@@ -31490,8 +31521,8 @@ var Tracking = function () {
     (function (i, s, o, g, r, a, m) {
         i.GoogleAnalyticsObject = r;
         i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments);
-        }, i[r].l = 1 * new Date();
+                (i[r].q = i[r].q || []).push(arguments);
+            }, i[r].l = 1 * new Date();
         a = s.createElement(o),
             m = s.getElementsByTagName(o)[0];
         a.async = 1;
@@ -31535,11 +31566,11 @@ var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
 var Authentication = require('./utils/authentication.js');
 
-var _ =require("./../../bower_components/underscore/underscore.js");
+var _ = require("./../../bower_components/underscore/underscore.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 var version = require('./utils/version');
 
-function init(){
+function init() {
 
     var graphic = new Graphic();
     var importdata = new DataImport();
@@ -31588,14 +31619,14 @@ function init(){
         graphic.set(expectedValues);
     });
 
-    importdata.on('change:data', function(model, data) {
+    importdata.on('change:data', function (model, data) {
         graphic.chart.dataset.set('rows', data);
     });
 
     var importdataView = new ViewImportData({model: importdata});
     document.getElementById('controls').appendChild(importdataView.render().el);
 
-    var setColumnAxis = function(column, value) {
+    var setColumnAxis = function (column, value) {
         column.collection = null;
         var oldValue;
         var newValue = column.get('axis');
@@ -31619,7 +31650,7 @@ function init(){
     };
 
     importdata.columns.on('change:axis', setColumnAxis);
-    importdata.columns.on('reset', function() {
+    importdata.columns.on('reset', function () {
 
         var dims = {};
 
@@ -31630,15 +31661,15 @@ function init(){
             dims[d].push(column);
         });
 
-        graphic.chart.unusedSeries.reset(dims.NONE||[]);
+        graphic.chart.unusedSeries.reset(dims.NONE || []);
 
         if (dims.X && dims.X.length) {
             graphic.chart.xAxis.useColumn(dims.X[0]);
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
-        graphic.chart.yAxis.columns.reset(dims.Y||[]);
-        graphic.chart.zAxis.columns.reset(dims.Z||[]);
+        graphic.chart.yAxis.columns.reset(dims.Y || []);
+        graphic.chart.zAxis.columns.reset(dims.Z || []);
 
     });
 
@@ -31656,7 +31687,7 @@ function init(){
     }
 
     // REFACTOR: this logic should be in a model somewhere.
-    graphic.chart.xAxis.on('change:datatype change:dateFormat', function(model) {
+    graphic.chart.xAxis.on('change:datatype change:dateFormat', function (model) {
 
         var property = model.get('property');
         var datatype = model.get('datatype');
@@ -31690,7 +31721,7 @@ function init(){
     }
 }
 
-function nightingale(){
+function nightingale() {
     var auth = new Authentication(init);
     auth.renderButton();
     return {
@@ -31700,4 +31731,5 @@ function nightingale(){
 }
 
 module.exports = window.nightingale = nightingale;
+
 },{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../bower_components/underscore/underscore.js":31,"./charting/DataImport.js":46,"./charting/Datatypes.js":48,"./charting/Graphic.js":50,"./charting/GraphicType.js":51,"./charting/LineControls.js":54,"./charting/Variations.js":56,"./charting/ViewGraphicControls.js":61,"./charting/ViewGraphicTypes.js":63,"./charting/ViewImportData.js":66,"./charting/ViewInlineHelp.js":68,"./charting/ViewSelectedVariation.js":70,"./core/backbone":75,"./export/svgDataURI.js":78,"./transform/index.js":96,"./utils/authentication.js":101,"./utils/version":103}]},{},["nightingale"]);
