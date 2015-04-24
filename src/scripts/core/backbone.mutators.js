@@ -1,10 +1,11 @@
 var Backbone = require('backbone');
 var _ = require('underscore');
 
-var Mutator     = function () {},
-    oldGet      = Backbone.Model.prototype.get,
-    oldSet      = Backbone.Model.prototype.set,
-    oldToJson   = Backbone.Model.prototype.toJSON;
+var Mutator = function () {
+    },
+    oldGet = Backbone.Model.prototype.get,
+    oldSet = Backbone.Model.prototype.set,
+    oldToJson = Backbone.Model.prototype.toJSON;
 
 // This is necessary to ensure that Models declared without the mutators object do not throw and error
 Mutator.prototype.mutators = {};
@@ -53,7 +54,7 @@ Mutator.prototype.set = function (key, value, options) {
         // check if we need to set a single value
         if (_.isFunction(this.mutators[key].set) === true) {
             ret = this.mutators[key].set.call(this, key, attrs[key], options, _.bind(oldSet, this));
-        } else if(_.isFunction(this.mutators[key])){
+        } else if (_.isFunction(this.mutators[key])) {
             ret = this.mutators[key].call(this, key, attrs[key], options, _.bind(oldSet, this));
         }
     }
@@ -64,11 +65,11 @@ Mutator.prototype.set = function (key, value, options) {
                 // check if we need to set a single value
 
                 var meth = this.mutators[attrKey];
-                if(_.isFunction(meth.set)){
+                if (_.isFunction(meth.set)) {
                     meth = meth.set;
                 }
 
-                if(_.isFunction(meth)){
+                if (_.isFunction(meth)) {
                     if (options === undefined || (_.isObject(options) === true && options.silent !== true && (options.mutators !== undefined && options.mutators.silent !== true))) {
                         this.trigger('mutators:set:' + attrKey);
                     }
@@ -95,8 +96,8 @@ Mutator.prototype.toJSON = function (options) {
             isSaving = _.has(options || {}, 'emulateHTTP');
             isTransient = this.mutators[name].transient;
             if (!isSaving || !isTransient) {
-              attr[name] = _.bind(this.mutators[name].get, this)();
-            } 
+                attr[name] = _.bind(this.mutators[name].get, this)();
+            }
         } else {
             attr[name] = _.bind(this.mutators[name], this)();
         }
@@ -106,7 +107,7 @@ Mutator.prototype.toJSON = function (options) {
 };
 
 // override get functionality to get HTML-escaped the mutator props
-Mutator.prototype.escape = function (attr){
+Mutator.prototype.escape = function (attr) {
     var val = this.get(attr);
     return _.escape(val === null ? '' : '' + val);
 };

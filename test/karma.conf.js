@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = function (config) {
     var karmaConfig = {
         basePath: '..',
         browsers: ['PhantomJS'],
@@ -12,19 +12,21 @@ module.exports = function(config) {
             'karma-browserify', 'karma-jasmine', 'karma-coverage', 'karma-phantomjs-launcher', 'karma-chrome-launcher', 'karma-html2js-preprocessor'
         ],
         coverageReporter: {
-            dir : 'test/coverage/',
+            dir: 'test/coverage/',
             reporters: [
-                { type: 'html',
-                    subdir: function(browser) {
+                {
+                    type: 'html',
+                    subdir: function (browser) {
                         return browser.toLowerCase().split(/[ /-]/)[0];
                     },
                     watermarks: {
                         statements: [0, 85],
                         lines: [0, 85],
                         functions: [0, 85],
-                        branches:[0, 85]
-                    }},
-                { type: 'json-summary', subdir: '.', file: 'summary.json' }
+                        branches: [0, 85]
+                    }
+                },
+                {type: 'json-summary', subdir: '.', file: 'summary.json'}
             ]
         },
         files: [

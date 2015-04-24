@@ -9,14 +9,14 @@ window.jQuery = Backbone.$ = $;
 var Stickit = require('backbone.stickit');
 require('bootstrap-sass');
 
-$(document.body).tooltip({ selector: '.has-tooltip[title]' });
+$(document.body).tooltip({selector: '.has-tooltip[title]'});
 
 var handlers = [
-  require('./stickit-handlers/btn-group-radio.js')
+    require('./stickit-handlers/btn-group-radio.js')
 ];
 
 handlers.forEach(function (handler) {
-  Backbone.Stickit.addHandler(handler);
+    Backbone.Stickit.addHandler(handler);
 });
 
 module.exports = Backbone;
