@@ -1,8 +1,8 @@
 var RegionView = require('./../core/RegionView.js');
-var Datatypes = require('./Datatypes.js');
-var ViewDatatype = require('./ViewDatatype.js');
-var ViewHighlight = require('./ViewHighlight.js');
-var ViewSeriesControls = require('./ViewSeriesControls.js');
+var Datatypes = require('../charting/Datatypes.js');
+var ViewDatatype = require('./Datatype.js');
+var ViewHighlight = require('./Highlight.js');
+var ViewSeriesControls = require('./SeriesControls.js');
 
 var ViewDependantAxisControls = RegionView.extend({
 

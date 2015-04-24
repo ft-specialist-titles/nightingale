@@ -1,5 +1,5 @@
 var Backbone = require('./../core/backbone.js');
-var DataImport = require('./DataImport.js');
+var DataImport = require('./../import/index.js');
 var $ = require('jquery');
 
 var tracking = require('./../utils/tracking.js');

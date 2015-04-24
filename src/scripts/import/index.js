@@ -2,17 +2,16 @@
 //todo: PM: remove hint once tests are written
 
 require('./../polyfill/bind');
-var Backbone = require('./../core/backbone.js');
-var Column = require('./Column.js');
 var d3 = require('d3');
 var _ = require('underscore');
-var Datatypes = require('./Datatypes.js');
-var Axis = require('./Axis.js');
+var Backbone = require('./../core/backbone.js');
+var Column = require('./../charting/Column.js');
+var Datatypes = require('./../charting/Datatypes.js');
+var Axis = require('./../charting/Axis.js');
+var transform = require('./../transform/index.js');
 
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
 var aYearALongWayInTheFuture = 3000;
-var transform = require('./../transform/index.js');
-
 var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
     return a.concat(alphabet.map(function (h) {
