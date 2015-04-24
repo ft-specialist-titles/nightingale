@@ -1,91 +1,93 @@
 var Backbone = require('./../core/backbone.js');
 
 function getKeyLabel(d) {
-  var property = d.get('property');
-  var label = d.get('label') || property;
-  return {key: property, label: label};
+    var property = d.get('property');
+    var label = d.get('label') || property;
+    return {key: property, label: label};
 }
 
 var GraphicVariation = Backbone.Model.extend({
 
-  defaults: {
-    svg: null
-  },
+    defaults: {
+        svg: null
+    },
 
-  initialize: function(attributes, options) {
-    this.variation = options.variation;
-    this.graphic = options.graphic;
-    this.graphicType = options.graphicType;
-    this.errors = new Backbone.Collection([]);
-  },
+    initialize: function (attributes, options) {
+        this.variation = options.variation;
+        this.graphic = options.graphic;
+        this.graphicType = options.graphicType;
+        this.errors = new Backbone.Collection([]);
+    },
 
-  createConfig: function() {
-    // FIXME: is it still necessary to make a copy of the data?
-    var data = this.graphic.chart.dataset.get('rows').map(function(d){return Object.create(d);});
+    createConfig: function () {
+        // FIXME: is it still necessary to make a copy of the data?
+        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
+            return Object.create(d);
+        });
 
-    if (!data.length) return;
+        if (!data.length) return;
 
-    var xAxisProperty = this.graphic.chart.xAxis.get('property');
-    var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
+        var xAxisProperty = this.graphic.chart.xAxis.get('property');
+        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
 
-    if (!xAxisProperty || !yAxisProperties.length) {
-      return;
-    }
-
-    var g = this.graphic.toJSON();
-
-    var config = {
-
-      width: this.variation.get('width'),
-      height: this.variation.get('height'),
-
-      title: g.title,
-      subtitle: g.subtitle,
-      source:  g.source,
-      hideSource: g.noSource,
-      footnote:  g.footnote,
-
-      data: data,
-      dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
-      x: {
-        series: {
-          key: xAxisProperty,
-          label: xAxisProperty
+        if (!xAxisProperty || !yAxisProperties.length) {
+            return;
         }
-      },
 
-      y: {
-        series: yAxisProperties
-      }
+        var g = this.graphic.toJSON();
 
-    };
+        var config = {
 
-    return this.graphicType.controls.overrideConfig(config);
-  },
+            width: this.variation.get('width'),
+            height: this.variation.get('height'),
 
-  toJSON: function() {
+            title: g.title,
+            subtitle: g.subtitle,
+            source: g.source,
+            hideSource: g.noSource,
+            footnote: g.footnote,
 
-    var d = Backbone.Model.prototype.toJSON.call(this);
+            data: data,
+            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
 
-    d.graphic = this.graphic.toJSON();
-    d.graphicType = this.graphicType.toJSON();
-    d.variation = this.variation.toJSON();
+            x: {
+                series: {
+                    key: xAxisProperty,
+                    label: xAxisProperty
+                }
+            },
 
-    var svg = this.attributes.svg;
+            y: {
+                series: yAxisProperties
+            }
 
-    if (!svg) {
-      d.svg = null;
-    } else {
-      var svgRect = svg.getBoundingClientRect();
-      d.svg = {
-        width: svgRect.width,
-        height: svgRect.height
-      };
+        };
+
+        return this.graphicType.controls.overrideConfig(config);
+    },
+
+    toJSON: function () {
+
+        var d = Backbone.Model.prototype.toJSON.call(this);
+
+        d.graphic = this.graphic.toJSON();
+        d.graphicType = this.graphicType.toJSON();
+        d.variation = this.variation.toJSON();
+
+        var svg = this.attributes.svg;
+
+        if (!svg) {
+            d.svg = null;
+        } else {
+            var svgRect = svg.getBoundingClientRect();
+            d.svg = {
+                width: svgRect.width,
+                height: svgRect.height
+            };
+        }
+
+        return d;
     }
-    
-    return d;
-  }
 });
 
 module.exports = GraphicVariation;

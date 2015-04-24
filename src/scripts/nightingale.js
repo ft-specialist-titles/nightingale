@@ -14,11 +14,11 @@ var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
 var Authentication = require('./utils/authentication.js');
 
-var _ =require('underscore');
+var _ = require('underscore');
 var $ = require('jquery');
 var version = require('./utils/version');
 
-function init(){
+function init() {
 
     var graphic = new Graphic();
     var importdata = new DataImport();
@@ -67,14 +67,14 @@ function init(){
         graphic.set(expectedValues);
     });
 
-    importdata.on('change:data', function(model, data) {
+    importdata.on('change:data', function (model, data) {
         graphic.chart.dataset.set('rows', data);
     });
 
     var importdataView = new ViewImportData({model: importdata});
     document.getElementById('controls').appendChild(importdataView.render().el);
 
-    var setColumnAxis = function(column, value) {
+    var setColumnAxis = function (column, value) {
         column.collection = null;
         var oldValue;
         var newValue = column.get('axis');
@@ -98,7 +98,7 @@ function init(){
     };
 
     importdata.columns.on('change:axis', setColumnAxis);
-    importdata.columns.on('reset', function() {
+    importdata.columns.on('reset', function () {
 
         var dims = {};
 
@@ -109,15 +109,15 @@ function init(){
             dims[d].push(column);
         });
 
-        graphic.chart.unusedSeries.reset(dims.NONE||[]);
+        graphic.chart.unusedSeries.reset(dims.NONE || []);
 
         if (dims.X && dims.X.length) {
             graphic.chart.xAxis.useColumn(dims.X[0]);
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
-        graphic.chart.yAxis.columns.reset(dims.Y||[]);
-        graphic.chart.zAxis.columns.reset(dims.Z||[]);
+        graphic.chart.yAxis.columns.reset(dims.Y || []);
+        graphic.chart.zAxis.columns.reset(dims.Z || []);
 
     });
 
@@ -135,7 +135,7 @@ function init(){
     }
 
     // REFACTOR: this logic should be in a model somewhere.
-    graphic.chart.xAxis.on('change:datatype change:dateFormat', function(model) {
+    graphic.chart.xAxis.on('change:datatype change:dateFormat', function (model) {
 
         var property = model.get('property');
         var datatype = model.get('datatype');
@@ -169,7 +169,7 @@ function init(){
     }
 }
 
-function nightingale(){
+function nightingale() {
     var auth = new Authentication(init);
     auth.renderButton();
     return {

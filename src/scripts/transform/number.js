@@ -4,34 +4,34 @@ var percent = /(\%)$/;
 
 module.exports = createNumberTransformer;
 
-function createNumberTransformer (options) {
+function createNumberTransformer(options) {
 
-  options = options || {};
+    options = options || {};
 
-  function transformNumber(d) {
+    function transformNumber(d) {
 
-    var _NaN = options.interpolateNulls ? null : NaN;
- 
-    if (d === null || d === undefined) return _NaN;
+        var _NaN = options.interpolateNulls ? null : NaN;
 
-    var type = typeof d;
+        if (d === null || d === undefined) return _NaN;
 
-    if (type === 'number') return d;
+        var type = typeof d;
 
-    if (type !== 'string') return _NaN;
+        if (type === 'number') return d;
 
-    d = d.trim()
-        .replace(allCommas, '')
-        .replace(currencySymbol, '')
-        .replace(percent, '');
+        if (type !== 'string') return _NaN;
 
-    if (d === '') return _NaN;
+        d = d.trim()
+            .replace(allCommas, '')
+            .replace(currencySymbol, '')
+            .replace(percent, '');
 
-    if (d === '*') return null;
+        if (d === '') return _NaN;
 
-    return Number(d);
+        if (d === '*') return null;
 
-  }
+        return Number(d);
 
-  return transformNumber;
+    }
+
+    return transformNumber;
 }
