@@ -8,7 +8,7 @@ var _ = require('underscore');
 var ViewGraphicVariation = Backbone.View.extend({
 
     initialize: function (options) {
-        this.chart = linechart();
+        this.chart = linechart;//();
         var debounced = _.bind(_.debounce(this.render, 50), this);
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
