@@ -15,73 +15,73 @@ var types = {
     'time':'time'
 };
 
-
-function normalise(value) {
+function normaliseSeperators(value) {
     if (!value) return null;
-
-    return value.toString()
-        .trim()
-        // make all regexp quicker and simpler by removing case
-        .toLowerCase()
-        // normalise separtators
-        .replace(/[\/\ ]/g, '-');
+    return value.toString().trim().toLowerCase().replace(/[\/\ ]/g, '-');
 }
 
 function DateParts(value){
     this.parts = [];
-    this.tokens = [];
-    this.value = normalise(value);
-    this.match = this.matched();
+    this.value = normaliseSeperators(value);
 }
 
-DateParts.prototype.matched =function(){
+DateParts.prototype.isYears = function(value, tokens){
+    //eg like 2000
+    return (/^\d{1,4}$/.test(value));
+};
+DateParts.prototype.isShortYears = function(value, tokens){
+    //eg like 02
+    return (/^\d{1,2}$/.test(value));
+};
+DateParts.prototype.isShortMonths = function(value, tokens){
+    //eg like jan
+    return (tokens.length === 2 && shortMonths.test(value));
+};
+DateParts.prototype.isNumbersButNotYears = function(value, tokens){
+    //eg 12345 or 1.1 or 1,000
+    return (/^[\d\.\,]+$/.test(value));
+};
+DateParts.prototype.isUnknownMonthsAndYears = function(value, tokens){
+    //eg like 00/00 or 14/14
+    return tokens.length === 2 && /^\d{2}-\d{2}$/.test(value);
+};
+DateParts.prototype.isMonthsThenYears = function(value, tokens){
+    //eg like 12/12
+    return this.isUnknownMonthsAndYears(value, tokens) && parseInt(tokens[0]) <= 12;
+};
+
+DateParts.prototype.matched = function(){
     var value = this.value;
     if (!value) return null;
-
-    // resolve quickly for simple year values
-    if (/^\d{1,4}$/.test(value)) {
-        return '%Y';
-
-        // resolve quickly for strings that
-        // look like numbers but definitely not years
-        // eg 12345 or 1.1 or 1,000
-    } else if (/^[\d\.\,]+$/.test(value)) {
-        return null;
-    }
-
     var tokens = value.split(/\-/g);
-    this.tokens = tokens;
     var numTokens = tokens.length;
 
-    // resolve quickly with values like 00/00
-    if (numTokens === 2 && /^\d{2}-\d{2}$/.test(value)) {
-        // assume something like 12-12 means December 2012.
-        if (parseInt(tokens[0]) <= 12) {
-            return '%m/%y';
-        } else {
-            // this would mean we have a value like 14-14
-            // which we can never safely make a date from.
-            return null;
-        }
-    } else if (numTokens === 2) {
-        if (shortMonths.test(tokens[0])) {
-            if (/^\d{4}$/.test(tokens[1])) {
-                return '%b/%Y';
-            } else if (/^\d{2}$/.test(tokens[1])) {
-                return '%b/%y';
-            }
-        } else if (/^\d{4}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+    if (this.isYears(value, tokens)) {
+        return '%Y';
+    } else if (this.isNumbersButNotYears(value, tokens)) {
+        return null;
+    } else if (this.isMonthsThenYears(value, tokens)) {
+        return '%m/%y';
+    } else if (this.isUnknownMonthsAndYears(value, tokens)) {
+        return null;
+    } else if (this.isShortMonths(tokens[0], tokens) || this.isShortMonths(tokens[1], tokens)) {
+        if (this.isYears(tokens[1], tokens)) {
+            return '%b/%Y';
+        } else if (this.isShortYears(tokens[1], tokens)) {
+            return '%b/%y';
+        } else if (this.isYears(tokens[0], tokens)) {
             return '%Y/%b';
-        } else if (/^\d{2}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
+        } else if (this.isShortYears(tokens[0], tokens)) {
             return '%y/%b';
         }
     }
-
+    //
+    //todo: test this format
     // trick the parser into thinking the last
     // token is a year if it matches the pattern 00-00-00
-    if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
-        this.tokens[2] = '99';
-    }
+    //if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+    //    this.tokens[2] = '99';
+    //}
 
     var part;
     for (var i = 0; i < numTokens; i++) {

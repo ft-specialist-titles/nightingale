@@ -16,7 +16,8 @@ var abbreviatedFormats = {
 var predictedDateFormat = function (value) {
 
     var dateParts = new DateParts(value);
-    if (dateParts.match!==false) return dateParts.match;
+    var matched = dateParts.matched();
+    if (matched!==false) return matched;
 
     var parts = dateParts.parts;
     var i= 0;

@@ -40,5 +40,10 @@
     <div id=charts></div>
     <div id=selection></div>
 </div>
-<script src="https://apis.google.com/js/platform.js?onload=nightingale" async defer></script>
+<!--<script src="https://apis.google.com/js/platform.js?onload=nightingale" async defer></script>-->
+<script>
+    if (document.domain === 'localhost') {
+        nightingale();
+    }
+</script>
 </body>
