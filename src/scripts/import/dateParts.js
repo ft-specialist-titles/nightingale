@@ -30,8 +30,12 @@ DateParts.prototype.isYears = function(value, tokens){
     return (/^\d{1,4}$/.test(value));
 };
 DateParts.prototype.isShortYears = function(value, tokens){
-    //eg like 02
+    //eg like 02 or 99
     return (/^\d{1,2}$/.test(value));
+};
+DateParts.prototype.isMonths = function(value, tokens){
+    //eg like jan
+    return (this.isShortYears(value) && value<=12);
 };
 DateParts.prototype.isShortMonths = function(value, tokens){
     //eg like jan
@@ -45,9 +49,13 @@ DateParts.prototype.isUnknownMonthsAndYears = function(value, tokens){
     //eg like 00/00 or 14/14
     return tokens.length === 2 && /^\d{2}-\d{2}$/.test(value);
 };
-DateParts.prototype.isMonthsThenYears = function(value, tokens){
+DateParts.prototype.isMonthsThenShortYears = function(value, tokens){
     //eg like 12/12
     return this.isUnknownMonthsAndYears(value, tokens) && parseInt(tokens[0]) <= 12;
+};
+DateParts.prototype.isMonthsThenYears = function(value, tokens){
+    //eg like 12/12
+    return tokens.length === 2 && this.isMonths(tokens[0]) && this.isYears(tokens[1]);
 };
 
 DateParts.prototype.matched = function(){
@@ -60,28 +68,29 @@ DateParts.prototype.matched = function(){
         return '%Y';
     } else if (this.isNumbersButNotYears(value, tokens)) {
         return null;
-    } else if (this.isMonthsThenYears(value, tokens)) {
+    } else if (this.isMonthsThenShortYears(value, tokens)) {
         return '%m/%y';
+    } else if (this.isMonthsThenYears(value, tokens)) {
+        return '%m/%Y';
     } else if (this.isUnknownMonthsAndYears(value, tokens)) {
         return null;
-    } else if (this.isShortMonths(tokens[0], tokens) || this.isShortMonths(tokens[1], tokens)) {
-        if (this.isYears(tokens[1], tokens)) {
-            return '%b/%Y';
-        } else if (this.isShortYears(tokens[1], tokens)) {
-            return '%b/%y';
-        } else if (this.isYears(tokens[0], tokens)) {
-            return '%Y/%b';
-        } else if (this.isShortYears(tokens[0], tokens)) {
-            return '%y/%b';
-        }
+    } else if (this.isShortMonths(tokens[0], tokens) && this.isShortYears(tokens[1], tokens)) {
+        return '%b/%y';
+    } else if (this.isShortMonths(tokens[1], tokens) && this.isShortYears(tokens[0], tokens)) {
+        return '%y/%b';
+    } else if (this.isShortMonths(tokens[0], tokens) && this.isYears(tokens[1], tokens)) {
+        return '%b/%Y';
+    } else if (this.isShortMonths(tokens[1], tokens) && this.isYears(tokens[0], tokens)) {
+        return '%Y/%b';
+    } else if (this.isYears(tokens[0], tokens) && this.isMonths(tokens[1], tokens) && numTokens===2) {
+        return '%Y/%m';
     }
-    //
-    //todo: test this format
+
     // trick the parser into thinking the last
     // token is a year if it matches the pattern 00-00-00
-    //if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
-    //    this.tokens[2] = '99';
-    //}
+    if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+        tokens[2] = '99';
+    }
 
     var part;
     for (var i = 0; i < numTokens; i++) {
@@ -91,6 +100,54 @@ DateParts.prototype.matched = function(){
 
     return false;
 };
+
+function timeParts(timeElements){
+    var timeStrings =[];
+    timeElements.reduce(function (result, timePart, i) {
+
+        var len = timePart.length;
+        var zulu = timePart.substr(len - 1) === 'Z';
+        var lastTwo = timePart.substr(len - 2).toLowerCase();
+        var am = lastTwo === 'am';
+        var pm = lastTwo === 'pm';
+        var ampm = am || pm;
+        timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
+        var num = Number(timePart);
+        var format;
+
+        if (timePart === '' || isNaN(num)) {
+            format = undefined;
+        } else if (i === 0 && num >= 0 && num <= 23) {
+            format = '%H';
+        } else if (i === 1 && num >= 0 && num <= 59) {
+            format = '%M';
+
+            // How the hell can a minute have 61 seconds?!
+            // https://docs.python.org/2/library/time.html
+        } else if (i === 2 && num >= 0 && num <= 61) {
+            if (timePart.test(/\d{2}\.\d{3}$/)) {
+                format = '%S.%L';
+            } else {
+                format = '%S';
+            }
+        } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
+            format = '%L';
+        }
+
+        if (zulu) {
+            format += 'Z';
+        } else if (ampm) {
+            format += '%p';
+        }
+
+        timeStrings.push(format);
+
+        return result;
+
+    }, timeStrings);
+
+    return timeStrings;
+}
 
 function Part(d) {
 
@@ -111,6 +168,7 @@ function Part(d) {
     if (/^\d{3,4}$/.test(d)) {
         this.type = types.year;
         this.format = '%Y';
+        this.num = parseInt(d);
     } else if (/^\d{1,2}$/.test(d)) {
 
         this.twoDigit = zeroPadded;
@@ -154,58 +212,13 @@ function Part(d) {
     } else if (d.indexOf(':') !== -1) {
 
         var timeElements = d.split(':');
-        var num;
-        var timePart;
         var timeStrings = [];
         var ampm = false;
 
         // it's only possible to have 4 components in a time format
         // ie %H:%M:%S:%L
         if (timeElements.length <= 4) {
-
-            timeElements.reduce(function (result, timePart, i) {
-
-                var len = timePart.length;
-                var zulu = timePart.substr(len - 1) === 'Z';
-                var lastTwo = timePart.substr(len - 2).toLowerCase();
-                var am = lastTwo === 'am';
-                var pm = lastTwo === 'pm';
-                var ampm = am || pm;
-                timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
-                var num = Number(timePart);
-                var format;
-
-                if (timePart === '' || isNaN(num)) {
-                    format = undefined;
-                } else if (i === 0 && num >= 0 && num <= 23) {
-                    format = '%H';
-                } else if (i === 1 && num >= 0 && num <= 59) {
-                    format = '%M';
-
-                    // How the hell can a minute have 61 seconds?!
-                    // https://docs.python.org/2/library/time.html
-                } else if (i === 2 && num >= 0 && num <= 61) {
-                    if (timePart.test(/\d{2}\.\d{3}$/)) {
-                        format = '%S.%L';
-                    } else {
-                        format = '%S';
-                    }
-                } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
-                    format = '%L';
-                }
-
-                if (zulu) {
-                    format += 'Z';
-                } else if (ampm) {
-                    format += '%p';
-                }
-
-                timeStrings.push(format);
-
-                return result;
-
-            }, timeStrings);
-
+            timeStrings = timeParts(timeElements)
         }
 
         if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
