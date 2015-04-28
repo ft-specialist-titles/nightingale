@@ -94,7 +94,7 @@ DateParts.prototype.matched = function(){
 
     var part;
     for (var i = 0; i < numTokens; i++) {
-        part = new Part(tokens[i]);
+        part = new this.Part(tokens[i]);
         this.parts.push(part);
     }
 
@@ -125,7 +125,7 @@ function timeParts(timeElements){
             // How the hell can a minute have 61 seconds?!
             // https://docs.python.org/2/library/time.html
         } else if (i === 2 && num >= 0 && num <= 61) {
-            if (timePart.test(/\d{2}\.\d{3}$/)) {
+            if (/\d{2}\.\d{3}$/.test(timePart)) {
                 format = '%S.%L';
             } else {
                 format = '%S';
@@ -149,7 +149,7 @@ function timeParts(timeElements){
     return timeStrings;
 }
 
-function Part(d) {
+DateParts.prototype.Part = function(d) {
 
     var len = d.length;
     var zeroPadded = len === 2;
@@ -218,7 +218,7 @@ function Part(d) {
         // it's only possible to have 4 components in a time format
         // ie %H:%M:%S:%L
         if (timeElements.length <= 4) {
-            timeStrings = timeParts(timeElements)
+            timeStrings = timeParts(timeElements);
         }
 
         if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
@@ -232,6 +232,6 @@ function Part(d) {
     } else if (/^\([a-z]+\)$/.test(d)) {
         console.log('this is part of the time zone info');
     }
-}
+};
 
 module.exports = DateParts;
