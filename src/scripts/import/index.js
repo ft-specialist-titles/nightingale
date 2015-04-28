@@ -507,49 +507,4 @@ var DataImport = Backbone.Model.extend({
 
 });
 
-var tests = {
-    '1.101': null,
-    '1,000': null,
-    '1,000,000': null,
-    '1': '%Y',
-    '11': '%Y',
-    '111': '%Y',
-    '1999': '%Y',
-    '11111': null,
-    '01-1999': '%m/%Y',
-    '12-1999': '%m/%Y',
-    '13-1999': null,
-    '32-1999': null,
-    'Jan 1999': '%b/%Y',
-    '31/01/2014': '%d/%m/%Y',
-    '31/01/14': '%d/%m/%y',
-    '01/31/2014': '%x',
-    '01/31/14': '%m/%d/%y',
-    '01 January 2014': '%d/%B/%Y',
-    '13/01/13': '%d/%m/%y',
-    '01/13/13': '%m/%d/%y',
-    '13/01/01': '%d/%m/%y',
-    '01/13/01': '%m/%d/%y',
-    '12/01/12': null,
-    '01/12/12': null,
-    '1/1/14': null,
-    '01-01-01': null,
-    '14/14': null,
-    '11/14': '%m/%y',
-    '01/13/2013': '%x',
-    '01 Jan 2014': '%d/%b/%Y',
-    '32 Jan 2014': null,
-    'Jan 01 2014': '%b/%d/%Y',
-    'Jan 32 2014': null,
-    'January 01 2014': '%B/%d/%Y',
-    '2014 January 01': '%Y/%B/%d',
-};
-
-Object.keys(tests).forEach(function (key) {
-    var date = key;
-    var format = tests[key];
-    var result = predictedDateFormat(date);
-    console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
-});
-
 module.exports = DataImport;

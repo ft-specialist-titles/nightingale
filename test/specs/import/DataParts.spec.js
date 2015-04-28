@@ -1,6 +1,6 @@
 var DateParts = require('../../../src/scripts/import/dateParts');
 
-fdescribe('dateParts can ', function () {
+describe('dateParts can ', function () {
 
     var spy;
     var date;
