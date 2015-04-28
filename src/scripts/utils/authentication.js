@@ -7,10 +7,6 @@ var Authentication = function (cb) {
 
 Authentication.prototype.renderButton = function () {
     var self = this;
-    if (document.domain === 'localhost') {
-        this.onSignIn({getBasicProfile: function() { return {getEmail: function(){return '.@ft.com';}};}});
-        return this.cb();
-    }
     if (!document.getElementById('my-signin2')) return;
     gapi.signin2.render('my-signin2', {
         'width': 200,
