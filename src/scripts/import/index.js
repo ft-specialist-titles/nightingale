@@ -1,22 +1,13 @@
 /*jshint -W083 */
 //todo: PM: remove hint once tests are written
 
-var d3 = require('d3');
-var _ = require('underscore');
 var Backbone = require('./../core/backbone.js');
 var Column = require('./../charting/Column.js');
-var Datatypes = require('./../charting/Datatypes.js');
+var DataTypes = require('./../charting/DataTypes.js');
 var Axis = require('./../charting/Axis.js');
 var transform = require('./../transform/index.js');
-var sniffDataType = require('./sniffDataType.js');
 var predictedDateFormat = require('./predictDateFormat.js');
-
-var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
-    return a.concat(alphabet.map(function (h) {
-        return h + (num === 0 ? '' : num);
-    }));
-}, []);
+var ValidateFile = require('./validateFile.js');
 
 function gtDateThreshold(count, totalNonDateStrings) {
     return count * 100 / totalNonDateStrings > 95;
@@ -59,217 +50,40 @@ var DataImport = Backbone.Model.extend({
 
     validate: function (attributes, options) {
 
-        var error = {message: '', details: []};
-        var method;
-        var data = [];
+        var xAxis;
+        var file = new ValidateFile(attributes);
+        if (file.error.message) return file.error;
+        var data = file.data;
+        var dataTypeCounters = file.dataTypeCounters;
 
-        // remove empty rows from the bottom
-        attributes.dataAsString = (attributes.dataAsString || '').trimRight();
-
-        // we can't just trimLeft as then we would loose empty column headers
-        // so we must remove things that look like empty rows from the beginning
-        attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');
-
-        if (!attributes.dataAsString) {
-            error.message = 'No data found';
-            return error;
-        }
-
-        if (!attributes.type) {
-            attributes.type = DataImport.guessDataFormat(attributes.dataAsString);
-            if (!attributes.type) {
-                error.message = 'Unrecognised data format';
-                return error;
-            }
-        }
-
-        var isPipelineFormat = DataImport.isPipelineFormat(attributes.dataAsString);
-
-        // Special case allow .txt pipline files. So just change the type to TSV.
-        if (isPipelineFormat && attributes.type === 'text/plain') {
-            attributes.type = 'text/tsv';
-        }
-
-        var supportedFormat = DataImport.isValidType(attributes.type);
-
-        if (!supportedFormat) {
-            error.message = 'Unsupported file type';
-            return error;
-        }
-
-        if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values') {
-            method = 'TSV';
-        } else if (attributes.type === 'text/csv') {
-            method = 'CSV';
-        } else {
-            error.message = 'Unsupported import format';
-            return error;
-        }
-
-        var colNames;
-        var numCols;
-        var convertFn;
-        var warningRows = [];
-        var warningMessage = null;
-        var hasHeaderRow = true;
-        var dataTypeCounters = [];
-        var pipelineData;
-        var pipelineOptions = null;
-        var missingCols = 0;
-        var extraCols = 0;
-
-
-        // TODO: handle when the first row is not a header row.
-        //       ... need to work out a row on useful header row on the fly, using letters A-Z
-
-
-        try {
-            if (isPipelineFormat) {
-                pipelineData = DataImport.parsePipeline(attributes.dataAsString);
-                attributes.dataAsString = pipelineData.dataString;
-                pipelineOptions = pipelineData.options;
-            }
-        } catch (pipelineError) {
-            error.message = pipelineError.message;
-            return error;
-        }
-
-        var processRow = function (row, rowNum) {
-            var values = row.map(Function.prototype.call, String.prototype.trim);
-            var numValues = values.length;
-            var result;
-
-            if (hasHeaderRow && rowNum === 0) {
-                colNames = values;
-                numCols = numValues;
-
-                // TODO: ensure none of the values are null/undefined/empty-string
-                // if so throw an error
-
-                var names = {}, n;
-
-                for (var i = 0; i < numCols; i++) {
-
-                    // ensure no duplicate column names
-                    n = colNames[i];
-
-                    if (!n) {
-                        n = emptyheaderRows[i];
-                    }
-
-                    if (n in names) {
-                        names[n]++;
-                        n = n + '-' + names[n];
-                    } else {
-                        names[n] = 1;
-                    }
-
-                    colNames[i] = n;
-
-                    dataTypeCounters.push({
-                        colName: n,
-                        strings: 0,
-                        stringValues: [],
-                        nulls: 0,
-                        numbers: 0,
-                        numberValues: [],
-                        dates: 0,
-                        dateValues: []
-                    });
-                }
-                return;
-            } else if (numValues <= 1 && !values[0]) {
-                // empty row
-                return;
-            } else if (numValues > numCols) {
-                warningRows.push({
-                    rowNum: rowNum,
-                    numValues: numValues,
-                    values: values.slice(0),
-                    message: 'Too many values'
-                });
-                extraCols += (numValues - numCols);
-                values = values.slice(0, numCols);
-            } else if (numValues < numCols) {
-                warningRows.push({
-                    rowNum: rowNum,
-                    numValues: numValues,
-                    values: values.slice(0),
-                    message: 'Not as many values as there are columns'
-                });
-                missingCols += (numCols - numValues);
-                values = values.concat(new Array(numCols - numValues));
-            }
-
-            values.forEach(sniffDataType, dataTypeCounters);
-            result = _.object(colNames, values);
-
-            return result;
-        };
-
-        try {
-            data = d3[method.toLowerCase()].parseRows(attributes.dataAsString, processRow);
-        } catch (e) {
-            error.message = 'There was a problem with the ' + method + ' data';
-            return error;
-        }
-
-        var numRows = data.length;
-
-        if (!numRows) {
-            error.message = 'No data found';
-            return error;
-        }
-
-        if (numCols < 2) {
-            error.message = 'Your data needs 2 columns or more.';
-            return error;
-        }
-
-        if (warningRows.length) {
-            if (!!missingCols && missingCols / numRows % 1 === 0) {
-                warningMessage = 'The data appears to be missing ' + (missingCols / numRows) + ' whole columns of data.';
-            } else if (!!extraCols && extraCols / numRows % 1 === 0) {
-                warningMessage = 'There  seems to be ' + (extraCols / numRows) + ' columns without headers. The data for these has been discarded.';
-            } else if (!missingCols && !!extraCols && extraCols < numRows) {
-                warningMessage = 'Some rows have too many values. These values have been discarded.';
-            } else if (!extraCols && !!missingCols && missingCols < numRows) {
-                // DO NOTHING - we assume the last (right-most) column has some null values.
-            } else {
-                warningMessage = 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';
-            }
-        }
-
-        var threshold = new Threshold(numRows);
+        var threshold = new Threshold(file.numRows);
 
         dataTypeCounters.forEach(function (typeCounter) {
             if (threshold.isAbove(typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NONE;
+                typeCounter.datatype = DataTypes.NONE;
             } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NUMERIC;
+                typeCounter.datatype = DataTypes.NUMERIC;
             } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.TIME;
+                typeCounter.datatype = DataTypes.TIME;
             } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.CATEGORICAL;
+                typeCounter.datatype = DataTypes.CATEGORICAL;
             } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NUMERIC;
+                typeCounter.datatype = DataTypes.NUMERIC;
             } else {
-                typeCounter.datatype = Datatypes.NONE;
+                typeCounter.datatype = DataTypes.NONE;
             }
         });
 
-        var xAxis;
-
         dataTypeCounters.forEach(function (counter) {
             var type = counter.datatype;
-            if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {
+            if (DataTypes.isTime(type) || DataTypes.isCategorical(type)) {
                 if (!xAxis) {
                     xAxis = counter;
                     counter.predictedAxis = Axis.X;
                 } else {
                     counter.predictedAxis = Axis.NONE;
                 }
-            } else if (Datatypes.isNumeric(type)) {
+            } else if (DataTypes.isNumeric(type)) {
                 counter.predictedAxis = Axis.Y;
             } else {
                 counter.predictedAxis = Axis.NONE;
@@ -308,13 +122,13 @@ var DataImport = Backbone.Model.extend({
             typeInfo = newColumns[i].get('typeInfo');
             colName = typeInfo.colName;
 
-            if (typeInfo.datatype === Datatypes.TIME) {
+            if (typeInfo.datatype === DataTypes.TIME) {
 
                 typeInfo.dateFormats = [];
                 countDateFormats = {};
                 totalNonDateStrings = 0;
 
-                for (var j = 0; j < numRows; j++) {
+                for (var j = 0; j < file.numRows; j++) {
                     val = data[j][colName];
 
                     if (!val) continue;
@@ -410,26 +224,26 @@ var DataImport = Backbone.Model.extend({
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
-                    typeInfo.datatype = Datatypes.NUMERIC;
+                    typeInfo.datatype = DataTypes.NUMERIC;
                     newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
             }
         }
 
-        transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);
+        transform.table(data, newColumns, transform.number, DataTypes.NUMERIC);
 
         console.table(dataTypeCounters);
 
         this.set({
-            numCols: numCols,
+            numCols: file.numCols,
             data: data,
             originalData: originalData,
-            colNames: colNames,
-            numRows: numRows,
-            pipelineOptions: pipelineOptions,
+            colNames: file.colNames,
+            numRows: file.numRows,
+            pipelineOptions: file.pipelineOptions,
             warning: {
-                message: warningMessage,
-                rows: warningRows
+                message: file.warningMessage,
+                rows: file.warningRows
             }
         });
         this.columns.reset(newColumns);
@@ -449,60 +263,6 @@ var DataImport = Backbone.Model.extend({
 
     isValidType: function (type) {
         return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
-    },
-
-    isPipelineFormat: function (str) {
-        return str.substring(0, 2) === '&\t';
-    },
-
-    parsePipeline: function (str) {
-        /*jshint -W084 */
-        var lines = str.trim().split(/[\n\r]+/gm);
-        var line;
-        var options = {};
-
-        while (line = lines.pop()) {
-            if (!line) {
-                continue;
-            }
-            if (line.charAt(0) === '\t') {
-                throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
-            }
-            line = line.trim();
-            if (!line) {
-                continue;
-            }
-            if (line.charAt(0) !== '&') {
-                lines.push(line);
-                break;
-            }
-            var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);
-            var value = bits[1];
-            if (value || value !== 'delete if not required') {
-                options[bits[0].replace(/^&/, '')] = value;
-            }
-        }
-        str = lines.join('\n');
-        return {dataString: str, options: options};
-    },
-
-    guessDataFormat: function (dataAsString) {
-
-        if (dataAsString) {
-            var lines = dataAsString.split(/\n/g);
-            if (lines.length) {
-                var line = (lines[0] || '').replace(/"(.*?)"/g, '');
-                var tabs = (line.match(/\t/g) || []).length;
-                var commas = (line.match(/\,/g) || []).length;
-                if (tabs > commas) {
-                    return 'text/tsv';
-                } else if (commas > tabs) {
-                    return 'text/csv';
-                }
-            }
-        }
-
-        return null;
     }
 
 });
