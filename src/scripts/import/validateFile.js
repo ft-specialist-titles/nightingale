@@ -180,7 +180,7 @@ ValidateFile.prototype.isValidType = function(type) {
 };
 
 ValidateFile.prototype.logError = function(bool, message){
-    if (bool) return this.error.message = message;
+    if (bool) return (this.error.message = message);
 };
 
 module.exports = ValidateFile;
