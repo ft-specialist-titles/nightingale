@@ -3,7 +3,7 @@
 
 var Backbone = require('./../core/backbone.js');
 var Column = require('./../charting/Column.js');
-var DataTypes = require('./../charting/DataTypes.js');
+var DataTypes = require('./../charting/Datatypes.js');
 var Axis = require('./../charting/Axis.js');
 var transform = require('./../transform/index.js');
 var predictedDateFormat = require('./predictDateFormat.js');
