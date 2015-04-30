@@ -75,7 +75,7 @@ function popularDate(formatKeys, dateStrings){
             greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, dateStrings.total);
         }
 
-        return (greaterThanThreshold) ? greaterThanThreshold : null
+        return (greaterThanThreshold) ? greaterThanThreshold : null;
 
     } else {
         return null;
@@ -83,14 +83,14 @@ function popularDate(formatKeys, dateStrings){
 }
 
 function findPopularDateFormat(file, typeInfo){
-    var dateStrings = convertDateStrings(file, typeInfo)
+    var dateStrings = convertDateStrings(file, typeInfo);
     var formatKeys = Object.keys(dateStrings.valid);
     var numKeys = formatKeys.length;
 
     if (numKeys === 1) {
         typeInfo.mostPopularDateFormat = formatKeys[0];
     } else if (numKeys > 1) {
-        typeInfo.mostPopularDateFormat = popularDate(formatKeys, dateStrings)
+        typeInfo.mostPopularDateFormat = popularDate(formatKeys, dateStrings);
     }
 }
 

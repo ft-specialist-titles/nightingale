@@ -67,4 +67,4 @@ function describeColumns(file){
     return newColumns;
 }
 
-module.exports = describeColumns
+module.exports = describeColumns;
