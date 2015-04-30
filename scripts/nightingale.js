@@ -13722,7 +13722,7 @@ if (typeof jQuery === 'undefined') {
 }();
 },{}],5:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v2.1.3
+ * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -13732,7 +13732,7 @@ if (typeof jQuery === 'undefined') {
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2014-12-18T15:11Z
+ * Date: 2015-04-28T16:01Z
  */
 
 (function( global, factory ) {
@@ -13790,7 +13790,7 @@ var
 	// Use the correct document accordingly with window argument (sandbox)
 	document = window.document,
 
-	version = "2.1.3",
+	version = "2.1.4",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -14254,7 +14254,12 @@ jQuery.each("Boolean Number String Function Array Date RegExp Object Error".spli
 });
 
 function isArraylike( obj ) {
-	var length = obj.length,
+
+	// Support: iOS 8.2 (not reproducible in simulator)
+	// `in` check used to prevent JIT error (gh-2145)
+	// hasOwn isn't used here due to false negatives
+	// regarding Nodelist length in IE
+	var length = "length" in obj && obj.length,
 		type = jQuery.type( obj );
 
 	if ( type === "function" || jQuery.isWindow( obj ) ) {
@@ -31518,6 +31523,11 @@ module.exports = Authentication;
 },{"./../../../bower_components/jquery/dist/jquery.js":5}],102:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
+    if (document.domain === 'localhost') {
+        this.track = false;
+        return;
+    }
+    this.track = true;
     (function (i, s, o, g, r, a, m) {
         i.GoogleAnalyticsObject = r;
         i[r] = i[r] || function () {
@@ -31535,6 +31545,7 @@ var Tracking = function () {
 };
 
 Tracking.prototype.trackPage = function (pageName) {
+    if (!this.track) return;
     //Set custom screen
     ga('send', 'screenview', {
         'screenName': pageName
@@ -31542,14 +31553,15 @@ Tracking.prototype.trackPage = function (pageName) {
 };
 
 Tracking.prototype.trackEvent = function (eventName) {
+    if (!this.track) return;
     ga('send', 'event', 'button', 'click', eventName);
 };
 
 module.exports = new Tracking();
 
 },{}],103:[function(require,module,exports){
-module.exports = "0.0.5";
-},{}],"nightingale":[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30}],"nightingale":[function(require,module,exports){
 var Backbone = require('./core/backbone');
 var Graphic = require('./charting/Graphic.js');
 var ViewGraphicControls = require('./charting/ViewGraphicControls.js');
