@@ -1,6 +1,6 @@
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
-var GraphicVariation = require('../charting/GraphicVariation.js');
+var GraphicVariation = require('../models/GraphicVariation.js');
 var ViewGraphicVariation = require('./GraphicVariation.js');
 var Backbone = require('./../core/backbone.js');
 

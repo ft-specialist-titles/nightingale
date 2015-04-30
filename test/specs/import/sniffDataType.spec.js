@@ -34,6 +34,9 @@ describe('sniffDataType can ', function () {
         expect(dataTypes[0].numbers).toBe(1);
         expect(dataTypes[0].numberValues[0]).toBe('1');
         expect(dataTypes[0].dateValues[2]).toBe('1');
+        expect(sniffDataType.bind(dataTypes)('1,000', 0)).toBe(undefined);
+        expect(dataTypes[0].numbers).toBe(2);
+        expect(dataTypes[0].dates).toBe(3);
 
     });
 
@@ -42,6 +45,17 @@ describe('sniffDataType can ', function () {
         expect(dataTypes[0].nulls).toBe(1);
         expect(dataTypes[0].dates).toBe(3);
 
+    });
+
+    it('understands currency/percentage to be numbers', function () {
+        expect(sniffDataType.bind(dataTypes)('£1.20', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('$1.20', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('€1.20', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('1.20$', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('1.20%', 0)).toBe(undefined);
+        expect(dataTypes[0].nulls).toBe(1);
+        expect(dataTypes[0].dates).toBe(3);
+        expect(dataTypes[0].numbers).toBe(6);
     });
 
 

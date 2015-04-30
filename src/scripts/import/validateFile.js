@@ -17,8 +17,8 @@ function ValidateFile (attributes) {
     this.error = {message: '', details: []};
     this.missingCols = 0;
     this.extraCols = 0;
-    this.colNames;
-    this.numCols;
+    this.numCols = 0;
+    this.colNames = [];
     this.dataTypeCounters = [];
     this.warningRows = [];
     this.data = [];

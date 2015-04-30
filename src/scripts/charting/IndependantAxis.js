@@ -1,15 +1,15 @@
-var Axis = require('./Axis.js');
-var Datatype = require('./Datatypes.js');
+var Axis = require('../models/Axis.js');
+var DataTypes = require('./Datatypes.js');
 var _ = require('underscore');
-var Column = require('./Column.js');
+var Column = require('../models/Column.js');
 
-var defaultDatatype = Datatype.TIME;
+var defaultDatatype = DataTypes.TIME;
 
 function convertPipelineIndexHeader(property, datatype) {
     if (property === '&') {
-        if (Datatype.isCategorical(datatype)) {
+        if (DataTypes.isCategorical(datatype)) {
             return 'Category';
-        } else if (Datatype.isTime(datatype)) {
+        } else if (DataTypes.isTime(datatype)) {
             return 'Time';
         }
     }
@@ -42,7 +42,7 @@ var IndependantAxis = Axis.extend({
 
         var typeInfo = column.get('typeInfo');
         var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
-        var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
         this.set({

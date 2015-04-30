@@ -1,6 +1,6 @@
 var Backbone = require('./../core/backbone.js');
-var DependantAxis = require('./DependantAxis.js');
-var IndependantAxis = require('./IndependantAxis.js');
+var DependantAxis = require('../charting/DependantAxis.js');
+var IndependantAxis = require('../charting/IndependantAxis.js');
 var Dataset = require('./Dataset.js');
 var Axis = require('./Axis.js');
 

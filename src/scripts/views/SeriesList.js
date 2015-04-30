@@ -1,7 +1,7 @@
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require('jquery');
-var Axis = require('../charting/Axis.js');
+var Axis = require('../models/Axis.js');
 
 var dragging;
 var placeholder = $('<div class="sortablelist-placeholder"/>');

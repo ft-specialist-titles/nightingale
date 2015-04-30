@@ -1,7 +1,7 @@
 var Backbone = require('./../core/backbone.js');
-var Axis = require('./Axis.js');
+var Axis = require('../models/Axis.js');
 var _ = require('underscore');
-var Datatypes = require('./Datatypes.js');
+var DataTypes = require('./Datatypes.js');
 
 function captitalizeFirstLetter(str) {
     if (!str || typeof str !== 'string') return str;
@@ -10,7 +10,7 @@ function captitalizeFirstLetter(str) {
     });
 }
 
-var defaultDatatype = Datatypes.NUMERIC;
+var defaultDatatype = DataTypes.NUMERIC;
 
 var DependantAxis = Axis.extend({
     initialize: function () {
@@ -34,7 +34,7 @@ var DependantAxis = Axis.extend({
             var warning = '';
             if (numCols === 0) {
                 this.set({
-                    datatype: Datatypes.NONE,
+                    datatype: DataTypes.NONE,
                     suggestedLabel: ''
                 });
             } else if (numCols === 1) {
@@ -64,7 +64,7 @@ var DependantAxis = Axis.extend({
                 types = _.pairs(types).sort(function (a, b) {
                     return a[1] < b[1];
                 });
-                var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
+                var mostPopularType = types.length ? types[0][0] : DataTypes.CATEGORICAL;
                 this.set({
                     suggestedLabel: '',
                     datatype: mostPopularType
