@@ -1,5 +1,10 @@
 /* global ga*/
 var Tracking = function () {
+    if (document.domain === 'localhost') {
+        this.track = false;
+        return;
+    }
+    this.track = true;
     (function (i, s, o, g, r, a, m) {
         i.GoogleAnalyticsObject = r;
         i[r] = i[r] || function () {
@@ -17,6 +22,7 @@ var Tracking = function () {
 };
 
 Tracking.prototype.trackPage = function (pageName) {
+    if (!this.track) return;
     //Set custom screen
     ga('send', 'screenview', {
         'screenName': pageName
@@ -24,6 +30,7 @@ Tracking.prototype.trackPage = function (pageName) {
 };
 
 Tracking.prototype.trackEvent = function (eventName) {
+    if (!this.track) return;
     ga('send', 'event', 'button', 'click', eventName);
 };
 
