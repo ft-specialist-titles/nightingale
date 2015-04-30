@@ -11,7 +11,7 @@ var tracking = require('./../utils/tracking.js');
 var controls = {
     'Line' : ViewLineControls,
     'Column' : ViewColumnControls
-}
+};
 
 var ViewSelectedVariation = RegionView.extend({
 

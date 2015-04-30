@@ -34,8 +34,8 @@ function init() {
             graphic: graphic,
             controls: new LineControls(),
             variations: Variations
-        })
-        ,new GraphicType({
+        }),
+        new GraphicType({
             typeName: 'Column'
         }, {
             graphic: graphic,
