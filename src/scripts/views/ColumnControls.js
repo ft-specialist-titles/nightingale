@@ -1,15 +1,12 @@
 var Backbone = require('./../core/backbone.js');
 
-var LineControls = Backbone.View.extend({
+var ColumnControls = Backbone.View.extend({
 
     className: 'view-graphic-type-controls',
 
-    template: require('./../templates/type-controls-line.hbs'),
+    template: require('./../templates/type-controls-column.hbs'),
 
     bindings: {
-        '[name="startFromZero"]': 'startFromZero',
-        '[name="thinLines"]': 'thinLines',
-        '[name="flipYAxis"]': 'flipYAxis',
         '[name="nice"]': 'nice'
     },
 
@@ -21,4 +18,4 @@ var LineControls = Backbone.View.extend({
 
 });
 
-module.exports = LineControls;
+module.exports = ColumnControls;

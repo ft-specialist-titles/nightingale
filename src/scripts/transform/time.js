@@ -53,8 +53,7 @@ function useJavascriptDateFn(format) {
 var datePartSeparators = /[\-\ ]/g;
 
 function createDateParser(format) {
-    var useJs = useJavascriptDateFn(format);
-    if (useJs) {
+    if (useJavascriptDateFn(format)) {
         return createDate;
     } else {
         var parser = d3.time.format(format).parse;

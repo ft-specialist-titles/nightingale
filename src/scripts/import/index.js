@@ -1,6 +1,3 @@
-/*jshint -W083 */
-//todo: PM: remove hint once tests are written
-
 var Backbone = require('./../core/backbone.js');
 var DataTypes = require('./../charting/Datatypes.js');
 var Axis = require('./../models/Axis.js');

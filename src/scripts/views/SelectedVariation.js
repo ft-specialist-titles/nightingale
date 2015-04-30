@@ -4,8 +4,14 @@ var attributeStyler = require('o-charts').util.attributeStyler;
 var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
 var ViewLineControls = require('./LineControls.js');
+var ViewColumnControls = require('./ColumnControls.js');
 var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
+
+var controls = {
+    'Line' : ViewLineControls,
+    'Column' : ViewColumnControls
+}
 
 var ViewSelectedVariation = RegionView.extend({
 
@@ -31,11 +37,10 @@ var ViewSelectedVariation = RegionView.extend({
 
     regions: {
         '[data-region="graphic-type-controls"]': function () {
-            return new ViewLineControls({model: this.model.graphicType});
 
-            // TODO: once we have more chart types then we'll
-            // need to be able to switch between different views here
-            // return new ViewGraphicTypeControls({model: this.model.graphicType});
+            var viewControls = controls[this.model.graphicType.attributes.typeName];
+            return new viewControls({model: this.model.graphicType});
+
         }
     },
 

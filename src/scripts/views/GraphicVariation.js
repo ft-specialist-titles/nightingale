@@ -1,14 +1,20 @@
 var Backbone = require('./../core/backbone.js');
 var $ = require('jquery');
-var linechart = require('o-charts').chart.line;
+var lineChart = require('o-charts').chart.line;
+var columnChart = require('o-charts').chart.column;
 var d3 = require('d3');
 var _ = require('underscore');
+
+var chartTypes = {
+    'Line' : lineChart,
+    'Column' : columnChart
+};
 
 //todo: variation -- to variant
 var ViewGraphicVariation = Backbone.View.extend({
 
     initialize: function (options) {
-        this.chart = linechart;//();
+        this.chart = chartTypes[this.model.graphicType.get('typeName')];
         var debounced = _.bind(_.debounce(this.render, 50), this);
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
@@ -68,6 +74,7 @@ var ViewGraphicVariation = Backbone.View.extend({
         this.svg.style.width = config.width + 'px';
 
         config.error = this.reportErrors;
+        config.groupDates = (this.model.graphicType.get('typeName')=='Column') ? ['quarterly','yearly']: false;
 
         d3.select(this.svg).data([config]).call(this.chart);
 

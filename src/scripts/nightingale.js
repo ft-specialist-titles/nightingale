@@ -9,6 +9,7 @@ var ViewInlineHelp = require('./views/InlineHelp.js');
 var ViewSelectedVariation = require('./views/SelectedVariation.js');
 var Variations = require('./charting/Variations.js');
 var LineControls = require('./models/LineControls.js');
+var ColumnControls = require('./models/ColumnControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
@@ -21,8 +22,8 @@ var version = require('./utils/version');
 function init() {
 
     var graphic = new Graphic();
-    var importdata = new DataImport();
-    var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importdata});
+    var importData = new DataImport();
+    var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
@@ -32,6 +33,13 @@ function init() {
         }, {
             graphic: graphic,
             controls: new LineControls(),
+            variations: Variations
+        })
+        ,new GraphicType({
+            typeName: 'Column'
+        }, {
+            graphic: graphic,
+            controls: new ColumnControls(),
             variations: Variations
         })
     ]);
@@ -58,7 +66,7 @@ function init() {
         document.getElementById('selection').appendChild(viewSelectedVariation.el);
     });
 
-    importdata.on('change:pipelineOptions', function (model, pipelineOption) {
+    importData.on('change:pipelineOptions', function (model, pipelineOption) {
         if (!pipelineOption) {
             graphic.set(graphic.defaults);
             return;
@@ -67,11 +75,11 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importdata.on('change:data', function (model, data) {
+    importData.on('change:data', function (model, data) {
         graphic.chart.dataset.set('rows', data);
     });
 
-    var importdataView = new ViewImportData({model: importdata});
+    var importdataView = new ViewImportData({model: importData});
     document.getElementById('controls').appendChild(importdataView.render().el);
 
     var setColumnAxis = function (column, value) {
@@ -97,12 +105,12 @@ function init() {
         }
     };
 
-    importdata.columns.on('change:axis', setColumnAxis);
-    importdata.columns.on('reset', function () {
+    importData.columns.on('change:axis', setColumnAxis);
+    importData.columns.on('reset', function () {
 
         var dims = {};
 
-        importdata.columns.each(function (column) {
+        importData.columns.each(function (column) {
             var d = column.get('axis') || 'NONE';
             if (!dims[d]) dims[d] = [];
             d.collection = null;
@@ -127,7 +135,7 @@ function init() {
     });
 
     function revertColumn(array, property) {
-        var originalData = importdata.get('originalData');
+        var originalData = importData.get('originalData');
         return array.map(function (d, i) {
             d[property] = originalData[i][property];
             return d;
@@ -139,7 +147,7 @@ function init() {
 
         var property = model.get('property');
         var datatype = model.get('datatype');
-        var currentDataset = importdata.get('data');
+        var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
 
@@ -153,7 +161,7 @@ function init() {
         graphic.chart.dataset.set('rows', revertedDataset);
     });
 
-    importdata.columns.each(setColumnAxis);
+    importData.columns.each(setColumnAxis);
 
     ViewInlineHelp.init();
 
@@ -165,7 +173,7 @@ function init() {
     if (document.location.hash === '#test') {
         var fs = require('fs');
         var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
-        importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
     }
 }
 

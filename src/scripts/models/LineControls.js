@@ -1,6 +1,5 @@
 var Backbone = require('./../core/backbone.js');
 var _ = require('underscore');
-var Chart = require('./Chart.js');
 var TickStyle = require('../charting/TickStyle.js');
 
 var LineControls = Backbone.Model.extend({
