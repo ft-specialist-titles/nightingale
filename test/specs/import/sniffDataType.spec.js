@@ -30,14 +30,19 @@ describe('sniffDataType can ', function () {
     it('guess a number as int or date', function () {
 
         expect(sniffDataType.bind(dataTypes)('1', 0)).toBe(undefined);
-        expect(dataTypes[0].dates).toBe(3);
+        expect(dataTypes[0].dates).toBe(2);
         expect(dataTypes[0].numbers).toBe(1);
         expect(dataTypes[0].numberValues[0]).toBe('1');
-        expect(dataTypes[0].dateValues[2]).toBe('1');
+
         expect(sniffDataType.bind(dataTypes)('1,000', 0)).toBe(undefined);
         expect(dataTypes[0].numbers).toBe(2);
-        expect(dataTypes[0].dates).toBe(3);
+        expect(dataTypes[0].dates).toBe(2);
 
+        expect(sniffDataType.bind(dataTypes)('1000', 0)).toBe(undefined);
+        expect(dataTypes[0].dates).toBe(3);
+        expect(dataTypes[0].numbers).toBe(3);
+        expect(dataTypes[0].dates).toBe(3);
+        expect(dataTypes[0].dateValues[2]).toBe('1000');
     });
 
     it('guess a nulls', function () {
@@ -55,7 +60,7 @@ describe('sniffDataType can ', function () {
         expect(sniffDataType.bind(dataTypes)('1.20%', 0)).toBe(undefined);
         expect(dataTypes[0].nulls).toBe(1);
         expect(dataTypes[0].dates).toBe(3);
-        expect(dataTypes[0].numbers).toBe(6);
+        expect(dataTypes[0].numbers).toBe(7);
     });
 
 

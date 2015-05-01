@@ -22,14 +22,14 @@ describe('predictDateFormat ', function () {
 
     it('can give you a suggested format', function () {
 
-        expect(predictDateFormat('4')).toBe('%Y');
-        expect(predictDateFormat('04')).toBe('%Y');
-        expect(predictDateFormat('004')).toBe('%Y');
+        expect(predictDateFormat('4')).toBe(null);
+        expect(predictDateFormat('04')).toBe(null);
+        expect(predictDateFormat('004')).toBe(null);
         expect(predictDateFormat('2004')).toBe('%Y');
         expect(predictDateFormat('04/24')).toBe('%m/%y');
         expect(predictDateFormat('04-24')).toBe('%m/%y');
         expect(predictDateFormat('04 24')).toBe('%m/%y');
-        expect(predictDateFormat('04 024')).toBe('%m/%Y');
+        expect(predictDateFormat('04 024')).toBe(null);
         expect(predictDateFormat('12 2024')).toBe('%m/%Y');
         expect(predictDateFormat('31 04 24')).toBe('%d/%m/%y');
         expect(predictDateFormat('31 04 2024')).toBe('%d/%m/%Y');
