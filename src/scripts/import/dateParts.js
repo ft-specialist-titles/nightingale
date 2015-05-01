@@ -27,7 +27,7 @@ function DateParts(value){
 
 DateParts.prototype.isYears = function(value, tokens){
     //eg like 2000
-    return (/^\d{1,4}$/.test(value));
+    return (/^\d{4}$/.test(value));
 };
 DateParts.prototype.isShortYears = function(value, tokens){
     //eg like 02 or 99

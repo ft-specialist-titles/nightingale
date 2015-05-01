@@ -18,7 +18,7 @@ var isDateString = function (value) {
     var result = true;
     var s = value.split(/[\:\/\-\ ]+/);
     var i = s.length;
-    if (!s.length) return false;
+    if (!s.length || value.length<4) return false; //dont allow 1,02, 103 to be dates
     while (result && i--) {
         result = isPartDate(s[i]);
     }
