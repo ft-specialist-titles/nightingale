@@ -1,3 +1,4 @@
+var d3 = require('d3');
 var Backbone = require('./../core/backbone.js');
 var DataTypes = require('./../charting/Datatypes.js');
 var Axis = require('./../models/Axis.js');
@@ -15,6 +16,28 @@ var Threshold = function (numRows) {
     };
     return this;
 };
+
+
+function setDateIntervalAverage(file, typeInfo){
+    typeInfo.dayIntervals = [];
+    typeInfo.monthIntervals = [];
+    typeInfo.yearIntervals = [];
+    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    typeInfo.dateValues.forEach(function(date,i){
+        if (i===0) return;
+        var start = format.parse(typeInfo.dateValues[i-1]);
+        var end = format.parse(date);
+        typeInfo.dayIntervals.push((d3.time.days(start, end)).length);
+        typeInfo.monthIntervals.push((d3.time.months(start, end)).length);
+        typeInfo.yearIntervals.push((d3.time.years(start, end)).length);
+    });
+    typeInfo.dayIntervalAverage = d3.mean(typeInfo.dayIntervals);
+    typeInfo.monthIntervalAverage = d3.mean(typeInfo.monthIntervals);
+    typeInfo.yearIntervalAverage = d3.mean(typeInfo.yearIntervals);
+    typeInfo.isQuarterly = typeInfo.dayIntervalAverage > 88 &&
+        typeInfo.dayIntervalAverage < 92 &&
+        typeInfo.monthIntervalAverage === 3;
+}
 
 var DataImport = Backbone.Model.extend({
 
@@ -57,6 +80,7 @@ var DataImport = Backbone.Model.extend({
             if (typeInfo.datatype === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
+                setDateIntervalAverage(file, typeInfo);
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
