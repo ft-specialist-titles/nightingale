@@ -151,6 +151,8 @@ function init() {
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
 
+//todo: pm date format dropdown on change
+
         //transform the data
         if (Datatypes.isNumeric(datatype)) {
             transform.series(revertedDataset, property, transform.number());

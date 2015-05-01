@@ -78,19 +78,16 @@ var predictedDateFormat = function (value) {
         part = partsWithGuesses[i];
         if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
             part.guessDay = false;
-            part.type === types.day;
             hasDay = true;
             part.format = part.twoDigit ? '%d' : '%e';
         }
         if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
             part.guessMonth = false;
-            part.type === types.month;
             hasMonth = true;
             part.format = '%m';
         }
         if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
             part.guessYear = false;
-            part.type === types.year;
             hasYear = true;
             part.format = '%y';
         }
@@ -116,19 +113,16 @@ var predictedDateFormat = function (value) {
         part = partsWithGuesses[i];
         if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
             part.guessDay = false;
-            part.type === types.day;
             hasDay = true;
             part.format = part.twoDigit ? '%d' : '%e';
         }
         if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
             part.guessMonth = false;
-            part.type === types.month;
             hasMonth = true;
             part.format = '%m';
         }
         if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
             part.guessYear = false;
-            part.type === types.year;
             hasYear = true;
             part.format = '%y';
         }

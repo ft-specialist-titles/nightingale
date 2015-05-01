@@ -77,8 +77,8 @@ var ViewSelectedVariation = RegionView.extend({
         // set this to null for transparent backgrounds
         var bgColor = '#fff1e0';
 
-        // FIXME: this is a hack, we shouldn't need this.
-        attributeStyler();
+         //FIXME: this is a hack, we shouldn't need this.
+        attributeStyler(undefined, true);
 
         download(filename, svg, format, bgColor, function () {
             // TODO: alert the user when there's an error creating the image

@@ -2,8 +2,7 @@ var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
 module.exports = function download(name, svg, types, bgColor, callback) {
-    callback = callback || function () {
-        };
+
     window.requestAnimationFrame(function () {
         types = types instanceof Array ? types : [types];
         types.forEach(function (type) {
@@ -24,7 +23,7 @@ module.exports = function download(name, svg, types, bgColor, callback) {
                 });
             } else {
                 console.error('Unsupported format:', type);
-                callback();
+                callback && callback();
             }
         });
     });
