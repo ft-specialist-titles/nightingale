@@ -13,11 +13,11 @@ function setDateGroupings(grouping){
 var ColumnControls = Backbone.Model.extend({
 
     defaults: {
-        groupDates: false
+        //groupDates: false
     },
 
     overrideConfig: function (config) {
-        config.groupDates = setDateGroupings(this.attributes.groupDates);
+        //config.groupDates = setDateGroupings(this.attributes.groupDates);
         return config;
     }
 

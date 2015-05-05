@@ -1,6 +1,4 @@
 /* global gapi, ng, auth2 */
-var $ = require('jquery');
-
 var Authentication = function (cb) {
     this.cb = cb;
 };
@@ -28,14 +26,14 @@ Authentication.prototype.onSignIn = function (googleUser) {
         var trackingImage = document.createElement('img');
         trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
         container.appendChild(trackingImage);
-        container.remove();
+        container.setAttribute('style','display:none');
         this.cb && typeof this.cb === 'function' && this.cb();
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
-        $("#login-alert").css('display', 'block');
+        document.getElementById("login-alert").setAttribute('style','display:block');
     }
 };
 
