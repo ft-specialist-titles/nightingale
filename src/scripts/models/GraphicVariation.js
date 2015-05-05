@@ -47,6 +47,7 @@ var GraphicVariation = Backbone.Model.extend({
             hideSource: g.noSource,
             footnote: g.footnote,
 
+            groupDates: this.graphic.chart.xAxis.get('groupDates'),
             data: data,
             dateParser: this.graphic.chart.xAxis.get('dateFormat'),
 

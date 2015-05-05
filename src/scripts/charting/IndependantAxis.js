@@ -42,13 +42,15 @@ var IndependantAxis = Axis.extend({
 
         var typeInfo = column.get('typeInfo');
         var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
+        var groupDates = typeInfo && typeInfo.groupDates;
         var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
         this.set({
             property: column.get('property'),
             datatype: datatype,
-            dateFormat: dateFormat
+            dateFormat: dateFormat,
+            groupDates: groupDates
         });
     },
 

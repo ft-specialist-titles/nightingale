@@ -1,13 +1,12 @@
 var Backbone = require('./../core/backbone.js');
 var $ = require('jquery');
-var lineChart = require('o-charts').chart.line;
-var columnChart = require('o-charts').chart.column;
+var oCharts = require('o-charts').chart;
 var d3 = require('d3');
 var _ = require('underscore');
 
 var chartTypes = {
-    'Line' : lineChart,
-    'Column' : columnChart
+    'Line' : oCharts.line,
+    'Column' : oCharts.column
 };
 
 //todo: variation -- to variant
@@ -74,7 +73,6 @@ var ViewGraphicVariation = Backbone.View.extend({
         this.svg.style.width = config.width + 'px';
 
         config.error = this.reportErrors;
-        config.groupDates = (this.model.graphicType.get('typeName')=='Column') ? ['quarterly','yearly']: false;
 
         d3.select(this.svg).data([config]).call(this.chart);
 

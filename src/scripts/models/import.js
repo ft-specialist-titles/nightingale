@@ -19,24 +19,27 @@ var Threshold = function (numRows) {
 
 
 function setDateIntervalAverage(file, typeInfo){
-    typeInfo.dayIntervals = [];
-    typeInfo.monthIntervals = [];
-    typeInfo.yearIntervals = [];
+    var days = [];
+    var months = [];
+    var years = [];
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
         var start = format.parse(typeInfo.dateValues[i-1]);
         var end = format.parse(date);
-        typeInfo.dayIntervals.push((d3.time.days(start, end)).length);
-        typeInfo.monthIntervals.push((d3.time.months(start, end)).length);
-        typeInfo.yearIntervals.push((d3.time.years(start, end)).length);
+        days.push((d3.time.days(start, end)).length);
+        months.push((d3.time.months(start, end)).length);
+        years.push((d3.time.years(start, end)).length);
     });
-    typeInfo.dayIntervalAverage = d3.mean(typeInfo.dayIntervals);
-    typeInfo.monthIntervalAverage = d3.mean(typeInfo.monthIntervals);
-    typeInfo.yearIntervalAverage = d3.mean(typeInfo.yearIntervals);
-    typeInfo.isQuarterly = typeInfo.dayIntervalAverage > 88 &&
-        typeInfo.dayIntervalAverage < 92 &&
-        typeInfo.monthIntervalAverage === 3;
+    var dayAverage = d3.mean(days);
+    var monthAverage = d3.mean(months);
+    var yearAverage = d3.mean(years);
+    var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
+    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
+    var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
+    typeInfo.groupDates = yearly ? ['yearly'] : false;
+    typeInfo.groupDates = quarterly ? ['quarterly','yearly'] : typeInfo.groupDates;
+    typeInfo.groupDates = monthly ? ['monthly','yearly'] : typeInfo.groupDates;
 }
 
 var DataImport = Backbone.Model.extend({
