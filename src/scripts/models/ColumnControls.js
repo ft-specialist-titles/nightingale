@@ -1,17 +1,23 @@
 var Backbone = require('./../core/backbone.js');
 var _ = require('underscore');
-var TickStyle = require('../charting/TickStyle.js');
+
+function setDateGroupings(grouping){
+    var dateGroupings = {
+        'monthly': ['monthly', 'yearly'],
+        'quarterly': ['quarterly', 'yearly'],
+        'yearly': ['yearly']
+    };
+    return dateGroupings[grouping];
+}
 
 var ColumnControls = Backbone.Model.extend({
 
     defaults: {
-        nice: false,
-        tickStyleX: TickStyle.AUTO,
-        tickStyleY: TickStyle.AUTO
+        groupDates: false
     },
 
     overrideConfig: function (config) {
-        config.niceValue = this.attributes.nice;
+        config.groupDates = setDateGroupings(this.attributes.groupDates);
         return config;
     }
 

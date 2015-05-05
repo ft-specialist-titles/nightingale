@@ -7,7 +7,7 @@ var ColumnControls = Backbone.View.extend({
     template: require('./../templates/type-controls-column.hbs'),
 
     bindings: {
-        '[name="nice"]': 'nice'
+        '[name="groupDates"]': 'groupDates'
     },
 
     render: function () {

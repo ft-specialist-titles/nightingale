@@ -124,6 +124,8 @@ function init() {
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
+        //todo: pm: it knows it should group dates -> update the controls somehow!
+        //console.log(graphic.chart.xAxis.get('groupDates'))
         graphic.chart.yAxis.columns.reset(dims.Y || []);
         graphic.chart.zAxis.columns.reset(dims.Z || []);
 
@@ -150,8 +152,6 @@ function init() {
         var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
-
-//todo: pm date format dropdown on change
 
         //transform the data
         if (Datatypes.isNumeric(datatype)) {
