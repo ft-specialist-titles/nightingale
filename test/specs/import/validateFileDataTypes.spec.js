@@ -1,6 +1,6 @@
-var sniffDataType = require('../../../src/scripts/import/sniffDataType');
+var sniffDataType = require('../../../src/scripts/import/validateFileDataTypes');
 
-describe('sniffDataType can ', function () {
+describe('validateFileDataTypes can ', function () {
 
     var dataTypes  =[{
         colName: 'date-example',

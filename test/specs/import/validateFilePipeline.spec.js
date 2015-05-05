@@ -1,4 +1,4 @@
-var pipeline = require('../../../src/scripts/import/pipeline');
+var pipeline = require('../../../src/scripts/import/validateFilePipeline');
 
 var pipelineData = '&	FTSE 100 - PRICE INDEX\n' +
     '11 Dec 2014	6461.7\n' +
@@ -13,7 +13,7 @@ var pipelineFile =  pipelineData + '\n' +
 '&doublescale=0\n' +
 '&accumulate=false\n';
 
-describe('pipeline can ', function () {
+describe('validateFilePipeline can ', function () {
 
     it('validate a file', function () {
 

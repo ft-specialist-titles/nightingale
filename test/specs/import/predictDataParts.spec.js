@@ -1,6 +1,6 @@
-var DateParts = require('../../../src/scripts/import/dateParts');
+var DateParts = require('../../../src/scripts/import/predictDateParts');
 
-describe('dateParts can ', function () {
+describe('predictDateParts can ', function () {
 
     var spy;
     var date;

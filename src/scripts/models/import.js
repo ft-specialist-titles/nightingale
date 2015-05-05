@@ -1,11 +1,11 @@
 var d3 = require('d3');
 var Backbone = require('./../core/backbone.js');
 var DataTypes = require('./../charting/Datatypes.js');
-var Axis = require('./../models/Axis.js');
+var Axis = require('./Axis.js');
 var transform = require('./../transform/index.js');
-var ValidateFile = require('./validateFile.js');
-var describeColumns = require('./describeColumns.js');
-var setPopularDateFormat = require('./setPopularDateFormat.js');
+var ValidateFile = require('../import/validateFile.js');
+var describeColumns = require('../import/describeColumns.js');
+var setPopularDateFormat = require('../import/setPopularDateFormat.js');
 
 var Threshold = function (numRows) {
     var percent = 95;

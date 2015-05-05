@@ -2,8 +2,8 @@
 var _ = require('underscore');
 var d3 = require('d3');
 
-var sniffDataType = require('./sniffDataType.js');
-var pipeline = require('./pipeline.js');
+var validateFileDataTypes = require('./validateFileDataTypes.js');
+var validateFilePipeline = require('./validateFilePipeline.js');
 
 var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 var emptyHeaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
@@ -37,9 +37,9 @@ function ValidateFile (attributes) {
     if (this.logError(!this.isValidType(attributes.type), 'Unsupported file type')) return this;
     if (this.logError(!method, 'Unsupported import format')) return this;
 
-    if (pipeline.isValid(attributes.dataAsString)) {
+    if (validateFilePipeline.isValid(attributes.dataAsString)) {
         try {
-            pipelineData = pipeline.parse(attributes.dataAsString);
+            pipelineData = validateFilePipeline.parse(attributes.dataAsString);
             attributes.dataAsString = pipelineData.dataString;
             this.pipelineOptions = pipelineData.options;
         } catch (pipelineError) {
@@ -84,7 +84,7 @@ ValidateFile.prototype.guessDataFormat = function(attributes) {
             attributes.type = 'text/csv';
         }
     }
-    if (pipeline.isValid(dataAsString) && attributes.type === 'text/plain'){
+    if (validateFilePipeline.isValid(dataAsString) && attributes.type === 'text/plain'){
         attributes.type = 'text/csv';
     }
     return attributes.type;
@@ -153,7 +153,7 @@ ValidateFile.prototype.processRow = function(row, rowNum) {
         values = values.concat(new Array(this.numCols - numValues));
     }
 
-    values.forEach(sniffDataType, this.dataTypeCounters);
+    values.forEach(validateFileDataTypes, this.dataTypeCounters);
     result = _.object(this.colNames, values);
 
     return result;

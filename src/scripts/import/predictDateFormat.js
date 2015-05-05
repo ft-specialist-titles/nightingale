@@ -1,4 +1,4 @@
-var DateParts = require('./dateParts.js');
+var DateParts = require('./predictDateParts.js');
 
 var types = {
     'month':'month',
