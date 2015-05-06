@@ -18,8 +18,7 @@ var formats = new Backbone.Collection([
     {value: '%d/%m/%Y/%H:%M:%S', label: 'Date Time with seconds - eg 31/01/2015 23:00:59'},
     {value: '%H:%M', label: 'Time only - 23:00'},
     {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2015 23:00:00 GMT+0000 (GMT)'},
-    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'},
-    {value: 'QUARTERLY', label: 'Quarterly YYYY - eg Q1 2015'}
+    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'}
 ]);
 
 var ViewDateFormat = Backbone.View.extend({
