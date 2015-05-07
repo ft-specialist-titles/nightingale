@@ -1,5 +1,5 @@
 var RegionView = require('./../core/RegionView.js');
-var ViewSeriesList = require('./ViewSeriesList.js');
+var ViewSeriesList = require('./SeriesList.js');
 
 var ViewSeriesControls = RegionView.extend({
 

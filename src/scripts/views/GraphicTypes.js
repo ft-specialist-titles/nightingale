@@ -1,7 +1,7 @@
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
-var GraphicVariation = require('./GraphicVariation.js');
-var ViewGraphicVariation = require('./ViewGraphicVariation.js');
+var GraphicVariation = require('../charting/GraphicVariation.js');
+var ViewGraphicVariation = require('./GraphicVariation.js');
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypes = CollectionView.extend({

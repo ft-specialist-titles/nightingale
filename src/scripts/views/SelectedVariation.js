@@ -1,10 +1,10 @@
 var _ = require('underscore');
-var RegionView = require('./../core/RegionView.js');
-var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
-var ViewLineControls = require('./ViewLineControls.js');
-var download = require('./../export/download.js');
 var util = require('util');
 var attributeStyler = require('o-charts').util.attributeStyler;
+var RegionView = require('./../core/RegionView.js');
+var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
+var ViewLineControls = require('./LineControls.js');
+var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
 
 var ViewSelectedVariation = RegionView.extend({

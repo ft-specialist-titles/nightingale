@@ -1,5 +1,5 @@
 var Backbone = require('./../core/backbone.js');
-var Datatypes = require('./Datatypes.js');
+var Datatypes = require('../charting/Datatypes.js');
 
 var ViewHighlight = Backbone.View.extend({
 
