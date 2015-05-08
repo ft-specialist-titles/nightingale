@@ -37,9 +37,9 @@ function setDateIntervalAverage(file, typeInfo){
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
-    typeInfo.groupDates = yearly ? ['yearly'] : false;
+    //typeInfo.groupDates = yearly ? ['yearly'] : false;
     typeInfo.groupDates = quarterly ? ['quarterly','yearly'] : typeInfo.groupDates;
-    typeInfo.groupDates = monthly ? ['monthly','yearly'] : typeInfo.groupDates;
+    //typeInfo.groupDates = monthly ? ['monthly','yearly'] : typeInfo.groupDates;
 }
 
 var DataImport = Backbone.Model.extend({
