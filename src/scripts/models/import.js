@@ -25,8 +25,8 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = format.parse(typeInfo.dateValues[i-1]);
-        var end = format.parse(date);
+        var start = format.parse(typeInfo.dateValues[i-1].split(/[\:\/\-\ ]+/).join('/'));
+        var end = format.parse(date.split(/[\:\/\-\ ]+/).join('/'));
         days.push((d3.time.days(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
