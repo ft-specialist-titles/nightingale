@@ -42,7 +42,7 @@ var IndependantAxis = Axis.extend({
 
         var typeInfo = column.get('typeInfo');
         var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
-        var groupDates = typeInfo && typeInfo.groupDates;
+        var units = typeInfo && typeInfo.units;
         var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
@@ -50,7 +50,7 @@ var IndependantAxis = Axis.extend({
             property: column.get('property'),
             datatype: datatype,
             dateFormat: dateFormat,
-            groupDates: groupDates
+            units: units
         });
     },
 

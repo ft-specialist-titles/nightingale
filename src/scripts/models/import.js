@@ -25,6 +25,7 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
+        //todo: save this format when data is first imported?
         var start = format.parse(typeInfo.dateValues[i-1].split(/[\:\/\-\ ]+/).join('/'));
         var end = format.parse(date.split(/[\:\/\-\ ]+/).join('/'));
         days.push((d3.time.days(start, end)).length);
@@ -37,9 +38,9 @@ function setDateIntervalAverage(file, typeInfo){
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
-    //typeInfo.groupDates = yearly ? ['yearly'] : false;
-    typeInfo.groupDates = quarterly ? ['quarterly','yearly'] : typeInfo.groupDates;
-    //typeInfo.groupDates = monthly ? ['monthly','yearly'] : typeInfo.groupDates;
+    //typeInfo.units = yearly ? ['yearly'] : false;
+    typeInfo.units = quarterly ? ['quarterly','yearly'] : typeInfo.units;
+    //typeInfo.units = monthly ? ['monthly','yearly'] : typeInfo.units;
 }
 
 var DataImport = Backbone.Model.extend({
