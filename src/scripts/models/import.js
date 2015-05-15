@@ -6,6 +6,7 @@ var transform = require('./../transform/index.js');
 var ValidateFile = require('../import/validateFile.js');
 var describeColumns = require('../import/describeColumns.js');
 var setPopularDateFormat = require('../import/setPopularDateFormat.js');
+var unitGenerator = require('o-charts').util.dates.unitGenerator;
 
 var Threshold = function (numRows) {
     var percent = 95;
@@ -17,6 +18,9 @@ var Threshold = function (numRows) {
     return this;
 };
 
+function formatDate(dateString, format) {
+    return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
+}
 
 function setDateIntervalAverage(file, typeInfo){
     var days = [];
@@ -26,12 +30,16 @@ function setDateIntervalAverage(file, typeInfo){
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
         //todo: save this format when data is first imported?
-        var start = format.parse(typeInfo.dateValues[i-1].split(/[\:\/\-\ ]+/).join('/'));
-        var end = format.parse(date.split(/[\:\/\-\ ]+/).join('/'));
+        var start = formatDate(typeInfo.dateValues[i-1], format);
+        var end = formatDate(date,format);
         days.push((d3.time.days(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
     });
+    var start = formatDate(typeInfo.dateValues[0], format);
+    var end = formatDate(typeInfo.dateValues[typeInfo.dateValues.length - 1], format);
+
+    var secondaryUnit = unitGenerator([start,end],false);
     var dayAverage = d3.mean(days);
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
@@ -39,7 +47,7 @@ function setDateIntervalAverage(file, typeInfo){
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
     //typeInfo.units = yearly ? ['yearly'] : false;
-    typeInfo.units = quarterly ? ['quarterly','yearly'] : typeInfo.units;
+    typeInfo.units = quarterly ? ['quarterly', secondaryUnit] : typeInfo.units;
     //typeInfo.units = monthly ? ['monthly','yearly'] : typeInfo.units;
 }
 
