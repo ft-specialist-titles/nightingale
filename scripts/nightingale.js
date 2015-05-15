@@ -23059,6 +23059,9 @@ var formatter = {
     unknown: function (d, i) {
         return d;
     },
+    years: function (d, i) {
+        return d.split(' ')[1];
+    },
     yearly: function (d, i) {
         return d.split(' ')[1];
     },
@@ -23067,6 +23070,15 @@ var formatter = {
     },
     monthly: function (d, i) {
         return d.split(' ')[0];
+    },
+    months: function (d, i) {
+        return d.split(' ')[0];
+    },
+    decades: function (d, i) {
+        return d.split(' ')[1];
+    },
+    centuries: function (d, i) {
+        return d.split(' ')[1];
     }
 };
 
@@ -23125,9 +23137,10 @@ function dateAxis() {
 
         if (dates.unitGenerator(config.scale.domain())[0] == 'days') {
             labels.removeDays(g, '.primary text');
-        } else {
-            labels.removeOverlapping(g, '.primary text');
         }
+        labels.removeDuplicates(g, '.primary text');
+        labels.removeDuplicates(g, '.secondary text');
+        labels.removeOverlapping(g, '.primary text');
         labels.removeOverlapping(g, '.secondary text');
     }
 
@@ -23197,6 +23210,7 @@ var interval = {
     decades: d3.time.year,
     years: d3.time.year,
     fullYears: d3.time.year,
+    quarterly: d3.time.month,
     months: d3.time.month,
     weeks: d3.time.week,
     days: d3.time.day,
@@ -23208,6 +23222,7 @@ var increment = {
     decades: 10,
     years: 1,
     fullYears: 1,
+    quarterly: 3,
     months: 1,
     weeks: 1,
     days: 1,
@@ -23231,6 +23246,19 @@ module.exports = {
     dateSort: function (a, b) {
         return (a.getTime() - b.getTime());
     },
+    createAxes: function(scale, unit, tickSize, simple){
+        var firstDate ;
+        var customTicks = (simple) ? scale.domain() : this.customTicks(scale, unit);
+        var axis = d3.svg.axis()
+            .scale(scale)
+            .tickValues(customTicks)
+            .tickFormat(function(d,i){
+                firstDate = firstDate || d;
+                return utils.formatter[unit](d,i, firstDate);
+            })
+            .tickSize(tickSize, 0);
+        return axis;
+    },
     render: function (scale, units, tickSize, simple) {
         if (!units) {
             units = utils.unitGenerator(scale.domain(), simple);
@@ -23239,13 +23267,7 @@ module.exports = {
         for (var i = 0; i < units.length; i++) {
             var unit = units[i];
             if (utils.formatter[unit]) {
-                var customTicks = (simple) ? scale.domain() : this.customTicks(scale, unit);
-                var axis = d3.svg.axis()
-                    .scale(scale)
-                    .tickValues(customTicks)
-                    .tickFormat(utils.formatter[unit])
-                    .tickSize(tickSize, 0);
-                axes.push(axis);
+                axes.push(this.createAxes(scale, unit, tickSize, simple));
             }
         }
         axes.forEach(function (axis) {
@@ -23520,7 +23542,7 @@ module.exports = {
 };
 
 },{}],14:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
+//var d3 = require('d3');
 
 function blankChart() {
     'use strict';
@@ -23591,8 +23613,8 @@ function blankChart() {
 
 module.exports = blankChart;
 
-},{"./../../../../d3/d3.js":4}],15:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
+},{}],15:[function(require,module,exports){
+//var d3 = require('d3');
 var Axes = require('../util/draw-axes.js');
 var DataModel = require('../util/data.model.js');
 var metadata = require('../util/metadata.js');
@@ -23658,8 +23680,8 @@ function columnChart(g){
 	var axes = new Axes(chartSVG, model);
 		axes.addValueScale();
 
-	if(model.groupDates){
-		axes.addGroupedTimeScale(model.groupDates);
+	if(model.groupData){
+		axes.addGroupedTimeScale(model.units);
 	}else{
 		axes.addTimeScale();
 	}
@@ -23674,7 +23696,7 @@ function columnChart(g){
 
 module.exports = columnChart;
 
-},{"../util/chart-attribute-styles":24,"../util/data.model.js":25,"../util/draw-axes.js":27,"../util/dressing.js":28,"../util/metadata.js":32,"./../../../../d3/d3.js":4}],16:[function(require,module,exports){
+},{"../util/chart-attribute-styles":24,"../util/data.model.js":25,"../util/draw-axes.js":27,"../util/dressing.js":28,"../util/metadata.js":32}],16:[function(require,module,exports){
 module.exports = {
     line: require('./line.js'),
     blank: require('./blank.js'),
@@ -23737,17 +23759,13 @@ function lineChart(g) {
     var dressing = new Dressing(svg, model);
     dressing.addHeader();
     dressing.addFooter();
-
     var chartSVG = svg.append('g').attr('class', 'chart');
     chartSVG.attr('transform', model.translate(model.chartPosition));
 
     var axes = new Axes(chartSVG, model);
+
     axes.addValueScale();
-    if(model.groupDates){
-        axes.addGroupedTimeScale(model.groupDates);
-    }else{
-        axes.addTimeScale();
-    }
+    axes.addTimeScale(model.units);
     axes.repositionAxis();
 
     var plotSVG = chartSVG.append('g').attr('class', 'plot');
@@ -23761,7 +23779,7 @@ function lineChart(g) {
 module.exports = lineChart;
 
 },{"../util/chart-attribute-styles":24,"../util/data.model.js":25,"../util/draw-axes.js":27,"../util/dressing.js":28,"../util/line-interpolators.js":30,"../util/metadata.js":32,"./../../../../d3/d3.js":4}],18:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
+//var d3 = require('d3');
 
 function pieChart() {
     'use strict';
@@ -23844,9 +23862,9 @@ function pieChart() {
 
 module.exports = pieChart;
 
-},{"./../../../../d3/d3.js":4}],19:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 //the ft logo there's probably an easier ay to do this...
-var d3 = require("./../../../../d3/d3.js");
+//var d3 = require('d3');
 
 function ftLogo(g, dim) {
     'use strict';
@@ -23878,8 +23896,8 @@ module.exports = ftLogo;
  h3.075L110.955,1.959z"/>
  */
 
-},{"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
+},{}],20:[function(require,module,exports){
+//var d3 = require('d3');
 var lineThickness = require('../util/line-thickness.js');
 var styler = require('../util/chart-attribute-styles');
 
@@ -23987,7 +24005,7 @@ function lineKey(options) {
 
 module.exports = lineKey;
 
-},{"../util/chart-attribute-styles":24,"../util/line-thickness.js":31,"./../../../../d3/d3.js":4}],21:[function(require,module,exports){
+},{"../util/chart-attribute-styles":24,"../util/line-thickness.js":31}],21:[function(require,module,exports){
 /*jshint -W084 */
 //text area provides a wrapping text block of a given type
 var d3 = require("./../../../../d3/d3.js");
@@ -24099,14 +24117,15 @@ module.exports = {
     },
 
     util: {
-        attributeStyler: require('./util/chart-attribute-styles.js')
+        attributeStyler: require('./util/chart-attribute-styles.js'),
+        dates: require('./util/dates.js')
     },
 
     version: require('./util/version')
 
 };
 
-},{"./axis/index.js":10,"./chart/index.js":16,"./element/series-key.js":20,"./element/text-area.js":21,"./util/chart-attribute-styles.js":24,"./util/version":34}],23:[function(require,module,exports){
+},{"./axis/index.js":10,"./chart/index.js":16,"./element/series-key.js":20,"./element/text-area.js":21,"./util/chart-attribute-styles.js":24,"./util/dates.js":26,"./util/version":34}],23:[function(require,module,exports){
 // More info:
 // http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
 
@@ -24437,7 +24456,7 @@ function setExtents(model){
 	model.y.series.forEach(function (l) {
 		var key = l.key;
 		model.data = model.data.map(function (d, j) {
-			var value = (model.groupDates) ? d.values[0][key] : d[key];
+			var value = (Array.isArray(d.values)) ? d.values[0][key] : d[key];
 			var isValidNumber = value === null || typeof value === 'number';
 			if (!isValidNumber) {
 				model.error({
@@ -24451,7 +24470,7 @@ function setExtents(model){
 			return d;
 		});
 		var ext = d3.extent(model.data, function(d){
-			return (model.groupDates) ? d.values[0][key] : d[key];
+			return (Array.isArray(d.values)) ? d.values[0][key] : d[key];
 		});
 		extents = extents.concat (ext);
 	});
@@ -24543,12 +24562,24 @@ function groupDates(m, units){
 	var firstDate;
 	m.data = d3.nest()
 		.key(function(d)  {
-			firstDate = firstDate || d.date;
-			return dateUtil.formatter[units[0]](d.date, i++, firstDate);
+            firstDate = firstDate || d[m.x.series.key];
+            var dateStr = [dateUtil.formatter[units[0]](d[m.x.series.key], i++, firstDate)];
+            units[1] && dateStr.push(dateUtil.formatter[units[1]](d[m.x.series.key], i++, firstDate));
+            return  dateStr.join(' ');
 		})
 		.entries(m.data);
 	m.x.series.key = 'key';
 	return m.data;
+}
+
+function needsGrouping(units){
+    if (!units) return false;
+    var isGroupingUnit = false;
+    units.forEach(function(unit){
+        var groupThis = ['quarterly', 'monthly', 'yearly'].indexOf(unit);
+        isGroupingUnit = isGroupingUnit || (groupThis>-1);
+    });
+    return isGroupingUnit;
 }
 
 function Model(chartType, opts) {
@@ -24607,9 +24638,10 @@ function Model(chartType, opts) {
 	m.chartHeight = chartHeight(m);
 	m.translate = translate(0);
 	m.data = verifyData(m);
+    m.groupData = needsGrouping(m.units);
 
-	if(m.groupDates){
-		m.data = groupDates(m, m.groupDates);
+    if(m.groupData && chartType == 'column'){
+        m.data = groupDates(m, m.units);
 		m.timeDomain = groupedTimeDomain(m);
 	}else{
 		m.timeDomain = timeDomain(m);
@@ -24655,12 +24687,15 @@ var formatter = {
     fullYears: function (d, i) {
         return d3.time.format('%Y')(d);
     },
-    yearly: function (d, i) {
-        return formatter.years(d, i);
+    yearly: function (d, i, firstDate) {
+        var years = (firstDate && !Array.isArray(firstDate) &&
+        (formatter.years(firstDate, i) == formatter.years(d, i))) ?
+            'fullYears' : 'years';
+
+        return formatter[years](d, i);
     },
-    quarterly: function (d, i, firstDate) {
-        var years = (firstDate && formatter.years(firstDate, i) == formatter.years(d, i)) ? 'fullYears' : 'years';
-        return 'Q' + Math.floor((d.getMonth() + 3) / 3) + ' ' + formatter[years](d, i);
+    quarterly: function (d, i) {
+        return 'Q' + Math.floor((d.getMonth() + 3) / 3);
     },
     monthly: function (d, i) {
         return formatter.months(d, i) + ' ' + formatter.fullYears(d, i);
@@ -24723,6 +24758,7 @@ var d3 = require("./../../../../d3/d3.js");
 var categoryAxis = require('../axis/category.js');
 var dateAxis = require('../axis/date.js');
 var numberAxis = require('../axis/number.js');
+var dateFormatter = require('./dates').formatter;
 
 function getHeight(selection) {
     return Math.ceil(selection.node().getBoundingClientRect().height);
@@ -24741,13 +24777,17 @@ function Axes(svg, model) {
 
 Axes.prototype.rearrangeLabels = function () {
     var model = this.model;
-    var showsAllLabels = this.timeScale.domain().length === this.svg.selectAll('.x.axis .primary text')[0].length;
+    var showsAllLabels = this.svg.selectAll('.x.axis .primary line')[0].length === this.svg.selectAll('.x.axis .primary text')[0].length;
     var allPositiveValues = Math.min.apply(null, this.valueScale.domain()) >= 0;
-    if (showsAllLabels && allPositiveValues) {
+
+    if (showsAllLabels && allPositiveValues && model.chartType == 'column') {
+        model.tickSize = 0;
+        this.svg.selectAll('.x.axis').remove();
         this.timeAxis.tickSize(0).scale(this.timeScale, this.units);
+        this.svg.call(this.timeAxis);
     } else if (!showsAllLabels) { //todo: should/can this be in category.js?
-        this.timeAxis.tickSize(model.tickSize * this.tickExtender)
-            .scale(this.timeScale, ['yearly']);//todo: pm: swap for groupDates[1]
+        this.svg.selectAll('.x.axis').remove();
+        this.timeAxis.scale(this.timeScale, [model.units[1]]);
         this.svg.call(this.timeAxis);
     }
 };
@@ -24782,10 +24822,9 @@ Axes.prototype.addGroupedTimeScale = function (units) {
         .tickSize(model.tickSize)
         .scale(this.timeScale, units);
     this.svg.call(this.timeAxis);
-    this.rearrangeLabels();
 };
 
-Axes.prototype.addTimeScale = function () {
+Axes.prototype.addTimeScale = function (units) {
     var model = this.model;
     this.timeScale = d3.time.scale()
         .domain(model.timeDomain)
@@ -24796,7 +24835,8 @@ Axes.prototype.addTimeScale = function () {
     this.timeAxis = dateAxis()
         .simple(model.simpleDate)
         .yOffset(model.chartHeight)	//position the axis at the bottom of the chart
-        .scale(this.timeScale);
+        .tickSize(model.tickSize)
+        .scale(this.timeScale, units);
     this.svg.call(this.timeAxis);
 };
 
@@ -24824,18 +24864,34 @@ Axes.prototype.addValueScale = function () {
     this.svg.call(this.vAxis);
 };
 
-Axes.prototype.reduceExtendedTicks = function () {
+Axes.prototype.extendedTicks = function () {
+    var showsAllLabels = this.svg.selectAll('.x.axis .primary line')[0].length === this.svg.selectAll('.x.axis .primary text')[0].length;
+    if (showsAllLabels) return;
     var model = this.model;
     var self = this;
     var extendedTicks_selector = ".x.axis .tick line[y2=\"" + (model.tickSize * this.tickExtender) + "\"]";
-    this.svg.selectAll(extendedTicks_selector)
+    var ticks_selector = ".x.axis .tick line";
+
+    this.svg.selectAll(ticks_selector)
         .attr("y2", function (d) {
-            return (d.toString().indexOf('Q1') < 0 ) ? model.tickSize : (model.tickSize * self.tickExtender);
+            var quarter = d.getMonth ? dateFormatter[model.units[0]](d) : d.toString();
+            return (quarter.indexOf('Q1') === 0) ? (model.tickSize * self.tickExtender) : model.tickSize ;
         });
+    var tickCount = this.svg.selectAll(ticks_selector)[0].length;
+    var extendedCount = this.svg.selectAll(extendedTicks_selector)[0].length;
+    if (extendedCount+2 >= tickCount){
+        //take into account of first + last starting on something not q1
+        this.svg.selectAll(extendedTicks_selector).attr("y2", model.tickSize);
+    }
 };
 
 Axes.prototype.repositionAxis = function () {
     var model = this.model;
+
+    if (model.groupData) { //todo: grr. two places!
+        this.rearrangeLabels();
+    }
+
     var xLabelHeight = getHeight(this.svg) - model.chartHeight;
     var yLabelWidth = getWidth(this.svg) - model.chartWidth;
     var plotHeight = model.chartHeight - xLabelHeight;
@@ -24857,7 +24913,10 @@ Axes.prototype.repositionAxis = function () {
     this.svg.call(this.vAxis);
     this.svg.call(this.timeAxis);
 
-    this.reduceExtendedTicks();
+    if (model.groupData && model.tickSize>0) {
+        this.rearrangeLabels();
+        this.extendedTicks();
+    }
 
     if (model.numberAxisOrient !== 'right') {
         this.svg.selectAll('.y.axis text').each(function () {
@@ -24874,7 +24933,7 @@ Axes.prototype.repositionAxis = function () {
 
 module.exports = Axes;
 
-},{"../axis/category.js":6,"../axis/date.js":8,"../axis/number.js":11,"./../../../../d3/d3.js":4}],28:[function(require,module,exports){
+},{"../axis/category.js":6,"../axis/date.js":8,"../axis/number.js":11,"./../../../../d3/d3.js":4,"./dates":26}],28:[function(require,module,exports){
 var textArea = require('../element/text-area.js');
 var seriesKey = require('../element/series-key.js');
 var ftLogo = require('../element/logo.js');
@@ -25006,12 +25065,9 @@ Dressing.prototype.addFootNotes = function () {
     var text = textArea().width(this.model.contentWidth - this.model.logoSize).lineHeight(this.footerLineHeight);
     var footnotes = svg.append('g').attr('class', 'chart-footnote').datum(model.footnote).call(text);
     var footnotesHeight = getHeight(footnotes);
-
-    var footerHeight = Math.max(footnotesHeight + (this.blockPadding * 2), model.logoSize);
     var currentPosition = model.chartPosition.top + model.chartHeight;
-
     footnotes.attr('transform', model.translate({top: currentPosition + this.footerLineHeight + this.blockPadding}));
-    this.footerHeight += (footerHeight + this.blockPadding);
+    this.footerHeight += footnotesHeight;
 };
 
 Dressing.prototype.addSource = function () {
@@ -25025,9 +25081,10 @@ Dressing.prototype.addSource = function () {
     var sourceHeight = getHeight(source);
     var currentPosition = model.chartPosition.top + model.chartHeight;
 
-    source.attr('transform', model.translate({top: this.footerHeight + currentPosition + this.blockPadding}));
+    source.attr('transform', model.translate({top: this.footerHeight + currentPosition + sourceLineHeightActual + (this.blockPadding * 2)}));
     if (model.hideSource) {
         source.remove();
+        sourceHeight = 0;
     }
     this.sourceFontOffset = sourceLineHeightActual - this.sourceFontSize;
     this.footerHeight += sourceHeight;
@@ -25039,10 +25096,11 @@ Dressing.prototype.getSourceFontOffset = function () {
 
 Dressing.prototype.setHeight = function () {
     var model = this.model;
+    var footerHeight = Math.max(this.footerHeight + (this.blockPadding * 2), model.logoSize) + this.blockPadding;
     if (!model.height) {
-        model.height = this.headerHeight + model.chartHeight + this.footerHeight;
+        model.height = this.headerHeight + model.chartHeight + footerHeight;
     } else {
-        model.chartHeight = model.height - this.headerHeight - this.footerHeight;
+        model.chartHeight = model.height - this.headerHeight - footerHeight;
         if (model.chartHeight < 0) {
             model.error({
                 message: 'calculated plot height is less than zero'
@@ -25309,7 +25367,7 @@ module.exports = {
 };
 
 },{}],34:[function(require,module,exports){
-module.exports = "0.1.0";
+module.exports = "0.1.2";
 },{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
@@ -28147,165 +28205,6 @@ module.exports = require('./dist/cjs/handlebars.runtime').default;
 module.exports = require("handlebars/runtime")["default"];
 
 },{"handlebars/runtime":45}],47:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var Datatypes = require('./Datatypes.js');
-
-var Axis = Backbone.Model.extend({
-        defaults: {
-            name: '',
-            label: '',
-            labelOverride: false,
-            suggestedLabel: '',
-            datatype: Datatypes.CATEGORICAL,
-            warningMessage: '',
-            dateFormat: '',
-            prefix: '',
-            suffix: ''
-        }
-    },
-    {
-        X: 'X',
-        Y: 'Y',
-        Z: 'Z',
-        NONE: null
-    });
-
-module.exports = Axis;
-
-},{"./../core/backbone.js":62,"./Datatypes.js":51}],48:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var DependantAxis = require('./DependantAxis.js');
-var IndependantAxis = require('./IndependantAxis.js');
-var Dataset = require('./Dataset.js');
-var Axis = require('./Axis.js');
-
-var Chart = Backbone.Model.extend({
-
-    initialize: function () {
-        this.xAxis = new IndependantAxis();
-        this.yAxis = new DependantAxis({
-            name: Axis.Y
-        });
-        this.zAxis = new DependantAxis({
-            name: Axis.Z
-        });
-        this.xAxis.chart = this.yAxis.chart = this.zAxis.chart = this;
-        this.unusedSeries = new Backbone.Collection();
-
-        var currentAxisCol;
-
-        this.listenTo(this.xAxis, 'change:property', function (model, property) {
-            var previousXCol = currentAxisCol;
-
-            currentAxisCol = !property ? null : this.xAxis.createColumn();
-
-            function getCol(collection) {
-                return !property ? null : collection.findWhere({property: property});
-            }
-
-            var column = getCol(this.yAxis.columns);
-
-            if (column) {
-
-                this.yAxis.columns.remove(column);
-
-            } else {
-
-                column = getCol(this.zAxis.columns);
-
-                if (column) {
-                    this.zAxis.columns.remove(column);
-                } else {
-                    column = getCol(this.unusedSeries);
-
-                    if (column) {
-                        this.unusedSeries.remove(column);
-                    }
-
-                }
-            }
-
-            if (previousXCol) {
-                var typeInfo = previousXCol.get('typeInfo');
-                if (typeInfo && typeInfo.predictedAxis === Axis.Y) {
-                    this.yAxis.columns.add(previousXCol);
-                } else if (typeInfo && typeInfo.predictedAxis === Axis.Z) {
-                    this.zAxis.columns.add(previousXCol);
-                } else {
-                    this.unusedSeries.add(previousXCol);
-                }
-            }
-
-        });
-
-        function removeSeries(model) {
-
-            // todo: before doing the tasks below you need to remove the listeners
-            //          in the axis objects that set the model.collection
-            // todo: dont add if the model being moved from one axis to another
-            // todo: dont add if the model is being moved to the X Axis
-            // todo: dont add is it's already being added to the unused series
-            var isXAxis = currentAxisCol && (model.get('property') === this.xAxis.get('property'));
-
-            if (!isXAxis) {
-                model.collection = this.unusedSeries;
-                this.unusedSeries.add(model);
-            }
-        }
-
-        function addSeries(model) {
-            this.unusedSeries.remove(model);
-        }
-
-        function resetSeries(collection) {
-            var unused = this.unusedSeries;
-            collection.forEach(function (m) {
-                var d = unused.findWhere({property: m.get('property')});
-                d && unused.remove(d);
-            });
-        }
-
-        this.listenTo(this.yAxis.columns, 'remove', removeSeries);
-        this.listenTo(this.zAxis.columns, 'remove', removeSeries);
-
-        this.listenTo(this.yAxis.columns, 'add', addSeries);
-        this.listenTo(this.zAxis.columns, 'add', addSeries);
-
-        this.listenTo(this.yAxis.columns, 'reset', resetSeries);
-        this.listenTo(this.zAxis.columns, 'reset', resetSeries);
-
-        this.dataset = new Dataset();
-    }
-
-});
-
-module.exports = Chart;
-
-},{"./../core/backbone.js":62,"./Axis.js":47,"./Dataset.js":50,"./DependantAxis.js":52,"./IndependantAxis.js":56}],49:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var Axis = require('./Axis.js');
-
-module.exports = Backbone.Model.extend({
-
-    defaults: {
-        property: '',
-        label: '',
-        axis: Axis.NONE,
-        isOther: false
-    }
-
-});
-
-},{"./../core/backbone.js":62,"./Axis.js":47}],50:[function(require,module,exports){
-var Backbone = require('./../core/backbone');
-
-module.exports = Backbone.Model.extend({
-    defaults: {
-        rows: []
-    }
-});
-
-},{"./../core/backbone":62}],51:[function(require,module,exports){
 var Datatypes = module.exports = {
     CATEGORICAL: 'categorical',
     NUMERIC: 'numeric',
@@ -28323,11 +28222,11 @@ var Datatypes = module.exports = {
     }
 };
 
-},{}],52:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
-var Axis = require('./Axis.js');
+var Axis = require('../models/Axis.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
-var Datatypes = require('./Datatypes.js');
+var DataTypes = require('./Datatypes.js');
 
 function captitalizeFirstLetter(str) {
     if (!str || typeof str !== 'string') return str;
@@ -28336,7 +28235,7 @@ function captitalizeFirstLetter(str) {
     });
 }
 
-var defaultDatatype = Datatypes.NUMERIC;
+var defaultDatatype = DataTypes.NUMERIC;
 
 var DependantAxis = Axis.extend({
     initialize: function () {
@@ -28360,7 +28259,7 @@ var DependantAxis = Axis.extend({
             var warning = '';
             if (numCols === 0) {
                 this.set({
-                    datatype: Datatypes.NONE,
+                    datatype: DataTypes.NONE,
                     suggestedLabel: ''
                 });
             } else if (numCols === 1) {
@@ -28390,7 +28289,7 @@ var DependantAxis = Axis.extend({
                 types = _.pairs(types).sort(function (a, b) {
                     return a[1] < b[1];
                 });
-                var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
+                var mostPopularType = types.length ? types[0][0] : DataTypes.CATEGORICAL;
                 this.set({
                     suggestedLabel: '',
                     datatype: mostPopularType
@@ -28414,169 +28313,19 @@ var DependantAxis = Axis.extend({
 
 module.exports = DependantAxis;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Axis.js":47,"./Datatypes.js":51}],53:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
+},{"../models/Axis.js":67,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./Datatypes.js":47}],49:[function(require,module,exports){
+var Axis = require('../models/Axis.js');
+var DataTypes = require('./Datatypes.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
-var Chart = require('./Chart.js');
+var Column = require('../models/Column.js');
 
-var Graphic = Backbone.Model.extend({
-
-    initialize: function () {
-        this.chart = new Chart();
-    },
-
-    defaults: {
-        title: 'Untitled chart',
-        subtitle: '',
-        source: '',
-        footnote: '',
-        noSource: false
-    },
-
-    subtitleSuggestion: function (save) {
-        var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
-        var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
-        var result;
-
-        if (label) {
-            result = !units ? label : label + ' (' + units + ')';
-            if (save) {
-                this.set('subtitle', result);
-            }
-        }
-
-        return result;
-    }
-});
-
-module.exports = Graphic;
-
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Chart.js":48}],54:[function(require,module,exports){
-var Backbone = require('./../core/backbone');
-
-var GraphicType = Backbone.Model.extend({
-
-    initialize: function (attributes, options) {
-        this.graphic = options.graphic;
-        this.variations = options.variations;
-        this.controls = options.controls;
-    },
-
-    defaults: {
-        typeName: ''
-    }
-});
-
-module.exports = GraphicType;
-
-},{"./../core/backbone":62}],55:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-
-function getKeyLabel(d) {
-    var property = d.get('property');
-    var label = d.get('label') || property;
-    return {key: property, label: label};
-}
-
-var GraphicVariation = Backbone.Model.extend({
-
-    defaults: {
-        svg: null
-    },
-
-    initialize: function (attributes, options) {
-        this.variation = options.variation;
-        this.graphic = options.graphic;
-        this.graphicType = options.graphicType;
-        this.errors = new Backbone.Collection([]);
-    },
-
-    createConfig: function () {
-        // FIXME: is it still necessary to make a copy of the data?
-        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
-            return Object.create(d);
-        });
-
-        if (!data.length) return;
-
-        var xAxisProperty = this.graphic.chart.xAxis.get('property');
-        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
-
-        if (!xAxisProperty || !yAxisProperties.length) {
-            return;
-        }
-
-        var g = this.graphic.toJSON();
-
-        var config = {
-
-            width: this.variation.get('width'),
-            height: this.variation.get('height'),
-
-            title: g.title,
-            subtitle: g.subtitle,
-            source: g.source,
-            hideSource: g.noSource,
-            footnote: g.footnote,
-
-            data: data,
-            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
-            x: {
-                series: {
-                    key: xAxisProperty,
-                    label: xAxisProperty
-                }
-            },
-
-            y: {
-                series: yAxisProperties
-            }
-
-        };
-
-        return this.graphicType.controls.overrideConfig(config);
-    },
-
-    toJSON: function () {
-
-        var d = Backbone.Model.prototype.toJSON.call(this);
-
-        d.graphic = this.graphic.toJSON();
-        d.graphicType = this.graphicType.toJSON();
-        d.variation = this.variation.toJSON();
-
-        var svg = this.attributes.svg;
-
-        if (!svg) {
-            d.svg = null;
-        } else {
-            var svgRect = svg.getBoundingClientRect();
-            d.svg = {
-                width: svgRect.width,
-                height: svgRect.height
-            };
-        }
-
-        return d;
-    }
-});
-
-module.exports = GraphicVariation;
-
-},{"./../core/backbone.js":62}],56:[function(require,module,exports){
-var Axis = require('./Axis.js');
-var Datatype = require('./Datatypes.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Column = require('./Column.js');
-
-var defaultDatatype = Datatype.TIME;
+var defaultDatatype = DataTypes.TIME;
 
 function convertPipelineIndexHeader(property, datatype) {
     if (property === '&') {
-        if (Datatype.isCategorical(datatype)) {
+        if (DataTypes.isCategorical(datatype)) {
             return 'Category';
-        } else if (Datatype.isTime(datatype)) {
+        } else if (DataTypes.isTime(datatype)) {
             return 'Time';
         }
     }
@@ -28609,13 +28358,15 @@ var IndependantAxis = Axis.extend({
 
         var typeInfo = column.get('typeInfo');
         var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
-        var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        var units = typeInfo && typeInfo.units;
+        var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
         this.set({
             property: column.get('property'),
             datatype: datatype,
-            dateFormat: dateFormat
+            dateFormat: dateFormat,
+            units: units
         });
     },
 
@@ -28631,38 +28382,7 @@ var IndependantAxis = Axis.extend({
 
 module.exports = IndependantAxis;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./Axis.js":47,"./Column.js":49,"./Datatypes.js":51}],57:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Chart = require('./Chart.js');
-var TickStyle = require('./TickStyle.js');
-
-var LineControls = Backbone.Model.extend({
-
-    defaults: {
-        thinLines: false,
-        flipYAxis: false,
-        startFromZero: false,
-        nice: false,
-        tickStyleX: TickStyle.AUTO,
-        tickStyleY: TickStyle.AUTO
-    },
-
-    overrideConfig: function (config) {
-        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
-        config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
-        config.y.flip = this.attributes.flipYAxis;
-        config.niceValue = this.attributes.nice;
-        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
-        return config;
-    }
-
-});
-
-
-module.exports = LineControls;
-
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Chart.js":48,"./TickStyle.js":58}],58:[function(require,module,exports){
+},{"../models/Axis.js":67,"../models/Column.js":69,"./../../../bower_components/underscore/underscore.js":35,"./Datatypes.js":47}],50:[function(require,module,exports){
 module.exports = {
     // works out best set of ticks to display
     AUTO: 'auto',
@@ -28680,7 +28400,7 @@ module.exports = {
     ARRAY: 'array',
 };
 
-},{}],59:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
@@ -28689,7 +28409,7 @@ module.exports = new Backbone.Collection([
     {width: 600, height: null, variationName: 'large web inline'},
 ]);
 
-},{"./../core/backbone.js":62}],60:[function(require,module,exports){
+},{"./../core/backbone.js":54}],52:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -28776,7 +28496,7 @@ var CollectionView = Backbone.View.extend({
 
 module.exports = CollectionView;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":62}],61:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":54}],53:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -28848,7 +28568,7 @@ var RegionView = Backbone.View.extend({
 
 module.exports = RegionView;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":62}],62:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":54}],54:[function(require,module,exports){
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var Backbone = require("./../../../bower_components/backbone/backbone.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -28872,7 +28592,7 @@ handlers.forEach(function (handler) {
 
 module.exports = Backbone;
 
-},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":35,"./stickit-handlers/btn-group-radio.js":63}],63:[function(require,module,exports){
+},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":35,"./stickit-handlers/btn-group-radio.js":55}],55:[function(require,module,exports){
 var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
 
 module.exports = {
@@ -28921,13 +28641,12 @@ module.exports = {
     }
 };
 
-},{"./../../../../bower_components/jquery/dist/jquery.js":5}],64:[function(require,module,exports){
+},{"./../../../../bower_components/jquery/dist/jquery.js":5}],56:[function(require,module,exports){
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
 module.exports = function download(name, svg, types, bgColor, callback) {
-    callback = callback || function () {
-        };
+
     window.requestAnimationFrame(function () {
         types = types instanceof Array ? types : [types];
         types.forEach(function (type) {
@@ -28948,13 +28667,13 @@ module.exports = function download(name, svg, types, bgColor, callback) {
                 });
             } else {
                 console.error('Unsupported format:', type);
-                callback();
+                callback && callback();
             }
         });
     });
 };
 
-},{"./svgDataURI.js":65,"./utils.js":66}],65:[function(require,module,exports){
+},{"./svgDataURI.js":57,"./utils.js":58}],57:[function(require,module,exports){
 var utils = require('./utils.js');
 
 
@@ -29116,7 +28835,7 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
 
 };
 
-},{"./utils.js":66}],66:[function(require,module,exports){
+},{"./utils.js":58}],58:[function(require,module,exports){
 /* globals unescape, MouseEvent, XMLSerializer */
 exports.createFilename = function createFilename(name, ext) {
     ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
@@ -29221,7 +28940,7 @@ exports.toDataURI = function toDataURI(data, type, encoding) {
 };
 
 
-},{}],67:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
 _.templateSettings = {
@@ -29235,7 +28954,255 @@ module.exports = {
     BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
 };
 
-},{"./../../../bower_components/underscore/underscore.js":35}],68:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35}],60:[function(require,module,exports){
+var DataTypes = require('./../charting/Datatypes.js');
+var Axis = require('./../models/Axis.js');
+var Column = require('./../models/Column.js');
+
+var Threshold = function (numRows) {
+    var percent = 95;
+    var s = 100 / numRows;
+    var almost = numRows - 1;
+    this.isAbove = function (count) {
+        return (count >= almost) || (count * s > percent);
+    };
+    return this;
+};
+
+function describeColumns(file){
+
+    var xAxis;
+    var dataTypeCounters = file.dataTypeCounters;
+    var threshold = new Threshold(file.numRows);
+
+    dataTypeCounters.forEach(function (typeCounter) {
+        if (threshold.isAbove(typeCounter.nulls)) {
+            typeCounter.datatype = DataTypes.NONE;
+        } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
+            typeCounter.datatype = DataTypes.NUMERIC;
+        } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
+            typeCounter.datatype = DataTypes.TIME;
+        } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
+            typeCounter.datatype = DataTypes.CATEGORICAL;
+        } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
+            typeCounter.datatype = DataTypes.NUMERIC;
+        } else {
+            typeCounter.datatype = DataTypes.NONE;
+        }
+    });
+
+    dataTypeCounters.forEach(function (counter) {
+        var type = counter.datatype;
+        if (DataTypes.isTime(type) || DataTypes.isCategorical(type)) {
+            if (!xAxis) {
+                xAxis = counter;
+                counter.predictedAxis = Axis.X;
+            } else {
+                counter.predictedAxis = Axis.NONE;
+            }
+        } else if (DataTypes.isNumeric(type)) {
+            counter.predictedAxis = Axis.Y;
+        } else {
+            counter.predictedAxis = Axis.NONE;
+        }
+    });
+
+// second pass in case we predict wrongly the first time
+// if !axes.y.length && !axes.x then error
+// if !axes.y.length then look at axes.none and try to add some of them to axes.y
+
+    var newColumns = dataTypeCounters.map(function (counter, index) {
+        return new Column({
+            property: counter.colName,
+            label: counter.colName,
+            axis: counter.predictedAxis,
+            typeInfo: counter
+        });
+    });
+
+    console.table(file.dataTypeCounters);
+    return newColumns;
+}
+
+module.exports = describeColumns;
+
+},{"./../charting/Datatypes.js":47,"./../models/Axis.js":67,"./../models/Column.js":69}],61:[function(require,module,exports){
+var DateParts = require('./predictDateParts.js');
+
+var types = {
+    'month':'month',
+    'year':'year',
+    'day':'day',
+    'ampm':'ampm',
+    'weekday':'weekday',
+    'time':'time'
+};
+var abbreviatedFormats = {
+    '%m/%d/%Y': '%x',
+    '%H:%M:%S': '%X'
+};
+
+var predictedDateFormat = function (value) {
+
+    var dateParts = new DateParts(value);
+    var matched = dateParts.matched();
+    if (matched!==false) return matched;
+
+    var parts = dateParts.parts;
+    var i= 0;
+    var part;
+
+    var hasYear = false;
+    var hasMonth = false;
+    var hasDay = false;
+    var numParts = parts.length;
+
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.type === types.year) {
+            if (hasYear) {
+                return null;
+            }
+            hasYear = true;
+        }
+        if (part.type === types.month) {
+            if (hasMonth) {
+                return null;
+            }
+            hasMonth = true;
+        }
+        if (part.type === types.day) {
+            if (hasDay) {
+                return null;
+            }
+            hasDay = true;
+        }
+    }
+
+    var partsWithGuesses = [];
+
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.guess()) {
+            partsWithGuesses.push(part);
+        }
+    }
+
+    var numGuesses = partsWithGuesses.length;
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+            part.guessDay = false;
+            hasDay = true;
+            part.format = part.twoDigit ? '%d' : '%e';
+        }
+        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+            part.guessMonth = false;
+            hasMonth = true;
+            part.format = '%m';
+        }
+        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+            part.guessYear = false;
+            hasYear = true;
+            part.format = '%y';
+        }
+    }
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+//// 2
+
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+            part.guessDay = false;
+            hasDay = true;
+            part.format = part.twoDigit ? '%d' : '%e';
+        }
+        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+            part.guessMonth = false;
+            hasMonth = true;
+            part.format = '%m';
+        }
+        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+            part.guessYear = false;
+            hasYear = true;
+            part.format = '%y';
+        }
+    }
+
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+
+//////////////////////////////
+
+    var format = [];
+
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.guess()) {
+            return null;
+        }
+        if (part.format) {
+            format.push(part.format);
+        }
+    }
+
+    format = format.length ? format.join('/') : null;
+
+    if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
+        format = format.replace('%H', '%I');
+    }
+
+    if (format in abbreviatedFormats) {
+        return abbreviatedFormats[format];
+    }
+
+    return format;
+
+};
+
+module.exports = predictedDateFormat;
+
+},{"./predictDateParts.js":62}],62:[function(require,module,exports){
 require('./../polyfill/bind');
 
 var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
@@ -29265,7 +29232,7 @@ function DateParts(value){
 
 DateParts.prototype.isYears = function(value, tokens){
     //eg like 2000
-    return (/^\d{1,4}$/.test(value));
+    return (/^\d{4}$/.test(value));
 };
 DateParts.prototype.isShortYears = function(value, tokens){
     //eg like 02 or 99
@@ -29474,701 +29441,294 @@ DateParts.prototype.Part = function(d) {
 
 module.exports = DateParts;
 
-},{"./../polyfill/bind":72}],69:[function(require,module,exports){
-/*jshint -W083 */
-//todo: PM: remove hint once tests are written
+},{"./../polyfill/bind":77}],63:[function(require,module,exports){
 
-var d3 = require("./../../../bower_components/d3/d3.js");
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Backbone = require('./../core/backbone.js');
-var Column = require('./../charting/Column.js');
-var Datatypes = require('./../charting/Datatypes.js');
-var Axis = require('./../charting/Axis.js');
-var transform = require('./../transform/index.js');
-var sniffDataType = require('./sniffDataType.js');
 var predictedDateFormat = require('./predictDateFormat.js');
-
-var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
-    return a.concat(alphabet.map(function (h) {
-        return h + (num === 0 ? '' : num);
-    }));
-}, []);
 
 function gtDateThreshold(count, totalNonDateStrings) {
     return count * 100 / totalNonDateStrings > 95;
 }
 
-var Threshold = function (numRows) {
-    var percent = 95;
-    var s = 100 / numRows;
-    var almost = numRows - 1;
-    this.isAbove = function (count) {
-        return (count >= almost) || (count * s > percent);
-    };
-    return this;
-};
+function convertDateStrings(file, typeInfo){
+    var val;
+    var dateFormat;
+    var countDateFormats = {};
+    var totalNonDateStrings = 0;
+    typeInfo.dateFormats = [];
 
-var DataImport = Backbone.Model.extend({
+    for (var j = 0; j < file.numRows; j++) {
+        val = file.data[j][typeInfo.colName];
+        if (!val) continue;
 
-    defaults: {
-        type: '',
-        hasHeaderRow: true,
-        dataAsString: '',
-        numRows: 0,
-        numCols: 0,
-        colNames: [],
-        pipelineOptions: null,
-        warning: {
-            message: null,
-            rows: []
-        },
-        data: [],
-        originalData: []
-    },
-
-    columns: null,
-
-    initialize: function () {
-        this.columns = new Backbone.Collection();
-        this.listenTo(this, 'invalid', this.discardData);
-    },
-
-    validate: function (attributes, options) {
-
-        var error = {message: '', details: []};
-        var method;
-        var data = [];
-
-        // remove empty rows from the bottom
-        attributes.dataAsString = (attributes.dataAsString || '').trimRight();
-
-        // we can't just trimLeft as then we would loose empty column headers
-        // so we must remove things that look like empty rows from the beginning
-        attributes.dataAsString = attributes.dataAsString.replace(/^\s+$/gm, '').replace(/^\n/, '');
-
-        if (!attributes.dataAsString) {
-            error.message = 'No data found';
-            return error;
-        }
-
-        if (!attributes.type) {
-            attributes.type = DataImport.guessDataFormat(attributes.dataAsString);
-            if (!attributes.type) {
-                error.message = 'Unrecognised data format';
-                return error;
-            }
-        }
-
-        var isPipelineFormat = DataImport.isPipelineFormat(attributes.dataAsString);
-
-        // Special case allow .txt pipline files. So just change the type to TSV.
-        if (isPipelineFormat && attributes.type === 'text/plain') {
-            attributes.type = 'text/tsv';
-        }
-
-        var supportedFormat = DataImport.isValidType(attributes.type);
-
-        if (!supportedFormat) {
-            error.message = 'Unsupported file type';
-            return error;
-        }
-
-        if (attributes.type === 'text/tsv' || attributes.type === 'text/tab-separated-values') {
-            method = 'TSV';
-        } else if (attributes.type === 'text/csv') {
-            method = 'CSV';
-        } else {
-            error.message = 'Unsupported import format';
-            return error;
-        }
-
-        var colNames;
-        var numCols;
-        var convertFn;
-        var warningRows = [];
-        var warningMessage = null;
-        var hasHeaderRow = true;
-        var dataTypeCounters = [];
-        var pipelineData;
-        var pipelineOptions = null;
-        var missingCols = 0;
-        var extraCols = 0;
-
-
-        // TODO: handle when the first row is not a header row.
-        //       ... need to work out a row on useful header row on the fly, using letters A-Z
-
-
-        try {
-            if (isPipelineFormat) {
-                pipelineData = DataImport.parsePipeline(attributes.dataAsString);
-                attributes.dataAsString = pipelineData.dataString;
-                pipelineOptions = pipelineData.options;
-            }
-        } catch (pipelineError) {
-            error.message = pipelineError.message;
-            return error;
-        }
-
-        var processRow = function (row, rowNum) {
-            var values = row.map(Function.prototype.call, String.prototype.trim);
-            var numValues = values.length;
-            var result;
-
-            if (hasHeaderRow && rowNum === 0) {
-                colNames = values;
-                numCols = numValues;
-
-                // TODO: ensure none of the values are null/undefined/empty-string
-                // if so throw an error
-
-                var names = {}, n;
-
-                for (var i = 0; i < numCols; i++) {
-
-                    // ensure no duplicate column names
-                    n = colNames[i];
-
-                    if (!n) {
-                        n = emptyheaderRows[i];
-                    }
-
-                    if (n in names) {
-                        names[n]++;
-                        n = n + '-' + names[n];
-                    } else {
-                        names[n] = 1;
-                    }
-
-                    colNames[i] = n;
-
-                    dataTypeCounters.push({
-                        colName: n,
-                        strings: 0,
-                        stringValues: [],
-                        nulls: 0,
-                        numbers: 0,
-                        numberValues: [],
-                        dates: 0,
-                        dateValues: []
-                    });
-                }
-                return;
-            } else if (numValues <= 1 && !values[0]) {
-                // empty row
-                return;
-            } else if (numValues > numCols) {
-                warningRows.push({
-                    rowNum: rowNum,
-                    numValues: numValues,
-                    values: values.slice(0),
-                    message: 'Too many values'
-                });
-                extraCols += (numValues - numCols);
-                values = values.slice(0, numCols);
-            } else if (numValues < numCols) {
-                warningRows.push({
-                    rowNum: rowNum,
-                    numValues: numValues,
-                    values: values.slice(0),
-                    message: 'Not as many values as there are columns'
-                });
-                missingCols += (numCols - numValues);
-                values = values.concat(new Array(numCols - numValues));
-            }
-
-            values.forEach(sniffDataType, dataTypeCounters);
-            result = _.object(colNames, values);
-
-            return result;
-        };
-
-        try {
-            data = d3[method.toLowerCase()].parseRows(attributes.dataAsString, processRow);
-        } catch (e) {
-            error.message = 'There was a problem with the ' + method + ' data';
-            return error;
-        }
-
-        var numRows = data.length;
-
-        if (!numRows) {
-            error.message = 'No data found';
-            return error;
-        }
-
-        if (numCols < 2) {
-            error.message = 'Your data needs 2 columns or more.';
-            return error;
-        }
-
-        if (warningRows.length) {
-            if (!!missingCols && missingCols / numRows % 1 === 0) {
-                warningMessage = 'The data appears to be missing ' + (missingCols / numRows) + ' whole columns of data.';
-            } else if (!!extraCols && extraCols / numRows % 1 === 0) {
-                warningMessage = 'There  seems to be ' + (extraCols / numRows) + ' columns without headers. The data for these has been discarded.';
-            } else if (!missingCols && !!extraCols && extraCols < numRows) {
-                warningMessage = 'Some rows have too many values. These values have been discarded.';
-            } else if (!extraCols && !!missingCols && missingCols < numRows) {
-                // DO NOTHING - we assume the last (right-most) column has some null values.
+        dateFormat = predictedDateFormat(val);
+        totalNonDateStrings++;
+        if (dateFormat) {
+            typeInfo.dateFormats.push(dateFormat);
+            if (dateFormat in countDateFormats) {
+                countDateFormats[dateFormat]++;
             } else {
-                warningMessage = 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';
+                countDateFormats[dateFormat] = 1;
             }
         }
-
-        var threshold = new Threshold(numRows);
-
-        dataTypeCounters.forEach(function (typeCounter) {
-            if (threshold.isAbove(typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NONE;
-            } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NUMERIC;
-            } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.TIME;
-            } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.CATEGORICAL;
-            } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-                typeCounter.datatype = Datatypes.NUMERIC;
-            } else {
-                typeCounter.datatype = Datatypes.NONE;
-            }
-        });
-
-        var xAxis;
-
-        dataTypeCounters.forEach(function (counter) {
-            var type = counter.datatype;
-            if (Datatypes.isTime(type) || Datatypes.isCategorical(type)) {
-                if (!xAxis) {
-                    xAxis = counter;
-                    counter.predictedAxis = Axis.X;
-                } else {
-                    counter.predictedAxis = Axis.NONE;
-                }
-            } else if (Datatypes.isNumeric(type)) {
-                counter.predictedAxis = Axis.Y;
-            } else {
-                counter.predictedAxis = Axis.NONE;
-            }
-        });
-
-        // second pass in case we predict wrongly the first time
-        // if !axes.y.length && !axes.x then error
-        // if !axes.y.length then look at axes.none and try to add some of them to axes.y
-
-        var newColumns = dataTypeCounters.map(function (counter, index) {
-            return new Column({
-                property: counter.colName,
-                label: counter.colName,
-                axis: counter.predictedAxis,
-                typeInfo: counter
-            });
-        });
-
-        var originalData = JSON.parse(JSON.stringify(data));
-        var isUnsafeDateString = /(^[^\d]|^\d{1,2}$|^(\d{1,2})[\/\-\ ]+)/;
-        var unsafeDateString = true;
-        var timeCols = [];
-        var typeInfo;
-        var colName;
-        var attemptedDate;
-        var val;
-        var dateFormat;
-        var countDateFormats;
-        var totalNonDateStrings;
-        var mostPopularDateFormatCount;
-        var mostPopularDateFormat;
-
-        for (var i = 0, x = newColumns.length; i < x; i++) {
-
-            typeInfo = newColumns[i].get('typeInfo');
-            colName = typeInfo.colName;
-
-            if (typeInfo.datatype === Datatypes.TIME) {
-
-                typeInfo.dateFormats = [];
-                countDateFormats = {};
-                totalNonDateStrings = 0;
-
-                for (var j = 0; j < numRows; j++) {
-                    val = data[j][colName];
-
-                    if (!val) continue;
-
-                    attemptedDate = NaN;
-                    unsafeDateString = true;//isUnsafeDateString.test(val);
-
-                    // Don't attempt to make a date object from an unsafe string. Javascript's date
-                    // constructor (esp in Chrome/V8) will happily parse ambiguous strings without understanding
-                    // the difference between day and month when they appear first.
-                    // Any will fill in the year if one isn't provied
-                    if (typeof val === 'string' && !unsafeDateString) {
-                        attemptedDate = new Date(val);
-                    }
-
-                    if (isNaN(+attemptedDate)) {
-                        dateFormat = predictedDateFormat(val);
-                        totalNonDateStrings++;
-                        if (dateFormat) {
-                            typeInfo.dateFormats.push(dateFormat);
-                            if (dateFormat in countDateFormats) {
-                                countDateFormats[dateFormat]++;
-                            } else {
-                                countDateFormats[dateFormat] = 1;
-                            }
-                        }
-                    } else {
-                        data[j][colName] = attemptedDate;
-                    }
-                }
-
-                mostPopularDateFormat = null;
-                mostPopularDateFormatCount = 0;
-
-                var formatKeys = Object.keys(countDateFormats);
-                var numKeys = formatKeys.length;
-
-                if (numKeys === 1) {
-                    typeInfo.mostPopularDateFormat = formatKeys[0];
-                } else if (numKeys > 1) {
-
-                    var containsLongMonths;
-                    var containsShortMonths;
-
-                    formatKeys.forEach(function (key) {
-
-                        var count = countDateFormats[key];
-                        if (count >= mostPopularDateFormatCount) {
-                            // it's not good enough for the current format to be joint most-popular
-                            mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;
-                            mostPopularDateFormatCount = count;
-                        }
-
-                        if (key.indexOf('%B') !== -1) {
-                            containsLongMonths = key;
-                        } else if (key.indexOf('%b') !== -1) {
-                            containsShortMonths = key;
-                        }
-
-                    });
-
-                    if (mostPopularDateFormatCount && totalNonDateStrings) {
-
-                        // the most popular date format found is more than 95%
-                        // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
-                        var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
-
-                        // handle the case when some of the dates are in the month of May
-                        // we therefore have a mix of long and short month formats ie %B and %b
-                        // We can gloss over this because either date format will correct parse the date on those strings
-                        if (!greaterThanThreshold && containsShortMonths && containsLongMonths) {
-                            if (mostPopularDateFormat === containsLongMonths) {
-                                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%B', '%b')] || 0;
-                            } else if (mostPopularDateFormat === containsShortMonths) {
-                                mostPopularDateFormatCount += countDateFormats[containsShortMonths.replace('%b', '%B')] || 0;
-                            }
-                            // recalculate if the count is over the threshold
-                            greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, totalNonDateStrings);
-                        }
-
-                        if (greaterThanThreshold) {
-                            typeInfo.mostPopularDateFormat = mostPopularDateFormat;
-                        } else {
-                            typeInfo.mostPopularDateFormat = null;
-                        }
-
-                    } else {
-                        typeInfo.mostPopularDateFormat = null;
-                    }
-
-                }
-
-                if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
-                    transform.series(data, colName, transform.time(typeInfo.mostPopularDateFormat));
-                } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
-                    typeInfo.datatype = Datatypes.NUMERIC;
-                    newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
-                }
-            }
-        }
-
-        transform.table(data, newColumns, transform.number, Datatypes.NUMERIC);
-
-        console.table(dataTypeCounters);
-
-        this.set({
-            numCols: numCols,
-            data: data,
-            originalData: originalData,
-            colNames: colNames,
-            numRows: numRows,
-            pipelineOptions: pipelineOptions,
-            warning: {
-                message: warningMessage,
-                rows: warningRows
-            }
-        });
-        this.columns.reset(newColumns);
-
-    },
-
-    discardData: function () {
-        this.set(this.defaults);
-        this.columns.reset([]);
-    },
-
-    ignoreWarning: function () {
-        this.set('warning', this.defaults.warning);
     }
+    return {
+        valid: countDateFormats,
+        total: totalNonDateStrings
+    };
+}
 
-}, {
+function popularDate(formatKeys, dateStrings){
+    var mostPopularDateFormatCount = null;
+    var mostPopularDateFormat = 0;
+    var containsLongMonths;
+    var containsShortMonths;
 
-    isValidType: function (type) {
-        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
-    },
+    formatKeys.forEach(function (key) {
 
-    isPipelineFormat: function (str) {
-        return str.substring(0, 2) === '&\t';
-    },
-
-    parsePipeline: function (str) {
-        /*jshint -W084 */
-        var lines = str.trim().split(/[\n\r]+/gm);
-        var line;
-        var options = {};
-
-        while (line = lines.pop()) {
-            if (!line) {
-                continue;
-            }
-            if (line.charAt(0) === '\t') {
-                throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
-            }
-            line = line.trim();
-            if (!line) {
-                continue;
-            }
-            if (line.charAt(0) !== '&') {
-                lines.push(line);
-                break;
-            }
-            var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);
-            var value = bits[1];
-            if (value || value !== 'delete if not required') {
-                options[bits[0].replace(/^&/, '')] = value;
-            }
-        }
-        str = lines.join('\n');
-        return {dataString: str, options: options};
-    },
-
-    guessDataFormat: function (dataAsString) {
-
-        if (dataAsString) {
-            var lines = dataAsString.split(/\n/g);
-            if (lines.length) {
-                var line = (lines[0] || '').replace(/"(.*?)"/g, '');
-                var tabs = (line.match(/\t/g) || []).length;
-                var commas = (line.match(/\,/g) || []).length;
-                if (tabs > commas) {
-                    return 'text/tsv';
-                } else if (commas > tabs) {
-                    return 'text/csv';
-                }
-            }
+        var count = dateStrings.valid[key];
+        if (count >= mostPopularDateFormatCount) {
+            // it's not good enough for the current format to be joint most-popular
+            mostPopularDateFormat = (count === mostPopularDateFormatCount) ? null : key;
+            mostPopularDateFormatCount = count;
         }
 
+        if (key.indexOf('%B') !== -1) {
+            containsLongMonths = key;
+        } else if (key.indexOf('%b') !== -1) {
+            containsShortMonths = key;
+        }
+
+    });
+
+    if (mostPopularDateFormatCount && dateStrings.total) {
+
+        // the most popular date format found is more than 95%
+        // of the string values in columns (minus the values that can be parsed by the JS Date constructor)
+        var greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, dateStrings.total);
+
+        // handle the case when some of the dates are in the month of May
+        // we therefore have a mix of long and short month formats ie %B and %b
+        // We can gloss over this because either date format will correct parse the date on those strings
+        if (!greaterThanThreshold && containsShortMonths && containsLongMonths) {
+            if (mostPopularDateFormat === containsLongMonths) {
+                mostPopularDateFormatCount += dateStrings.valid[containsShortMonths.replace('%B', '%b')] || 0;
+            } else if (mostPopularDateFormat === containsShortMonths) {
+                mostPopularDateFormatCount += dateStrings.valid[containsShortMonths.replace('%b', '%B')] || 0;
+            }
+            // recalculate if the count is over the threshold
+            greaterThanThreshold = gtDateThreshold(mostPopularDateFormatCount, dateStrings.total);
+        }
+
+        return (greaterThanThreshold) ? greaterThanThreshold : null;
+
+    } else {
         return null;
     }
+}
 
-});
+function findPopularDateFormat(file, typeInfo){
+    var dateStrings = convertDateStrings(file, typeInfo);
+    var formatKeys = Object.keys(dateStrings.valid);
+    var numKeys = formatKeys.length;
 
-module.exports = DataImport;
+    if (numKeys === 1) {
+        typeInfo.mostPopularDateFormat = formatKeys[0];
+    } else if (numKeys > 1) {
+        typeInfo.mostPopularDateFormat = popularDate(formatKeys, dateStrings);
+    }
+}
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":35,"./../charting/Axis.js":47,"./../charting/Column.js":49,"./../charting/Datatypes.js":51,"./../core/backbone.js":62,"./../transform/index.js":87,"./predictDateFormat.js":70,"./sniffDataType.js":71}],70:[function(require,module,exports){
-var DateParts = require('./dateParts.js');
+module.exports = findPopularDateFormat;
 
-var types = {
-    'month':'month',
-    'year':'year',
-    'day':'day',
-    'ampm':'ampm',
-    'weekday':'weekday',
-    'time':'time'
-};
-var abbreviatedFormats = {
-    '%m/%d/%Y': '%x',
-    '%H:%M:%S': '%X'
-};
+},{"./predictDateFormat.js":61}],64:[function(require,module,exports){
 
-var predictedDateFormat = function (value) {
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var d3 = require("./../../../bower_components/d3/d3.js");
 
-    var dateParts = new DateParts(value);
-    var matched = dateParts.matched();
-    if (matched!==false) return matched;
+var validateFileDataTypes = require('./validateFileDataTypes.js');
+var validateFilePipeline = require('./validateFilePipeline.js');
 
-    var parts = dateParts.parts;
-    var i= 0;
-    var part;
+var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+var emptyHeaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
+    return a.concat(alphabet.map(function (h) {
+        return h + (num === 0 ? '' : num);
+    }));
+}, []);
 
-    var hasYear = false;
-    var hasMonth = false;
-    var hasDay = false;
-    var numParts = parts.length;
+function ValidateFile (attributes) {
 
-    for (i = 0; i < numParts; i++) {
-        part = parts[i];
-        if (part.type === types.year) {
-            if (hasYear) {
-                return null;
-            }
-            hasYear = true;
-        }
-        if (part.type === types.month) {
-            if (hasMonth) {
-                return null;
-            }
-            hasMonth = true;
-        }
-        if (part.type === types.day) {
-            if (hasDay) {
-                return null;
-            }
-            hasDay = true;
+    this.error = {message: '', details: []};
+    this.missingCols = 0;
+    this.extraCols = 0;
+    this.numCols = 0;
+    this.colNames = [];
+    this.dataTypeCounters = [];
+    this.warningRows = [];
+    this.data = [];
+    this.pipelineOptions = null;
+    this.warningMessage = null;
+
+    var method;
+    var pipelineData;
+
+    attributes.dataAsString = this.removeEmptyRows(attributes.dataAsString);
+    attributes.type = this.guessDataFormat(attributes);
+    method = attributes.type.split('/')[1];
+
+    if (this.logError(!attributes.dataAsString, 'No data found')) return this;
+    if (this.logError(!attributes.type, 'Unrecognised data format')) return this;
+    if (this.logError(!this.isValidType(attributes.type), 'Unsupported file type')) return this;
+    if (this.logError(!method, 'Unsupported import format')) return this;
+
+    if (validateFilePipeline.isValid(attributes.dataAsString)) {
+        try {
+            pipelineData = validateFilePipeline.parse(attributes.dataAsString);
+            attributes.dataAsString = pipelineData.dataString;
+            this.pipelineOptions = pipelineData.options;
+        } catch (pipelineError) {
+            this.error.message = pipelineError.message;
+            return this;
         }
     }
 
-    var partsWithGuesses = [];
-
-    for (i = 0; i < numParts; i++) {
-        part = parts[i];
-        if (part.guess()) {
-            partsWithGuesses.push(part);
-        }
+    try {
+        this.data = d3[method].parseRows(attributes.dataAsString, this.processRow.bind(this));
+        this.numRows = this.data.length;
+    } catch (e) {
+        this.error.message = 'There was a problem with the ' + method + ' data';
+        return this;
     }
 
-    var numGuesses = partsWithGuesses.length;
+    if (this.logError(!this.numRows, 'No data found')) return this.error;
+    if (this.logError(this.numCols < 2, 'Your data needs 2 columns or more.')) return this.error;
 
-    for (i = 0; i < numGuesses; i++) {
-        part = partsWithGuesses[i];
-        if (hasYear && part.guessYear) {
-            part.guessYear = false;
-        }
-        if (hasMonth && part.guessMonth) {
-            part.guessMonth = false;
-        }
-        if (hasDay && part.guessDay) {
-            part.guessDay = false;
-        }
-    }
+    this.warningMessage = this.gatherWarnings(this.warningRows, this.numRows);
+}
 
-    for (i = 0; i < numGuesses; i++) {
-        part = partsWithGuesses[i];
-        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-            part.guessDay = false;
-            part.type === types.day;
-            hasDay = true;
-            part.format = part.twoDigit ? '%d' : '%e';
-        }
-        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-            part.guessMonth = false;
-            part.type === types.month;
-            hasMonth = true;
-            part.format = '%m';
-        }
-        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-            part.guessYear = false;
-            part.type === types.year;
-            hasYear = true;
-            part.format = '%y';
-        }
-    }
-
-    for (i = 0; i < numGuesses; i++) {
-        part = partsWithGuesses[i];
-        if (hasYear && part.guessYear) {
-            part.guessYear = false;
-        }
-        if (hasMonth && part.guessMonth) {
-            part.guessMonth = false;
-        }
-        if (hasDay && part.guessDay) {
-            part.guessDay = false;
-        }
-    }
-
-//// 2
-
-
-    for (i = 0; i < numGuesses; i++) {
-        part = partsWithGuesses[i];
-        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-            part.guessDay = false;
-            part.type === types.day;
-            hasDay = true;
-            part.format = part.twoDigit ? '%d' : '%e';
-        }
-        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-            part.guessMonth = false;
-            part.type === types.month;
-            hasMonth = true;
-            part.format = '%m';
-        }
-        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-            part.guessYear = false;
-            part.type === types.year;
-            hasYear = true;
-            part.format = '%y';
-        }
-    }
-
-
-    for (i = 0; i < numGuesses; i++) {
-        part = partsWithGuesses[i];
-        if (hasYear && part.guessYear) {
-            part.guessYear = false;
-        }
-        if (hasMonth && part.guessMonth) {
-            part.guessMonth = false;
-        }
-        if (hasDay && part.guessDay) {
-            part.guessDay = false;
-        }
-    }
-
-
-//////////////////////////////
-
-    var format = [];
-
-    for (i = 0; i < numParts; i++) {
-        part = parts[i];
-        if (part.guess()) {
-            return null;
-        }
-        if (part.format) {
-            format.push(part.format);
-        }
-    }
-
-    format = format.length ? format.join('/') : null;
-
-    if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
-        format = format.replace('%H', '%I');
-    }
-
-    if (format in abbreviatedFormats) {
-        return abbreviatedFormats[format];
-    }
-
-    return format;
-
+ValidateFile.prototype.removeEmptyRows = function(data){
+    data = (data || '').trimRight();
+    return data.replace(/^\s+$/gm, '').replace(/^\n/, '');
 };
 
-module.exports = predictedDateFormat;
+ValidateFile.prototype.guessDataFormat = function(attributes) {
+    var dataAsString = attributes.dataAsString;
+    if (!dataAsString) { return; }
 
-},{"./dateParts.js":68}],71:[function(require,module,exports){
+    var lines = dataAsString.split(/\n/g);
+    if (attributes.type === 'text/tab-separated-values'){
+        attributes.type = 'text/tsv';
+    } else if (lines.length) {
+        var line = (lines[0] || '').replace(/"(.*?)"/g, '');
+        var tabs = (line.match(/\t/g) || []).length;
+        var commas = (line.match(/\,/g) || []).length;
+        if (tabs > commas) {
+            attributes.type = 'text/tsv';
+        } else if (commas > tabs) {
+            attributes.type = 'text/csv';
+        }
+    }
+    if (validateFilePipeline.isValid(dataAsString) && attributes.type === 'text/plain'){
+        attributes.type = 'text/csv';
+    }
+    return attributes.type;
+};
+
+ValidateFile.prototype.processRow = function(row, rowNum) {
+    var values = row.map(Function.prototype.call, String.prototype.trim);
+    var numValues = values.length;
+    var result;
+    var names = {}, n;
+
+    if (rowNum === 0) {
+        this.colNames = values;
+        this.numCols = numValues;
+
+        for (var i = 0; i < this.numCols; i++) {
+
+            // ensure no duplicate column names
+            n = this.colNames[i];
+
+            if (!n) {
+                n = emptyHeaderRows[i];
+            }
+
+            if (n in names) {
+                names[n]++;
+                n = n + '-' + names[n];
+            } else {
+                names[n] = 1;
+            }
+
+            this.colNames[i] = n;
+
+            this.dataTypeCounters.push({
+                colName: n,
+                strings: 0,
+                stringValues: [],
+                nulls: 0,
+                numbers: 0,
+                numberValues: [],
+                dates: 0,
+                dateValues: []
+            });
+        }
+        return;
+    } else if (numValues <= 1 && !values[0]) {
+        // empty row
+        return;
+    } else if (numValues > this.numCols) {
+        this.warningRows.push({
+            rowNum: rowNum,
+            numValues: numValues,
+            values: values.slice(0),
+            message: 'Too many values'
+        });
+        this.extraCols += (numValues - this.numCols);
+        values = values.slice(0, this.numCols);
+    } else if (numValues < this.numCols) {
+        this.warningRows.push({
+            rowNum: rowNum,
+            numValues: numValues,
+            values: values.slice(0),
+            message: 'Not as many values as there are columns'
+        });
+        this.missingCols += (this.numCols - numValues);
+        values = values.concat(new Array(this.numCols - numValues));
+    }
+
+    values.forEach(validateFileDataTypes, this.dataTypeCounters);
+    result = _.object(this.colNames, values);
+
+    return result;
+};
+
+ValidateFile.prototype.gatherWarnings = function(warningRows, numRows){
+    if (!warningRows.length) { return; }
+    var extraCols = this.extraCols;
+    if (!!this.missingCols && this.missingCols / numRows % 1 === 0) {
+        return 'The data appears to be missing ' + (this.missingCols / numRows) + ' whole columns of data.';
+    } else if (!!extraCols && extraCols / numRows % 1 === 0) {
+        return 'There  seems to be ' + (extraCols / numRows) + ' columns without headers. The data for these has been discarded.';
+    } else if (!this.missingCols && !!extraCols && extraCols < numRows) {
+        return 'Some rows have too many values. These values have been discarded.';
+    } else if (!extraCols && !!this.missingCols && this.missingCols < numRows) {
+        // DO NOTHING - we assume the last (right-most) column has some null values.
+    } else {
+        return 'Some rows in the data have warnings. A data repair was attempted but you should probably check the data in a spreadsheet.';
+    }
+};
+
+ValidateFile.prototype.isValidType = function(type) {
+    return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
+};
+
+ValidateFile.prototype.logError = function(bool, message){
+    if (bool) return (this.error.message = message);
+};
+
+module.exports = ValidateFile;
+
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":35,"./validateFileDataTypes.js":65,"./validateFilePipeline.js":66}],65:[function(require,module,exports){
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
 var aYearALongWayInTheFuture = 3000;
 
@@ -30189,7 +29749,7 @@ var isDateString = function (value) {
     var result = true;
     var s = value.split(/[\:\/\-\ ]+/);
     var i = s.length;
-    if (!s.length) return false;
+    if (!s.length || value.length<4) return false; //dont allow 1,02, 103 to be dates
     while (result && i--) {
         result = isPartDate(s[i]);
     }
@@ -30247,7 +29807,557 @@ var sniffDataType = function (value, colNum) {
 
 module.exports = sniffDataType;
 
-},{}],72:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
+module.exports = {
+    isValid : function(str) {
+        return str.substring(0, 2) === '&\t';
+    },
+    parse : function(str) {
+        /*jshint -W084 */
+        var lines = str.trim().split(/[\n\r]+/gm);
+        var line;
+        var options = {};
+
+        while (line = lines.pop()) {
+            if (!line) {
+                continue;
+            }
+            if (line.charAt(0) === '\t') {
+                throw new Error('Pipeline formatted files must have a value for every cell in the index ("&") column.');
+            }
+            line = line.trim();
+            if (!line) {
+                continue;
+            }
+            if (line.charAt(0) !== '&') {
+                lines.push(line);
+                break;
+            }
+            var bits = line.split(/=/).map(Function.prototype.call, String.prototype.trim);
+            var value = bits[1];
+            if (value || value !== 'delete if not required') {
+                options[bits[0].replace(/^&/, '')] = value;
+            }
+        }
+        str = lines.join('\n');
+        return {dataString: str, options: options};
+    }
+};
+
+},{}],67:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var Datatypes = require('../charting/Datatypes.js');
+
+var Axis = Backbone.Model.extend({
+        defaults: {
+            name: '',
+            label: '',
+            labelOverride: false,
+            suggestedLabel: '',
+            datatype: Datatypes.CATEGORICAL,
+            warningMessage: '',
+            dateFormat: '',
+            prefix: '',
+            suffix: ''
+        }
+    },
+    {
+        X: 'X',
+        Y: 'Y',
+        Z: 'Z',
+        NONE: null
+    });
+
+module.exports = Axis;
+
+},{"../charting/Datatypes.js":47,"./../core/backbone.js":54}],68:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var DependantAxis = require('../charting/DependantAxis.js');
+var IndependantAxis = require('../charting/IndependantAxis.js');
+var Dataset = require('./Dataset.js');
+var Axis = require('./Axis.js');
+
+var Chart = Backbone.Model.extend({
+
+    initialize: function () {
+        this.xAxis = new IndependantAxis();
+        this.yAxis = new DependantAxis({
+            name: Axis.Y
+        });
+        this.zAxis = new DependantAxis({
+            name: Axis.Z
+        });
+        this.xAxis.chart = this.yAxis.chart = this.zAxis.chart = this;
+        this.unusedSeries = new Backbone.Collection();
+
+        var currentAxisCol;
+
+        this.listenTo(this.xAxis, 'change:property', function (model, property) {
+            var previousXCol = currentAxisCol;
+
+            currentAxisCol = !property ? null : this.xAxis.createColumn();
+
+            function getCol(collection) {
+                return !property ? null : collection.findWhere({property: property});
+            }
+
+            var column = getCol(this.yAxis.columns);
+
+            if (column) {
+
+                this.yAxis.columns.remove(column);
+
+            } else {
+
+                column = getCol(this.zAxis.columns);
+
+                if (column) {
+                    this.zAxis.columns.remove(column);
+                } else {
+                    column = getCol(this.unusedSeries);
+
+                    if (column) {
+                        this.unusedSeries.remove(column);
+                    }
+
+                }
+            }
+
+            if (previousXCol) {
+                var typeInfo = previousXCol.get('typeInfo');
+                if (typeInfo && typeInfo.predictedAxis === Axis.Y) {
+                    this.yAxis.columns.add(previousXCol);
+                } else if (typeInfo && typeInfo.predictedAxis === Axis.Z) {
+                    this.zAxis.columns.add(previousXCol);
+                } else {
+                    this.unusedSeries.add(previousXCol);
+                }
+            }
+
+        });
+
+        function removeSeries(model) {
+
+            // todo: before doing the tasks below you need to remove the listeners
+            //          in the axis objects that set the model.collection
+            // todo: dont add if the model being moved from one axis to another
+            // todo: dont add if the model is being moved to the X Axis
+            // todo: dont add is it's already being added to the unused series
+            var isXAxis = currentAxisCol && (model.get('property') === this.xAxis.get('property'));
+
+            if (!isXAxis) {
+                model.collection = this.unusedSeries;
+                this.unusedSeries.add(model);
+            }
+        }
+
+        function addSeries(model) {
+            this.unusedSeries.remove(model);
+        }
+
+        function resetSeries(collection) {
+            var unused = this.unusedSeries;
+            collection.forEach(function (m) {
+                var d = unused.findWhere({property: m.get('property')});
+                d && unused.remove(d);
+            });
+        }
+
+        this.listenTo(this.yAxis.columns, 'remove', removeSeries);
+        this.listenTo(this.zAxis.columns, 'remove', removeSeries);
+
+        this.listenTo(this.yAxis.columns, 'add', addSeries);
+        this.listenTo(this.zAxis.columns, 'add', addSeries);
+
+        this.listenTo(this.yAxis.columns, 'reset', resetSeries);
+        this.listenTo(this.zAxis.columns, 'reset', resetSeries);
+
+        this.dataset = new Dataset();
+    }
+
+});
+
+module.exports = Chart;
+
+},{"../charting/DependantAxis.js":48,"../charting/IndependantAxis.js":49,"./../core/backbone.js":54,"./Axis.js":67,"./Dataset.js":71}],69:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var Axis = require('./Axis.js');
+
+module.exports = Backbone.Model.extend({
+
+    defaults: {
+        property: '',
+        label: '',
+        axis: Axis.NONE,
+        isOther: false
+    }
+
+});
+
+},{"./../core/backbone.js":54,"./Axis.js":67}],70:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+function setDateGroupings(grouping){
+    var dateGroupings = {
+        'monthly': ['monthly', 'yearly'],
+        'quarterly': ['quarterly', 'yearly'],
+        'yearly': ['yearly']
+    };
+    return dateGroupings[grouping];
+}
+
+var ColumnControls = Backbone.Model.extend({
+
+    defaults: {
+        //groupDates: false
+    },
+
+    overrideConfig: function (config) {
+        //config.groupDates = setDateGroupings(this.attributes.groupDates);
+        return config;
+    }
+
+});
+
+
+module.exports = ColumnControls;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54}],71:[function(require,module,exports){
+var Backbone = require('./../core/backbone');
+
+module.exports = Backbone.Model.extend({
+    defaults: {
+        rows: []
+    }
+});
+
+},{"./../core/backbone":54}],72:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var Chart = require('./Chart.js');
+
+var Graphic = Backbone.Model.extend({
+
+    initialize: function () {
+        this.chart = new Chart();
+    },
+
+    defaults: {
+        title: 'Untitled chart',
+        subtitle: '',
+        source: '',
+        footnote: '',
+        noSource: false
+    },
+
+    subtitleSuggestion: function (save) {
+        var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
+        var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
+        var result;
+
+        if (label) {
+            result = !units ? label : label + ' (' + units + ')';
+            if (save) {
+                this.set('subtitle', result);
+            }
+        }
+
+        return result;
+    }
+});
+
+module.exports = Graphic;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./Chart.js":68}],73:[function(require,module,exports){
+var Backbone = require('./../core/backbone');
+
+var GraphicType = Backbone.Model.extend({
+
+    initialize: function (attributes, options) {
+        this.graphic = options.graphic;
+        this.variations = options.variations;
+        this.controls = options.controls;
+    },
+
+    defaults: {
+        typeName: ''
+    }
+});
+
+module.exports = GraphicType;
+
+},{"./../core/backbone":54}],74:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+
+function getKeyLabel(d) {
+    var property = d.get('property');
+    var label = d.get('label') || property;
+    return {key: property, label: label};
+}
+
+var GraphicVariation = Backbone.Model.extend({
+
+    defaults: {
+        svg: null
+    },
+
+    initialize: function (attributes, options) {
+        this.variation = options.variation;
+        this.graphic = options.graphic;
+        this.graphicType = options.graphicType;
+        this.errors = new Backbone.Collection([]);
+    },
+
+    createConfig: function () {
+        // FIXME: is it still necessary to make a copy of the data?
+        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
+            return Object.create(d);
+        });
+
+        if (!data.length) return;
+
+        var xAxisProperty = this.graphic.chart.xAxis.get('property');
+        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
+
+        if (!xAxisProperty || !yAxisProperties.length) {
+            return;
+        }
+
+        var g = this.graphic.toJSON();
+
+        var config = {
+
+            width: this.variation.get('width'),
+            height: this.variation.get('height'),
+
+            title: g.title,
+            subtitle: g.subtitle,
+            source: g.source,
+            hideSource: g.noSource,
+            footnote: g.footnote,
+
+            units: this.graphic.chart.xAxis.get('units'),
+            data: data,
+            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
+
+            x: {
+                series: {
+                    key: xAxisProperty,
+                    label: xAxisProperty
+                }
+            },
+
+            y: {
+                series: yAxisProperties
+            }
+
+        };
+
+        return this.graphicType.controls.overrideConfig(config);
+    },
+
+    toJSON: function () {
+
+        var d = Backbone.Model.prototype.toJSON.call(this);
+
+        d.graphic = this.graphic.toJSON();
+        d.graphicType = this.graphicType.toJSON();
+        d.variation = this.variation.toJSON();
+
+        var svg = this.attributes.svg;
+
+        if (!svg) {
+            d.svg = null;
+        } else {
+            var svgRect = svg.getBoundingClientRect();
+            d.svg = {
+                width: svgRect.width,
+                height: svgRect.height
+            };
+        }
+
+        return d;
+    }
+});
+
+module.exports = GraphicVariation;
+
+},{"./../core/backbone.js":54}],75:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var TickStyle = require('../charting/TickStyle.js');
+
+var LineControls = Backbone.Model.extend({
+
+    defaults: {
+        thinLines: false,
+        flipYAxis: false,
+        startFromZero: false,
+        nice: false,
+        tickStyleX: TickStyle.AUTO,
+        tickStyleY: TickStyle.AUTO
+    },
+
+    overrideConfig: function (config) {
+        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
+        config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
+        config.y.flip = this.attributes.flipYAxis;
+        config.niceValue = this.attributes.nice;
+        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
+        return config;
+    }
+
+});
+
+
+module.exports = LineControls;
+
+},{"../charting/TickStyle.js":50,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54}],76:[function(require,module,exports){
+var d3 = require("./../../../bower_components/d3/d3.js");
+var Backbone = require('./../core/backbone.js');
+var DataTypes = require('./../charting/Datatypes.js');
+var Axis = require('./Axis.js');
+var transform = require('./../transform/index.js');
+var ValidateFile = require('../import/validateFile.js');
+var describeColumns = require('../import/describeColumns.js');
+var setPopularDateFormat = require('../import/setPopularDateFormat.js');
+var unitGenerator = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.dates.unitGenerator;
+
+var Threshold = function (numRows) {
+    var percent = 95;
+    var s = 100 / numRows;
+    var almost = numRows - 1;
+    this.isAbove = function (count) {
+        return (count >= almost) || (count * s > percent);
+    };
+    return this;
+};
+
+function formatDate(dateString, format) {
+    return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
+}
+
+function setDateIntervalAverage(file, typeInfo){
+    var days = [];
+    var months = [];
+    var years = [];
+    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    typeInfo.dateValues.forEach(function(date,i){
+        if (i===0) return;
+        //todo: save this format when data is first imported?
+        var start = formatDate(typeInfo.dateValues[i-1], format);
+        var end = formatDate(date,format);
+        days.push((d3.time.days(start, end)).length);
+        months.push((d3.time.months(start, end)).length);
+        years.push((d3.time.years(start, end)).length);
+    });
+    var start = formatDate(typeInfo.dateValues[0], format);
+    var end = formatDate(typeInfo.dateValues[typeInfo.dateValues.length - 1], format);
+
+    var dayAverage = d3.mean(days);
+    var monthAverage = d3.mean(months);
+    var yearAverage = d3.mean(years);
+    var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
+    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
+    var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
+    if (quarterly){
+        //typeInfo.units = yearly ? ['yearly'] : false;
+        typeInfo.units = ['quarterly', unitGenerator([start,end],false)];
+        //typeInfo.units = monthly ? ['monthly','yearly'] : typeInfo.units;
+    }
+}
+
+var DataImport = Backbone.Model.extend({
+
+    defaults: {
+        type: '',
+        hasHeaderRow: true,
+        dataAsString: '',
+        numRows: 0,
+        numCols: 0,
+        colNames: [],
+        pipelineOptions: null,
+        warning: {
+            message: null,
+            rows: []
+        },
+        data: [],
+        originalData: []
+    },
+
+    columns: null,
+
+    initialize: function () {
+        this.columns = new Backbone.Collection();
+        this.listenTo(this, 'invalid', this.discardData);
+    },
+
+    validate: function (attributes, options) {
+
+        var file = new ValidateFile(attributes);
+        if (file.error.message) return file.error;
+        var newColumns = describeColumns(file);
+        var threshold = new Threshold(file.numRows);
+        var originalData = JSON.parse(JSON.stringify(file.data));
+        var typeInfo;
+
+        for (var i = 0, x = newColumns.length; i < x; i++) {
+
+            typeInfo = newColumns[i].get('typeInfo');
+
+            if (typeInfo.datatype === DataTypes.TIME) {
+
+                setPopularDateFormat(file, typeInfo);
+                setDateIntervalAverage(file, typeInfo);
+
+                if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
+                    transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
+                } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
+                    typeInfo.datatype = DataTypes.NUMERIC;
+                    newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
+                }
+            }
+        }
+
+        transform.table(file.data, newColumns, transform.number, DataTypes.NUMERIC);
+
+        this.set({
+            numCols: file.numCols,
+            data: file.data,
+            originalData: originalData,
+            colNames: file.colNames,
+            numRows: file.numRows,
+            pipelineOptions: file.pipelineOptions,
+            warning: {
+                message: file.warningMessage,
+                rows: file.warningRows
+            }
+        });
+        this.columns.reset(newColumns);
+
+    },
+
+    discardData: function () {
+        this.set(this.defaults);
+        this.columns.reset([]);
+    },
+
+    ignoreWarning: function () {
+        this.set('warning', this.defaults.warning);
+    }
+
+}, {
+
+    isValidType: function (type) {
+        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
+    }
+
+});
+
+module.exports = DataImport;
+
+},{"../import/describeColumns.js":60,"../import/setPopularDateFormat.js":63,"../import/validateFile.js":64,"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../transform/index.js":93,"./Axis.js":67}],77:[function(require,module,exports){
 if (!Function.prototype.bind) {
     Function.prototype.bind = function (oThis) {
         if (typeof this !== 'function') {
@@ -30272,14 +30382,14 @@ if (!Function.prototype.bind) {
     };
 }
 
-},{}],73:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],74:[function(require,module,exports){
+},{"hbsfy/runtime":46}],79:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30298,7 +30408,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"datatype\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],75:[function(require,module,exports){
+},{"hbsfy/runtime":46}],80:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30317,42 +30427,42 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],76:[function(require,module,exports){
+},{"hbsfy/runtime":46}],81:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],77:[function(require,module,exports){
+},{"hbsfy/runtime":46}],82:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div><!-- Graphic Type Control --></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],78:[function(require,module,exports){
+},{"hbsfy/runtime":46}],83:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-region=\"variations\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],79:[function(require,module,exports){
+},{"hbsfy/runtime":46}],84:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"graphic-container\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],80:[function(require,module,exports){
+},{"hbsfy/runtime":46}],85:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],81:[function(require,module,exports){
+},{"hbsfy/runtime":46}],86:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -30363,21 +30473,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],82:[function(require,module,exports){
+},{"hbsfy/runtime":46}],87:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],83:[function(require,module,exports){
+},{"hbsfy/runtime":46}],88:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"datatype\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],84:[function(require,module,exports){
+},{"hbsfy/runtime":46}],89:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30419,7 +30529,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</span>\n</span>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],85:[function(require,module,exports){
+},{"hbsfy/runtime":46}],90:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -30436,14 +30546,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],86:[function(require,module,exports){
+},{"hbsfy/runtime":46}],91:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<!--<div class=\"radio\">-->\n    <!--<h4>Date Groupings</h4>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"false\"> Off-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n    <!--</label>-->\n<!--</div>-->\n";
+},"useData":true});
+
+},{"hbsfy/runtime":46}],92:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Nice\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],87:[function(require,module,exports){
+},{"hbsfy/runtime":46}],93:[function(require,module,exports){
 module.exports = {
     number: require('./number.js'),
     time: require('./time.js'),
@@ -30451,7 +30568,7 @@ module.exports = {
     table: require('./table.js')
 };
 
-},{"./number.js":88,"./series.js":89,"./table.js":90,"./time.js":91}],88:[function(require,module,exports){
+},{"./number.js":94,"./series.js":95,"./table.js":96,"./time.js":97}],94:[function(require,module,exports){
 var currencySymbol = /^(\$|€|¥|£)/;
 var allCommas = /\,/g;
 var percent = /(\%)$/;
@@ -30490,7 +30607,7 @@ function createNumberTransformer(options) {
     return transformNumber;
 }
 
-},{}],89:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
@@ -30508,7 +30625,7 @@ function series(array, property, transformer, customLogic) {
     }
 }
 
-},{}],90:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 var Datatypes = require('../charting/Datatypes.js');
 var series = require('./series.js');
 
@@ -30552,7 +30669,7 @@ function transformTable(data, columns, transform, type, customLogic) {
     }
 }
 
-},{"../charting/Datatypes.js":51,"./series.js":89}],91:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./series.js":95}],97:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 
 module.exports = createTimeTransformer;
@@ -30608,8 +30725,7 @@ function useJavascriptDateFn(format) {
 var datePartSeparators = /[\-\ ]/g;
 
 function createDateParser(format) {
-    var useJs = useJavascriptDateFn(format);
-    if (useJs) {
+    if (useJavascriptDateFn(format)) {
         return createDate;
     } else {
         var parser = d3.time.format(format).parse;
@@ -30620,10 +30736,8 @@ function createDateParser(format) {
     }
 }
 
-},{"./../../../bower_components/d3/d3.js":4}],92:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4}],98:[function(require,module,exports){
 /* global gapi, ng, auth2 */
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
 var Authentication = function (cb) {
     this.cb = cb;
 };
@@ -30651,20 +30765,20 @@ Authentication.prototype.onSignIn = function (googleUser) {
         var trackingImage = document.createElement('img');
         trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
         container.appendChild(trackingImage);
-        container.remove();
+        container.setAttribute('style','display:none');
         this.cb && typeof this.cb === 'function' && this.cb();
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
-        $("#login-alert").css('display', 'block');
+        document.getElementById("login-alert").setAttribute('style','display:block');
     }
 };
 
 module.exports = Authentication;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5}],93:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
     if (document.domain === 'localhost') {
@@ -30703,9 +30817,9 @@ Tracking.prototype.trackEvent = function (eventName) {
 
 module.exports = new Tracking();
 
-},{}],94:[function(require,module,exports){
-module.exports = "0.0.6";
-},{}],95:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
+module.exports = "1.0.0";
+},{}],101:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -30736,7 +30850,30 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":62,"./../templates/axis-label.hbs":73}],96:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],102:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+
+var ColumnControls = Backbone.View.extend({
+
+    className: 'view-graphic-type-controls',
+
+    template: require('./../templates/type-controls-column.hbs'),
+
+    bindings: {
+        '[name="groupDates"]': 'groupDates'
+    },
+
+    render: function () {
+        this.el.innerHTML = this.template();
+        this.stickit(this.model.controls);
+        return this;
+    }
+
+});
+
+module.exports = ColumnControls;
+
+},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],103:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30769,7 +30906,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./../templates/datatype.hbs":75}],97:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],104:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -30835,7 +30972,7 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":62}],98:[function(require,module,exports){
+},{"./../core/backbone.js":54}],105:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Datatypes = require('../charting/Datatypes.js');
 var ViewDatatype = require('./Datatype.js');
@@ -30918,7 +31055,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"../charting/Datatypes.js":51,"./../core/RegionView.js":61,"./../templates/axis.hbs":74,"./Datatype.js":96,"./Highlight.js":103,"./SeriesControls.js":109}],99:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":103,"./Highlight.js":110,"./SeriesControls.js":116}],106:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
@@ -31018,7 +31155,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":61,"./../core/backbone.js":62,"./../templates/graphic-controls.hbs":76,"./../utils/tracking.js":93,"./DependantAxisControls.js":98,"./IndependentAxisControls.js":105}],100:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":99,"./DependantAxisControls.js":105,"./IndependentAxisControls.js":112}],107:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -31037,10 +31174,10 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":62,"./../templates/graphic-type-controls.hbs":77}],101:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],108:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
-var GraphicVariation = require('../charting/GraphicVariation.js');
+var GraphicVariation = require('../models/GraphicVariation.js');
 var ViewGraphicVariation = require('./GraphicVariation.js');
 var Backbone = require('./../core/backbone.js');
 
@@ -31096,18 +31233,23 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"../charting/GraphicVariation.js":55,"./../core/CollectionView.js":60,"./../core/RegionView.js":61,"./../core/backbone.js":62,"./../templates/graphic-type.hbs":78,"./GraphicVariation.js":102}],102:[function(require,module,exports){
+},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":109}],109:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-var linechart = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart.line;
+var oCharts = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart;
 var d3 = require("./../../../bower_components/d3/d3.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
+
+var chartTypes = {
+    'Line' : oCharts.line,
+    'Column' : oCharts.column
+};
 
 //todo: variation -- to variant
 var ViewGraphicVariation = Backbone.View.extend({
 
     initialize: function (options) {
-        this.chart = linechart;//();
+        this.chart = chartTypes[this.model.graphicType.get('typeName')];
         var debounced = _.bind(_.debounce(this.render, 50), this);
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
@@ -31179,7 +31321,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./../templates/graphic.hbs":79}],103:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],110:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -31215,9 +31357,9 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"../charting/Datatypes.js":51,"./../core/backbone.js":62,"./../templates/highlight.hbs":80}],104:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],111:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
-var DataImport = require('./../import/index.js');
+var DataImport = require('./../models/import.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 
 var tracking = require('./../utils/tracking.js');
@@ -31319,7 +31461,21 @@ var ViewImportData = Backbone.View.extend({
     },
 
     readFile: function (file) {
-        if (!DataImport.isValidType(file.type)) {
+        var type = file.type;
+        if (!file.type){ //windows. grr.
+            switch (file.name.split('.').slice(-1)[0]){
+                case 'csv':
+                    type = 'text/csv';
+                    break;
+                case 'tsv':
+                    type = 'text/tsv';
+                    break;
+                case 'txt':
+                    type = 'text/txt';
+                    break;
+            }
+        }
+        if (!DataImport.isValidType(type)) {
             this.showError({message: 'Invalid file type.'});
             return;
         }
@@ -31415,7 +31571,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":62,"./../import/index.js":69,"./../templates/import-warning.hbs":81,"./../templates/import.hbs":82,"./../utils/tracking.js":93}],105:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":99}],112:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./AxisLabel.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31495,7 +31651,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"../charting/Datatypes.js":51,"./../core/RegionView.js":61,"./../templates/independant-axis-control.hbs":83,"./AxisLabel.js":95,"./Datatype.js":96,"./DateFormat.js":97,"./Highlight.js":103}],106:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":101,"./Datatype.js":103,"./DateFormat.js":104,"./Highlight.js":110}],113:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -31540,10 +31696,10 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":62,"./../help/index.js":67}],107:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../help/index.js":59}],114:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
-var ViewLineControls = Backbone.View.extend({
+var LineControls = Backbone.View.extend({
 
     className: 'view-graphic-type-controls',
 
@@ -31564,17 +31720,23 @@ var ViewLineControls = Backbone.View.extend({
 
 });
 
-module.exports = ViewLineControls;
+module.exports = LineControls;
 
-},{"./../core/backbone.js":62,"./../templates/type-controls-line.hbs":86}],108:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],115:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
 var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
 var ViewLineControls = require('./LineControls.js');
+var ViewColumnControls = require('./ColumnControls.js');
 var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
+
+var controls = {
+    'Line' : ViewLineControls,
+    'Column' : ViewColumnControls
+};
 
 var ViewSelectedVariation = RegionView.extend({
 
@@ -31600,11 +31762,10 @@ var ViewSelectedVariation = RegionView.extend({
 
     regions: {
         '[data-region="graphic-type-controls"]': function () {
-            return new ViewLineControls({model: this.model.graphicType});
 
-            // TODO: once we have more chart types then we'll
-            // need to be able to switch between different views here
-            // return new ViewGraphicTypeControls({model: this.model.graphicType});
+            var viewControls = controls[this.model.graphicType.attributes.typeName];
+            return new viewControls({model: this.model.graphicType});
+
         }
     },
 
@@ -31641,8 +31802,8 @@ var ViewSelectedVariation = RegionView.extend({
         // set this to null for transparent backgrounds
         var bgColor = '#fff1e0';
 
-        // FIXME: this is a hack, we shouldn't need this.
-        attributeStyler();
+         //FIXME: this is a hack, we shouldn't need this.
+        attributeStyler(undefined, true);
 
         download(filename, svg, format, bgColor, function () {
             // TODO: alert the user when there's an error creating the image
@@ -31677,7 +31838,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":61,"./../export/download.js":64,"./../templates/selected-variation.hbs":85,"./../utils/tracking.js":93,"./GraphicTypeControls.js":100,"./LineControls.js":107,"util":38}],109:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":99,"./ColumnControls.js":102,"./GraphicTypeControls.js":107,"./LineControls.js":114,"util":38}],116:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./SeriesList.js');
 
@@ -31719,11 +31880,11 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":61,"./SeriesList.js":110}],110:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./SeriesList.js":117}],117:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-var Axis = require('../charting/Axis.js');
+var Axis = require('../models/Axis.js');
 
 var dragging;
 var placeholder = $('<div class="sortablelist-placeholder"/>');
@@ -32002,18 +32163,19 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"../charting/Axis.js":47,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":60,"./../core/backbone.js":62,"./../templates/ordered-column.hbs":84}],"nightingale":[function(require,module,exports){
+},{"../models/Axis.js":67,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":52,"./../core/backbone.js":54,"./../templates/ordered-column.hbs":89}],"nightingale":[function(require,module,exports){
 var Backbone = require('./core/backbone');
-var Graphic = require('./charting/Graphic.js');
+var Graphic = require('./models/Graphic.js');
 var ViewGraphicControls = require('./views/GraphicControls.js');
 var ViewGraphicTypes = require('./views/GraphicTypes.js');
-var GraphicType = require('./charting/GraphicType.js');
-var DataImport = require('./import/index.js');
+var GraphicType = require('./models/GraphicType.js');
+var DataImport = require('./models/import.js');
 var ViewImportData = require('./views/ImportData.js');
 var ViewInlineHelp = require('./views/InlineHelp.js');
 var ViewSelectedVariation = require('./views/SelectedVariation.js');
 var Variations = require('./charting/Variations.js');
-var LineControls = require('./charting/LineControls.js');
+var LineControls = require('./models/LineControls.js');
+var ColumnControls = require('./models/ColumnControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
@@ -32026,8 +32188,8 @@ var version = require('./utils/version');
 function init() {
 
     var graphic = new Graphic();
-    var importdata = new DataImport();
-    var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importdata});
+    var importData = new DataImport();
+    var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
@@ -32037,6 +32199,13 @@ function init() {
         }, {
             graphic: graphic,
             controls: new LineControls(),
+            variations: Variations
+        }),
+        new GraphicType({
+            typeName: 'Column'
+        }, {
+            graphic: graphic,
+            controls: new ColumnControls(),
             variations: Variations
         })
     ]);
@@ -32063,7 +32232,7 @@ function init() {
         document.getElementById('selection').appendChild(viewSelectedVariation.el);
     });
 
-    importdata.on('change:pipelineOptions', function (model, pipelineOption) {
+    importData.on('change:pipelineOptions', function (model, pipelineOption) {
         if (!pipelineOption) {
             graphic.set(graphic.defaults);
             return;
@@ -32072,11 +32241,11 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importdata.on('change:data', function (model, data) {
+    importData.on('change:data', function (model, data) {
         graphic.chart.dataset.set('rows', data);
     });
 
-    var importdataView = new ViewImportData({model: importdata});
+    var importdataView = new ViewImportData({model: importData});
     document.getElementById('controls').appendChild(importdataView.render().el);
 
     var setColumnAxis = function (column, value) {
@@ -32102,12 +32271,12 @@ function init() {
         }
     };
 
-    importdata.columns.on('change:axis', setColumnAxis);
-    importdata.columns.on('reset', function () {
+    importData.columns.on('change:axis', setColumnAxis);
+    importData.columns.on('reset', function () {
 
         var dims = {};
 
-        importdata.columns.each(function (column) {
+        importData.columns.each(function (column) {
             var d = column.get('axis') || 'NONE';
             if (!dims[d]) dims[d] = [];
             d.collection = null;
@@ -32121,6 +32290,8 @@ function init() {
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
+        //todo: pm: it knows it should group dates -> update the controls somehow!
+        //console.log(graphic.chart.xAxis.get('groupDates'))
         graphic.chart.yAxis.columns.reset(dims.Y || []);
         graphic.chart.zAxis.columns.reset(dims.Z || []);
 
@@ -32132,7 +32303,7 @@ function init() {
     });
 
     function revertColumn(array, property) {
-        var originalData = importdata.get('originalData');
+        var originalData = importData.get('originalData');
         return array.map(function (d, i) {
             d[property] = originalData[i][property];
             return d;
@@ -32144,7 +32315,7 @@ function init() {
 
         var property = model.get('property');
         var datatype = model.get('datatype');
-        var currentDataset = importdata.get('data');
+        var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
 
@@ -32158,7 +32329,7 @@ function init() {
         graphic.chart.dataset.set('rows', revertedDataset);
     });
 
-    importdata.columns.each(setColumnAxis);
+    importData.columns.each(setColumnAxis);
 
     ViewInlineHelp.init();
 
@@ -32170,7 +32341,7 @@ function init() {
     if (document.location.hash === '#test') {
         
         var samplePipeline = "&\tCopper\tAluminium\tCrude Steel\tNickel\tZinc\tA\n2000\t11.90527035\t12.88227647\t16.3249737\t5.964178172\t14.94880367\tw\n2001\t14.90979838\t14.79618258\t19.85942869\t7.949482026\t17.34996236\te\n2002\t17.06410621\t16.43807823\t22.57947763\t8.865713351\t18.85458602\td\n2003\t19.40081957\t18.66366179\t26.60416833\t10.92193236\t20.66901854\n2004\t20.93441835\t20.2563434\t27.62783117\t13.24416421\t24.92104998\n2005\t22.38573017\t22.30671384\t31.80150459\t15.88371919\t28.51567707\n2006\t22.57743334\t24.60148997\t31.18606697\t19.99521188\t28.42943533\n2007\t25.72759598\t31.72764724\t32.93222885\t27.77983712\t31.7872181\n2008\t28.79472747\t33.44374235\t34.48414347\t27.67262055\t34.10648752\n2009\t37.62883844\t40.30471711\t46.49966448\t37.27782139\t40.46141291\n2010\t37.62442203\t40.65365224\t43.34739308\t39.43329532\t41.14371208\n2011\t40.43421488\t42.86569525\t43.72042854\t42.9085906\t42.87401575\n2012\t42.42299504\t44.84331227\t44.24752313\t45.13470946\t44.0610687\n2013\t43.87741312\t46.72836978\t44.92189279\t47.54939004\t44.82051282\n2014\t44.76310503\t48.49750201\t45.07895964\t48.54492499\t45.34965035\n2015\t45.43446877\t49.88835668\t45.26876036\t49.84448724\t44.83221477\n2016\t46.28360061\t51.04121624\t45.26081474\t50.52739306\t44.38709677\n2017\t47.17123636\t51.75119632\t45.17639687\t51.01846341\t44.01242236\n2018\t47.83432356\t52.63445929\t45.08582303\t51.93488634\t44.01\n&title=China share of global demand\t\t\t\t\t\n&subtitle=%\t\t\t\t\t\n&source=Macquarie.com\t\t\t\t\t\n&footnote=A real footnote\t\t\t\t\t\n&comment=Line chart\t\t\t\t\t\n&doublescale=0\t\t\t\t\t\n&accumulate=false\t\t\t\t\t\n";
-        importdata.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
     }
 }
 
@@ -32185,4 +32356,4 @@ function nightingale() {
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":51,"./charting/Graphic.js":53,"./charting/GraphicType.js":54,"./charting/LineControls.js":57,"./charting/Variations.js":59,"./core/backbone":62,"./export/svgDataURI.js":65,"./import/index.js":69,"./transform/index.js":87,"./utils/authentication.js":92,"./utils/version":94,"./views/GraphicControls.js":99,"./views/GraphicTypes.js":101,"./views/ImportData.js":104,"./views/InlineHelp.js":106,"./views/SelectedVariation.js":108}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":98,"./utils/version":100,"./views/GraphicControls.js":106,"./views/GraphicTypes.js":108,"./views/ImportData.js":111,"./views/InlineHelp.js":113,"./views/SelectedVariation.js":115}]},{},["nightingale"]);
