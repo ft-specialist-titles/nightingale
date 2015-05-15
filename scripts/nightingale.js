@@ -575,7 +575,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":31}],2:[function(require,module,exports){
+},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":35}],2:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2185,7 +2185,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../underscore/underscore.js":31}],3:[function(require,module,exports){
+},{"./../underscore/underscore.js":35}],3:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.4 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -22934,107 +22934,38 @@ return jQuery;
 
 },{}],6:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
+var styler = require('../util/chart-attribute-styles');
+var labels = require('../util/labels.js');
+var utils = require('./category.utils.js');
 
 function categoryAxis() {
-    'use strict';
 
-	var ticksize = 5;
-	var a = d3.svg.axis().orient('left').tickSize(ticksize , 0);
-	var lineHeight = 16;
-	var userTicks = [];
-	var yOffset = 0;
-	var xOffset = 0;
-
-	function isVertical() {
-		return a.orient() === 'left' || a.orient() === 'right';
-	}
-
-	function axis(g) {
-		g = g.append('g').attr('transform','translate(' + xOffset + ',' + yOffset + ')');
-		g.call(a);
-	}
-
-	axis.tickSize = function(x){
-		if (!arguments.length) return ticksize;
-		a.tickSize(-x);
-		return axis;
-	};
-
-	axis.ticks = function(x){
-		if (!arguments.length) return a.ticks();
-		if (x.length) {
-			userTicks = x;
-		}
-		return axis;
-	};
-
-	axis.orient = function(x){
-		if (!arguments.length) return a.orient();
-		a.orient(x);
-		return axis;
-	};
-
-	axis.scale = function(x){
-		if (!arguments.length) return a.scale();
-		a.scale(x);
-		if (userTicks.length) {
-			a.tickValues( userTicks );
-		} else {
-			a.ticks( Math.round( (a.scale().range()[1] - a.scale().range()[0])/100 ) );
-		}
-		return axis;
-	};
-
-	axis.yOffset = function(x){
-		if (!arguments.length) return yOffset;
-		yOffset = x;
-		return axis;
-	};
-
-	axis.xOffset = function(x){
-		if (!arguments.length) return yOffset;
-		xOffset = x;
-		return axis;
-	};
-
-	return axis;
-}
-
-module.exports = categoryAxis;
-
-},{"./../../../../d3/d3.js":4}],7:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
-var labels = require('./date.labels.js');
-var dateScale = require('./date.scale.js');
-var styler = require('../util/chart-attribute-styles');
-
-function dateAxis() {
     var config = {
-        axes  : [d3.svg.axis().orient('bottom')],
-        scale : false  ,
-        lineHeight : 20,
-        tickSize   : 5 ,
-        simple : false,//axis has only first and last points as ticks, i.e. the scale's domain extent
-        nice   : false,
-        pixelsPerTick : 100,
-        units  : ['multi'],
-        unitOverride : false,
-        yOffset : 0,
-        xOffset : 0,
-        labelWidth : 0,
-        showDomain : false
+        axes: [d3.svg.axis().orient('bottom')],
+        scale: false,
+        lineHeight: 20,
+        tickSize: 5,
+        simple: false,//axis has only first and last points as ticks, i.e. the scale's domain extent
+        nice: false,
+        pixelsPerTick: 100,
+        units: ['multi'],
+        unitOverride: false,
+        yOffset: 0,
+        xOffset: 0,
+        labelWidth: 0,
+        showDomain: false
     };
 
-    function render(g){
+    function render(g) {
 
-        g = g.append('g').attr('transform','translate(' + config.xOffset + ',' + config.yOffset + ')');
+        g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
 
-        g.append('g').attr('class','x axis').each(function() {
+        g.append('g').attr('class', 'x axis').each(function () {
             var g = d3.select(this);
-            config.axes.forEach(function (a,i) {
+            config.axes.forEach(function (a, i) {
                 g.append('g')
-                    .attr('class', ((i===0) ? 'primary' : 'secondary'))
-                    .attr('transform','translate(0,' + (i * config.lineHeight) + ')')
+                    .attr('class', ((i === 0) ? 'primary' : 'secondary'))
+                    .attr('transform', 'translate(0,' + (i * config.lineHeight) + ')')
                     .call(a);
             });
             //remove text-anchor attribute from year positions
@@ -23043,63 +22974,206 @@ function dateAxis() {
                 y: null,
                 dy: 15 + config.tickSize
             });
-            //clear the styles D3 sets so everything's coming from the css
-            g.selectAll('*').attr('style', null);
-            //todo: only apply to this svg i.e. pass in `g` as parent node
-            //todo: optimise: only do this for 'axis'
-            styler();
+            styler(g, true);
         });
 
-        if(!config.showDomain){
+        if (!config.showDomain) {
             g.select('path.domain').remove();
         }
-
-        labels.render(config.scale, g);
+        labels.removeDuplicates(g, '.primary text');
+        labels.removeDuplicates(g, '.secondary text');
+        labels.removeOverlapping(g, '.primary text');
+        labels.removeOverlapping(g, '.secondary text');
     }
 
-    render.simple = function(bool) {
+    render.simple = function (bool) {
         if (!arguments.length) return config.simple;
         config.simple = bool;
         return render;
     };
 
-    render.nice = function(bool) {
+    render.nice = function (bool) {
         if (!arguments.length) return config.nice;
         config.nice = bool;
         return render;
     };
 
-    render.tickSize = function(int) {
+    render.tickSize = function (int) {
         if (!arguments.length) return config.tickSize;
         config.tickSize = int;
         return render;
     };
 
-    render.labelWidth = function(int) {
+    render.labelWidth = function (int) {
         if (!arguments.length) return config.labelWidth;
         config.labelWidth = int;
         return render;
     };
 
-    render.lineHeight = function(int) {
+    render.lineHeight = function (int) {
         if (!arguments.length) return config.lineHeight;
         config.lineHeight = int;
         return render;
     };
 
-    render.yOffset = function(int) {
+    render.yOffset = function (int) {
         if (!arguments.length) return config.yOffset;
         config.yOffset = int;
         return render;
     };
 
-    render.xOffset = function(int) {
+    render.xOffset = function (int) {
         if (!arguments.length) return config.xOffset;
         config.xOffset = int;
         return render;
     };
 
-    render.scale = function(scale, units) {
+    render.scale = function (scale, units) {
+        if (!arguments.length) return config.axes[0].scale();
+        units = units || ['unknown'];
+        config.scale = scale;
+
+        var axes = [];
+        for (var i = 0; i < units.length; i++) {
+            var unit = units[i];
+            if (utils.formatter[unit]) {
+                var axis = d3.svg.axis()
+                    .scale(scale)
+                    .tickFormat(utils.formatter[unit])
+                    .tickSize(config.tickSize, 0);
+                axes.push(axis);
+            }
+        }
+
+        config.axes = axes;
+        return render;
+    };
+
+    return render;
+}
+
+module.exports = categoryAxis;
+
+},{"../util/chart-attribute-styles":24,"../util/labels.js":29,"./../../../../d3/d3.js":4,"./category.utils.js":7}],7:[function(require,module,exports){
+var formatter = {
+    unknown: function (d, i) {
+        return d;
+    },
+    yearly: function (d, i) {
+        return d.split(' ')[1];
+    },
+    quarterly: function (d, i) {
+        return d.split(' ')[0];
+    },
+    monthly: function (d, i) {
+        return d.split(' ')[0];
+    }
+};
+
+module.exports = {
+    formatter: formatter
+};
+
+},{}],8:[function(require,module,exports){
+var d3 = require("./../../../../d3/d3.js");
+var labels = require('../util/labels.js');
+var dates = require('../util/dates.js');
+var dateScale = require('./date.scale.js');
+var styler = require('../util/chart-attribute-styles');
+
+function dateAxis() {
+    var config = {
+        axes: [d3.svg.axis().orient('bottom')],
+        scale: false,
+        lineHeight: 20,
+        tickSize: 5,
+        simple: false,//axis has only first and last points as ticks, i.e. the scale's domain extent
+        nice: false,
+        pixelsPerTick: 100,
+        units: ['multi'],
+        unitOverride: false,
+        yOffset: 0,
+        xOffset: 0,
+        labelWidth: 0,
+        showDomain: false
+    };
+
+    function render(g) {
+
+        g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
+
+        g.append('g').attr('class', 'x axis').each(function () {
+            var g = d3.select(this);
+            config.axes.forEach(function (a, i) {
+                g.append('g')
+                    .attr('class', ((i === 0) ? 'primary' : 'secondary'))
+                    .attr('transform', 'translate(0,' + (i * config.lineHeight) + ')')
+                    .call(a);
+            });
+            //remove text-anchor attribute from year positions
+            g.selectAll('.primary text').attr({
+                x: null,
+                y: null,
+                dy: 15 + config.tickSize
+            });
+            styler(g);
+        });
+
+        if (!config.showDomain) {
+            g.select('path.domain').remove();
+        }
+
+        if (dates.unitGenerator(config.scale.domain())[0] == 'days') {
+            labels.removeDays(g, '.primary text');
+        } else {
+            labels.removeOverlapping(g, '.primary text');
+        }
+        labels.removeOverlapping(g, '.secondary text');
+    }
+
+    render.simple = function (bool) {
+        if (!arguments.length) return config.simple;
+        config.simple = bool;
+        return render;
+    };
+
+    render.nice = function (bool) {
+        if (!arguments.length) return config.nice;
+        config.nice = bool;
+        return render;
+    };
+
+    render.tickSize = function (int) {
+        if (!arguments.length) return config.tickSize;
+        config.tickSize = int;
+        return render;
+    };
+
+    render.labelWidth = function (int) {
+        if (!arguments.length) return config.labelWidth;
+        config.labelWidth = int;
+        return render;
+    };
+
+    render.lineHeight = function (int) {
+        if (!arguments.length) return config.lineHeight;
+        config.lineHeight = int;
+        return render;
+    };
+
+    render.yOffset = function (int) {
+        if (!arguments.length) return config.yOffset;
+        config.yOffset = int;
+        return render;
+    };
+
+    render.xOffset = function (int) {
+        if (!arguments.length) return config.xOffset;
+        config.xOffset = int;
+        return render;
+    };
+
+    render.scale = function (scale, units) {
         if (!arguments.length) return config.axes[0].scale();
         if (config.nice) {
             scale.nice((scale.range()[1] - scale.range()[0]) / config.pixelsPerTick);
@@ -23113,101 +23187,10 @@ function dateAxis() {
 }
 
 module.exports = dateAxis;
-},{"../util/chart-attribute-styles":25,"./../../../../d3/d3.js":4,"./date.labels.js":8,"./date.scale.js":9}],8:[function(require,module,exports){
+
+},{"../util/chart-attribute-styles":24,"../util/dates.js":26,"../util/labels.js":29,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
-var utils = require('./date.utils.js');
-
-module.exports = {
-    intersection : function(a, b){
-        var overlap = (
-            a.left <= b.right &&
-            b.left <= a.right &&
-            a.top <= b.bottom &&
-            b.top <= a.bottom
-        );
-        return overlap;
-    },
-    overlapping : function(dElements){
-        var self = this;
-        var bounds = [];
-        var overlap = false;
-        dElements.each(function(d,i){
-            var rect = this.getBoundingClientRect();
-            var include = true;
-            bounds.forEach(function(b,i){
-                if(self.intersection(b,rect)){
-                    include = false;
-                    overlap = true;
-                }
-            });
-            if(include){
-                bounds.push(rect);
-            }
-        });
-        return overlap;
-    },
-
-    removeOverlappingLabels : function(g, selector){
-        var self = this;
-        var dElements = g.selectAll(selector );
-        var elementCount = dElements[0].length;
-        var limit = 5;
-        function remove(d,i){
-            var last = i === elementCount-1;
-            var previousLabel = dElements[0][elementCount-2];
-            var lastOverlapsPrevious = (last && self.intersection(previousLabel.getBoundingClientRect(), this.getBoundingClientRect()));
-            if (last && lastOverlapsPrevious){
-                d3.select(previousLabel).remove();
-            } else if(i%2 !== 0 && !last) {
-                d3.select(this).remove();
-            }
-        }
-        while(self.overlapping( g.selectAll(selector ) ) && limit>0){
-            limit--;
-            g.selectAll(selector ).each(remove);
-            dElements = g.selectAll(selector );
-            elementCount = dElements[0].length;
-        }
-    },
-
-    calculateWidestLabel : function(dElements){
-        var labelWidth = 0;
-        dElements.each(function (d) {
-            labelWidth = Math.max(d3.select(this).node().getBoundingClientRect().width, labelWidth);
-        });
-        return labelWidth;
-    },
-    removeDayLabels : function(g, selector){
-        var dElements  = g.selectAll(selector);
-        var elementCount = dElements[0].length;
-        function remove(d, i){
-            var d3This = d3.select(this);
-            if(i !== 0 && i !== elementCount-1 && d3This.text() != 1) {
-                d3This.remove();
-            }
-        }
-        dElements.each(remove);
-    },
-    render: function(scale, g){
-
-        var width = this.calculateWidestLabel(g.select('.tick text'));
-
-        if (utils.unitGenerator(scale.domain())[0] == 'days'){
-            this.removeDayLabels(g, '.primary text');
-        } else {
-            this.removeOverlappingLabels(g, '.primary text');
-        }
-        this.removeOverlappingLabels(g, '.secondary text');
-
-        return {
-            width: width
-        };
-    }
-};
-
-},{"./../../../../d3/d3.js":4,"./date.utils.js":10}],9:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
-var utils = require('./date.utils.js');
+var utils = require('../util/dates.js');
 
 var interval = {
     centuries: d3.time.year,
@@ -23232,80 +23215,37 @@ var increment = {
 };
 
 module.exports = {
-    formatter : {
-        centuries: function (d, i) {
-            if (i === 0 || d.getYear() % 100 === 0) {
-                return d3.time.format('%Y')(d);
-            }
-            return d3.time.format('%y')(d);
-        },
-
-        decades: function (d, i) {
-            if (i === 0 || d.getYear() % 100 === 0) {
-                return d3.time.format('%Y')(d);
-            }
-            return d3.time.format('%y')(d);
-        },
-
-        years: function (d, i) {
-            if (i === 0 || d.getYear() % 100 === 0) {
-                return d3.time.format('%Y')(d);
-            }
-            return d3.time.format('%y')(d);
-        },
-
-        fullYears: function (d, i) {
-            return d3.time.format('%Y')(d);
-        },
-        shortmonths: function (d, i) {
-            return d3.time.format('%b')(d)[0];
-        },
-        months: function (d, i) {
-            return d3.time.format('%b')(d);
-        },
-
-        weeks: function (d, i) {
-            return d3.time.format('%e %b')(d);
-        },
-
-        days: function (d, i) {
-            return d3.time.format('%e')(d);
-        },
-
-        hours: function (d, i) {
-            return parseInt(d3.time.format('%H')(d)) + ':00';
-        }
-    },
-    createDetailedTicks:function(scale, unit){
-        var customTicks = scale.ticks( interval[ unit ], increment[ unit ] );
+    customTicks: function (scale, unit) {
+        var customTicks = scale.ticks(interval[unit], increment[unit]);
         customTicks.push(scale.domain()[0]); //always include the first and last values
         customTicks.push(scale.domain()[1]);
         customTicks.sort(this.dateSort);
 
         //if the last 2 values labels are the same, remove them
-        var labels = customTicks.map(this.formatter[unit]);
-        if(labels[labels.length-1] == labels[labels.length-2]){
+        var labels = customTicks.map(utils.formatter[unit]);
+        if (labels[labels.length - 1] == labels[labels.length - 2]) {
             customTicks.pop();
         }
         return customTicks;
     },
-    dateSort : function(a,b){
+    dateSort: function (a, b) {
         return (a.getTime() - b.getTime());
     },
-    render: function(scale, units, tickSize, simple){
+    render: function (scale, units, tickSize, simple) {
         if (!units) {
             units = utils.unitGenerator(scale.domain(), simple);
         }
         var axes = [];
         for (var i = 0; i < units.length; i++) {
-            if( this.formatter[units[i]] ){
-                var customTicks = (simple) ? scale.domain() : this.createDetailedTicks(scale, units[i]);
+            var unit = units[i];
+            if (utils.formatter[unit]) {
+                var customTicks = (simple) ? scale.domain() : this.customTicks(scale, unit);
                 var axis = d3.svg.axis()
-                    .scale( scale )
+                    .scale(scale)
                     .tickValues(customTicks)
-                    .tickFormat(this.formatter[units[i]])
-                    .tickSize(tickSize,0);
-                axes.push(axis );
+                    .tickFormat(utils.formatter[unit])
+                    .tickSize(tickSize, 0);
+                axes.push(axis);
             }
         }
         axes.forEach(function (axis) {
@@ -23315,45 +23255,14 @@ module.exports = {
     }
 };
 
-},{"./../../../../d3/d3.js":4,"./date.utils.js":10}],10:[function(require,module,exports){
+},{"../util/dates.js":26,"./../../../../d3/d3.js":4}],10:[function(require,module,exports){
 module.exports = {
-    unitGenerator : function(domain, simple){	//which units are most appropriate
-        var timeDif = domain[1].getTime() - domain[0].getTime();
-        var dayLength = 86400000;
-        var units;
-        if (timeDif < dayLength * 2) {
-            units = ['hours','days','months'];
-        } else if (timeDif < dayLength * 60){
-            units =['days','months'];
-        } else if (timeDif < dayLength * 365.25) {
-            units =['months','years'];
-        } else if (timeDif < dayLength * 365.25 * 15) {
-            units = ['years'];
-        } else if (timeDif < dayLength * 365.25 * 150) {
-            units = ['decades'];
-        } else if (timeDif < dayLength * 365.25 * 1000) {
-            units = ['centuries'];
-        } else {
-            units = ['multi'];
-        }
-        if (simple && (
-            units.indexOf('years')>-1 ||
-            units.indexOf('decades') ||
-            units.indexOf('centuries'))) {
-            units = ['fullYears']; //simple axis always uses full years
-        }
-        return units;
-    }
+    category: require('./category.js'),
+    date: require('./date.js'),
+    number: require('./number.js')
 };
 
-},{}],11:[function(require,module,exports){
-module.exports = {
-  category: require('./category.js'),
-  date: require('./date.js'),
-  number: require('./number.js')
-};
-
-},{"./category.js":6,"./date.js":7,"./number.js":12}],12:[function(require,module,exports){
+},{"./category.js":6,"./date.js":8,"./number.js":11}],11:[function(require,module,exports){
 //this is wrapper for d3.svg.axis
 //for a standard FT styled numeric axis
 //usually these are vertical
@@ -23361,12 +23270,13 @@ module.exports = {
 var d3 = require("./../../../../d3/d3.js");
 var numberLabels = require('./number.labels');
 var numberScales = require('./number.scale');
+var styler = require('../util/chart-attribute-styles');
 
 function numericAxis() {
     'use strict';
 
     var ticksize = 5;
-    var a = d3.svg.axis().orient('left').tickSize(ticksize , 0);
+    var a = d3.svg.axis().orient('left').tickSize(ticksize, 0);
     var lineHeight = 16;
     var userTicks = [];
     var hardRules = [0];
@@ -23378,33 +23288,31 @@ function numericAxis() {
     var tickExtension = 0;
 
     function axis(g) {
-        var orientOffset = (a.orient() === 'right') ? -a.tickSize() : 0 ;
+        var orientOffset = (a.orient() === 'right') ? -a.tickSize() : 0;
 
-        g = g.append('g').attr('transform','translate(' + (xOffset + orientOffset) + ',' + yOffset + ')');
-
-        numberLabels.render(g,{
+        g = g.append('g').attr('transform', 'translate(' + (xOffset + orientOffset) + ',' + yOffset + ')');
+        numberLabels.render(g, {
             axes: a, lineHeight: lineHeight, hardRules: hardRules, extension: tickExtension
         });
-
         if (noLabels) {
             g.selectAll('text').remove();
         }
-        g.selectAll('*').attr('style', null); //clear the styles D3 sets so everything's coming from the css
+        styler(g);
     }
 
-    axis.tickExtension = function(int) { // extend the axis ticks to the right/ left a specified distance
+    axis.tickExtension = function (int) { // extend the axis ticks to the right/ left a specified distance
         if (!arguments.length) return tickExtension;
         tickExtension = int;
         return axis;
     };
 
-    axis.tickSize = function(int) {
+    axis.tickSize = function (int) {
         if (!arguments.length) return ticksize;
         a.tickSize(-int);
         return axis;
     };
 
-    axis.ticks = function(int) {
+    axis.ticks = function (int) {
         if (!arguments.length) return a.ticks();
         if (int.length > 0) {
             userTicks = int;
@@ -23412,61 +23320,61 @@ function numericAxis() {
         return axis;
     };
 
-    axis.orient = function(string){
+    axis.orient = function (string) {
         if (!arguments.length) return a.orient();
         a.orient(string);
         return axis;
     };
 
-    axis.simple = function(bool){
+    axis.simple = function (bool) {
         if (!arguments.length) return simple;
         simple = bool;
         return axis;
     };
 
-    axis.pixelsPerTick = function(int){
+    axis.pixelsPerTick = function (int) {
         if (!arguments.length) return pixelsPerTick;
         pixelsPerTick = int;
         return axis;
     };
 
-    axis.scale = function(x){
+    axis.scale = function (x) {
         if (!arguments.length) return a.scale();
         a.scale(x);
         if (userTicks.length > 0) {
             a.tickValues(userTicks);
-        }else{
-            var customTicks = numberScales.customTicks(a.scale(), pixelsPerTick,hardRules,  simple);
-            a.tickValues( customTicks );
+        } else {
+            var customTicks = numberScales.customTicks(a.scale(), pixelsPerTick, hardRules, simple);
+            a.tickValues(customTicks);
         }
         return axis;
     };
 
-    axis.hardRules = function(int){ //this allows you to set which lines will be solid rather than dotted, by default it's just zero and the bottom of the chart
+    axis.hardRules = function (int) { //this allows you to set which lines will be solid rather than dotted, by default it's just zero and the bottom of the chart
         if (!arguments.length) return hardRules;
         hardRules = int;
         return axis;
     };
 
-    axis.yOffset = function(int){
+    axis.yOffset = function (int) {
         if (!arguments.length) return yOffset;
         yOffset = int;
         return axis;
     };
 
-    axis.xOffset = function(int){
+    axis.xOffset = function (int) {
         if (!arguments.length) return xOffset;
         xOffset = int;
         return axis;
     };
 
-    axis.tickFormat = function(format){
+    axis.tickFormat = function (format) {
         if (!arguments.length) return a.tickFormat();
         a.tickFormat(format);
         return axis;
     };
 
-    axis.noLabels = function(bool){
+    axis.noLabels = function (bool) {
         if (!arguments.length) return noLabels;
         noLabels = bool;
         return axis;
@@ -23477,55 +23385,55 @@ function numericAxis() {
 
 module.exports = numericAxis;
 
-},{"./../../../../d3/d3.js":4,"./number.labels":13,"./number.scale":14}],13:[function(require,module,exports){
+},{"../util/chart-attribute-styles":24,"./../../../../d3/d3.js":4,"./number.labels":12,"./number.scale":13}],12:[function(require,module,exports){
 module.exports = {
 
     isVertical: function (axis) {
         return axis.orient() === 'left' || axis.orient() === 'right';
     },
-    arrangeTicks: function(g, axes, lineHeight, hardRules){
+    arrangeTicks: function (g, axes, lineHeight, hardRules) {
         var textWidth = this.textWidth(g, axes.orient());
         if (this.isVertical(axes)) {
-            g.selectAll('text').attr('transform', 'translate( '+textWidth+', ' + -(lineHeight/2) + ' )');
-            g.selectAll('.tick').classed('origin', function (d,i) {
+            g.selectAll('text').attr('transform', 'translate( ' + textWidth + ', ' + -(lineHeight / 2) + ' )');
+            g.selectAll('.tick').classed('origin', function (d, i) {
                 return hardRules.indexOf(d) > -1;
             });
         }
     },
-    extendAxis: function(g, axes, extension){
+    extendAxis: function (g, axes, extension) {
         var rules = g.selectAll('line');
         if (axes.orient() == 'right') {
             rules.attr('x1', extension);
-        }else{
+        } else {
             rules.attr('x1', -extension);
         }
     },
-    textWidth: function(g, orient){
+    textWidth: function (g, orient) {
         var textWidth = 0;
-        if(orient == 'right'){
-            g.selectAll('text').each(function(d){
-                textWidth = Math.max( textWidth, Math.ceil(this.getBoundingClientRect().width) );
+        if (orient == 'right') {
+            g.selectAll('text').each(function (d) {
+                textWidth = Math.max(textWidth, Math.ceil(this.getBoundingClientRect().width));
             });
         }
         return textWidth;
     },
-    removeDecimals: function(g){
+    removeDecimals: function (g) {
         var decimalTotal = 0;
-        g.selectAll('text').each(function(d){
+        g.selectAll('text').each(function (d) {
             var val0 = parseFloat(this.textContent.split('.')[0]);
             var val1 = parseFloat(this.textContent.split('.')[1]);
             decimalTotal += val1;
-            if (val0 === 0 && val1===0) {
+            if (val0 === 0 && val1 === 0) {
                 this.textContent = 0;
             }
         });
-        if (!decimalTotal){
-            g.selectAll('text').each(function(d){
+        if (!decimalTotal) {
+            g.selectAll('text').each(function (d) {
                 this.textContent = this.textContent.split('.')[0];
             });
         }
     },
-    render: function(g, config){
+    render: function (g, config) {
         g.append('g')
             .attr('class', (this.isVertical(config.axes)) ? 'y axis left' : 'x axis')
             .append('g')
@@ -23541,41 +23449,41 @@ module.exports = {
 
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = {
-    removeDuplicateTicks: function(scale, ticks){
+    removeDuplicateTicks: function (scale, ticks) {
         var formatted = [];
         var tickFormat = scale.tickFormat();
-        ticks = ticks.filter( function(d){
+        ticks = ticks.filter(function (d) {
             var f = tickFormat(d);
-            if(formatted.indexOf(f) > -1){
+            if (formatted.indexOf(f) > -1) {
                 return false;
             }
             formatted.push(f);
             return true;
-        } );
+        });
         return ticks;
     },
-    tickIntervalBoundaries: function(ticks){
+    tickIntervalBoundaries: function (ticks) {
         var interval = 0;
-        ticks.forEach(function(d,i){
-            if(i < ticks.length-1){
-                interval = Math.max( ticks[i+1] - d,  interval);
+        ticks.forEach(function (d, i) {
+            if (i < ticks.length - 1) {
+                interval = Math.max(ticks[i + 1] - d, interval);
             }
         });
         return interval;
     },
-    detailedTicks: function(scale, pixelsPerTick){
+    detailedTicks: function (scale, pixelsPerTick) {
         var count = this.tickCount(scale, pixelsPerTick);
         var ticks = scale.ticks(count);
         var interval = this.tickIntervalBoundaries(ticks);
-        scale.domain()[0] = Math.ceil(scale.domain()[0]/interval) * interval;
-        scale.domain()[1] = Math.floor(scale.domain()[1]/interval) * interval;
+        scale.domain()[0] = Math.ceil(scale.domain()[0] / interval) * interval;
+        scale.domain()[1] = Math.floor(scale.domain()[1] / interval) * interval;
         ticks.push(scale.domain()[1]);
         ticks.push(scale.domain()[0]);
         return ticks;
     },
-    simpleTicks: function(scale){
+    simpleTicks: function (scale) {
         var customTicks = [];
         var domain = scale.domain();
         if (Math.min(domain[0], domain[1]) < 0 && Math.max(domain[0], domain[1]) > 0) {
@@ -23585,18 +23493,24 @@ module.exports = {
         customTicks.push(domain[0]);
         return customTicks;
     },
-    tickCount: function(scale, pixelsPerTick) {
-        var count = Math.round( (scale.range()[1] - scale.range()[0])/pixelsPerTick );
-        if(count < 2) { count = 3; }
-        else if(count < 5) { count = 5; }
-        else if(count < 10) { count = 10; }
+    tickCount: function (scale, pixelsPerTick) {
+        var count = Math.round((scale.range()[1] - scale.range()[0]) / pixelsPerTick);
+        if (count < 2) {
+            count = 3;
+        }
+        else if (count < 5) {
+            count = 5;
+        }
+        else if (count < 10) {
+            count = 10;
+        }
         return count;
     },
-    customTicks: function(scale, pixelsPerTick,hardRules,  simple){
+    customTicks: function (scale, pixelsPerTick, hardRules, simple) {
         var customTicks = [];
         if (simple) {
             customTicks = this.simpleTicks(scale);
-        }else{
+        } else {
             customTicks = this.detailedTicks(scale, pixelsPerTick);
             hardRules.push(scale.domain()[1]);
         }
@@ -23605,388 +23519,925 @@ module.exports = {
     }
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 
 function blankChart() {
     'use strict';
 
-	function buildModel(opts){
-		var m = {
-			//layout stuff
-			title: 'chart title',
-			subtitle: 'chart subtitle (letters)',
-			height: undefined,
-			width: 300,
-			chartHeight: 300,
-			chartWidth: 300,
-			blockPadding: 8,
-			data: [],
-			error: function(err) {
-				console.log('ERROR: ', err);
-			}
-		};
+    function buildModel(opts) {
+        var m = {
+            //layout stuff
+            title: 'chart title',
+            subtitle: 'chart subtitle (letters)',
+            height: undefined,
+            width: 300,
+            chartHeight: 300,
+            chartWidth: 300,
+            blockPadding: 8,
+            data: [],
+            error: function (err) {
+                console.log('ERROR: ', err);
+            }
+        };
 
-		for(var key in opts) {
-			m[key] = opts[key];
-		}
+        for (var key in opts) {
+            m[key] = opts[key];
+        }
 
-		return m;
-	}
+        return m;
+    }
 
-	function getHeight(selection){
-		return Math.ceil(selection.node().getBoundingClientRect().height);
-	}
+    function getHeight(selection) {
+        return Math.ceil(selection.node().getBoundingClientRect().height);
+    }
 
-	function getWidth(selection){
-		return Math.ceil(selection.node().getBoundingClientRect().width);
-	}
+    function getWidth(selection) {
+        return Math.ceil(selection.node().getBoundingClientRect().width);
+    }
 
-	function translate(position){
-		return 'translate(' + position.left + ',' + position.top + ')';
-	}
+    function translate(position) {
+        return 'translate(' + position.left + ',' + position.top + ')';
+    }
 
-	function chart(g) {
+    function chart(g) {
 
-		var model = buildModel(g.data()[0]);
+        var model = buildModel(g.data()[0]);
 
-		if(!model.height) {
-			model.height = model.width;
-		}
+        if (!model.height) {
+            model.height = model.width;
+        }
 
-		var	svg = g.append('svg')
-				.attr({
-					'class': 'null-chart',
-					height: model.height,
-					width: model.width
-				});
+        var svg = g.append('svg')
+            .attr({
+                'class': 'null-chart',
+                height: model.height,
+                width: model.width
+            });
 
-		var title = svg.append('text').text(model.title + " - PLACE HOLDER CHART");
-		title.attr('transform', translate({top: getHeight(title), left: 0}));
-		var subtitle = svg.append('text').text(model.subtitle);
-		subtitle.attr('transform', translate({top: getHeight(title) + getHeight(subtitle) ,left: 0}));
+        var title = svg.append('text').text(model.title + " - PLACE HOLDER CHART");
+        title.attr('transform', translate({top: getHeight(title), left: 0}));
+        var subtitle = svg.append('text').text(model.subtitle);
+        subtitle.attr('transform', translate({top: getHeight(title) + getHeight(subtitle), left: 0}));
 
-		svg.selectAll('text').attr({
-			fill:'#000',
-			stroke:'none'
-		});
-	}
+        svg.selectAll('text').attr({
+            fill: '#000',
+            stroke: 'none'
+        });
+    }
 
-	return chart;
+    return chart;
 }
 
 module.exports = blankChart;
 
-},{"./../../../../d3/d3.js":4}],16:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],15:[function(require,module,exports){
+var d3 = require("./../../../../d3/d3.js");
+var Axes = require('../util/draw-axes.js');
+var DataModel = require('../util/data.model.js');
+var metadata = require('../util/metadata.js');
+var Dressing = require('../util/dressing.js');
+var styler = require('../util/chart-attribute-styles');
+
+function plotSeries(plotSVG, model, axes, series, i){
+	var data = formatData(model, series);
+    var colWidth = axes.columnWidth || 1;
+    var adjustX = (axes.timeScale.rangeBand) ? (axes.timeScale.rangeBand() / model.y.series.length) : colWidth;
+
+    var s = plotSVG.append('g').attr('class', 'series');
+    s.selectAll('rect')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', function (d){return 'column '  + series.className + (d.value < 0 ? ' negative' : ' positive');})
+        .attr('data-value', function (d){	return d.value;})
+		.attr('x', function (d){ return axes.timeScale(d.key) + (adjustX * i); })
+		.attr('y', function (d){ return axes.valueScale(Math.max(0, d.value));})
+        .attr('height', function (d){return Math.abs(axes.valueScale(d.value) - axes.valueScale(0));})
+		.attr("width", colWidth);
+
+    styler(plotSVG);
+}
+
+function formatData(model, series) {
+    //null values in the data are interpolated over, filter these out
+    //NaN values are represented by line breaks
+    var data = model.data.map(function (d){
+        return{
+            key:d[model.x.series.key],
+            value: d[series.key] || d.values[0][series.key]
+        };
+    }).filter(function (d) {
+        return (d.y !== null);
+    });
+    return data;
+}
+
+function columnChart(g){
+	'use strict';
+
+	var model = new DataModel('column',Object.create(g.data()[0]));
+	var i = model.y.series.length;
+	var svg = g.append('svg')
+		.attr({
+			'class': 'graphic line-chart',
+			height: model.height,
+			width: model.width,
+			xmlns: "http://www.w3.org/2000/svg",
+			version: "1.2"
+		});
+	metadata.create(svg, model);
+
+	var dressing = new Dressing(svg, model);
+		dressing.addHeader();
+		dressing.addFooter();
+
+	var chartSVG = svg.append('g').attr('class', 'chart');
+		chartSVG.attr('transform', model.translate(model.chartPosition));
+
+	var axes = new Axes(chartSVG, model);
+		axes.addValueScale();
+
+	if(model.groupDates){
+		axes.addGroupedTimeScale(model.groupDates);
+	}else{
+		axes.addTimeScale();
+	}
+	axes.repositionAxis();
+
+	var plotSVG = chartSVG.append('g').attr('class', 'plot');
+
+	while(i--){
+		plotSeries(plotSVG, model, axes, model.y.series[i], i);
+	}
+}
+
+module.exports = columnChart;
+
+},{"../util/chart-attribute-styles":24,"../util/data.model.js":25,"../util/draw-axes.js":27,"../util/dressing.js":28,"../util/metadata.js":32,"./../../../../d3/d3.js":4}],16:[function(require,module,exports){
 module.exports = {
-  line: require('./line.js'),
-  blank: require('./blank.js'),
-  pie: require('./pie.js')
+    line: require('./line.js'),
+    blank: require('./blank.js'),
+    pie: require('./pie.js'),
+    column: require('./column.js')
 };
 
-},{"./blank.js":15,"./line.js":17,"./pie.js":19}],17:[function(require,module,exports){
+},{"./blank.js":14,"./column.js":15,"./line.js":17,"./pie.js":18}],17:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
-var dateAxis = require('../axis/date.js');
-var numberAxis = require('../axis/number.js');
-var textArea = require('../element/text-area.js');
-var lineKey = require('../element/line-key.js');
-var ftLogo = require('../element/logo.js');
+var Axes = require('../util/draw-axes.js');
 var interpolator = require('../util/line-interpolators.js');
-var LineModel = require('./line.model.js');
+var DataModel = require('../util/data.model.js');
 var metadata = require('../util/metadata.js');
+var Dressing = require('../util/dressing.js');
+var styler = require('../util/chart-attribute-styles');
 
-function getHeight(selection) {
-    return Math.ceil(selection.node().getBoundingClientRect().height);
+//null values in the data are interpolated over, filter these out
+//NaN values are represented by line breaks
+function plotSeries(plotSVG, model, axes, series) {
+
+    var data = model.data.map(function (d) {
+        return {
+            x: d[model.x.series.key],
+            y: d[series.key] || d.values[0][series.key]
+        };
+    }).filter(function (d) {
+        return (d.y !== null);
+    });
+
+    var line = d3.svg.line()
+        .interpolate(interpolator.gappedLine)
+        .x(function (d) { return axes.timeScale(d.x); })
+        .y(function (d) { return axes.valueScale(d.y);});
+
+    plotSVG.append('path')
+        .datum(data)
+        .attr('class', 'line ' + series.className)
+        .attr('stroke-width', model.lineStrokeWidth)
+        .attr('d', function (d) {
+            //console.log('datum ', d);//todo: log function that can be mocked in tests
+            return line(d);
+        });
+    styler(plotSVG);
 }
 
-function getWidth(selection) {
-    return Math.ceil(selection.node().getBoundingClientRect().width);
-}
-
-function lineChart(p) {
+function lineChart(g) {
     'use strict';
 
-	function chart(g){
+    var model = new DataModel('line',Object.create(g.data()[0]));
+    var svg = g.append('svg')
+        .attr({
+            'class': 'graphic line-chart',
+            height: model.height,
+            width: model.width,
+            xmlns: "http://www.w3.org/2000/svg",
+            version: "1.2"
+        });
+    metadata.create(svg, model);
 
-		var model = new LineModel(Object.create(g.data()[0]));
-		var svg = g.append('svg')
-				.attr({
-					'class': 'graphic line-chart',
-					height: model.height,
-					width: model.width,
-					xmlns:"http://www.w3.org/2000/svg",
-					version:"1.2"
-				});
-        metadata.create(svg, model);
+    var dressing = new Dressing(svg, model);
+    dressing.addHeader();
+    dressing.addFooter();
 
-		var defaultLineHeight = 1.2;
-		// TODO: don't hard-code the fontsize, get from CSS somehow.
-		var titleFontSize = 18;
-		// TODO: move calculation of lineheight to the textarea component;
-		var titleLineHeight = defaultLineHeight;
-		var titleLineHeightActual = Math.ceil(titleFontSize * titleLineHeight);
-		var titleLineSpacing = titleLineHeightActual - titleFontSize;
-		var footerLineHeight = 15;
-		var subtitleFontSize = 12;
-		var subtitleLineHeight = defaultLineHeight;
-		var subtitleLineHeightActual = Math.ceil(subtitleFontSize * subtitleLineHeight);
-		var subtitleLineSpacing = subtitleLineHeightActual - subtitleFontSize;
-		var sourceFontSize = 10;
-		var sourceLineHeight = defaultLineHeight;
-		var sourceLineHeightActual = sourceFontSize * sourceLineHeight;
-		var halfLineStrokeWidth = Math.ceil(model.lineStrokeWidth / 2);
+    var chartSVG = svg.append('g').attr('class', 'chart');
+    chartSVG.attr('transform', model.translate(model.chartPosition));
 
-			//create title, subtitle, key, source, footnotes, logo, the chart itself
-			var titleTextWrapper = textArea().width(model.contentWidth).lineHeight(titleLineHeightActual),
-			subtitleTextWrapper = textArea().width(model.contentWidth).lineHeight(subtitleLineHeightActual),
-			footerTextWrapper = textArea().width(model.contentWidth - model.logoSize).lineHeight(footerLineHeight),
+    var axes = new Axes(chartSVG, model);
+    axes.addValueScale();
+    if(model.groupDates){
+        axes.addGroupedTimeScale(model.groupDates);
+    }else{
+        axes.addTimeScale();
+    }
+    axes.repositionAxis();
 
-			chartKey = lineKey({lineThickness: model.lineStrokeWidth})
-				.style(function (d) {
-					return d.value;
-				})
-				.label(function (d) {
-					return d.key;
-				}),
-			totalHeight = 0;
+    var plotSVG = chartSVG.append('g').attr('class', 'plot');
+    var i = model.y.series.length;
 
-		//position stuff
-		//start from the top...
-		var title = svg.append('g').attr('class','chart-title').datum(model.title).call(titleTextWrapper);
-
-		if (!model.titlePosition) {
-			if (model.title) {
-				model.titlePosition = {top: totalHeight + titleFontSize, left: 0};
-				//if the title is multi line it's positon should only be the offset by the height of the first line...
-				totalHeight += (getHeight(title) + model.blockPadding - titleLineSpacing);
-			} else {
-				model.titlePosition = {top: totalHeight, left: 0};
-			}
-		}
-
-		title.attr('transform', model.translate(model.titlePosition));
-
-		var subtitle = svg.append('g').attr('class','chart-subtitle').datum(model.subtitle).call(subtitleTextWrapper);
-
-		if (!model.subtitlePosition) {
-			if (model.subtitle) {
-				model.subtitlePosition = {top: totalHeight + subtitleFontSize, left: 0};
-				totalHeight += (getHeight(subtitle) + model.blockPadding);
-			} else {
-				model.subtitlePosition = {top: totalHeight, left: 0};
-			}
-		}
-
-		subtitle.attr('transform', model.translate(model.subtitlePosition));
-
-		if (model.key) {
-			var entries = model.y.series.map(function (d) {
-				return {key: d.label, value: d.className};
-			});
-
-			var key = svg.append('g').attr('class', 'chart-key').datum(entries).call(chartKey);
-
-			if (!model.keyPosition) {
-				model.keyPosition = {top: totalHeight, left: halfLineStrokeWidth};
-				totalHeight += (getHeight(key) + model.blockPadding);
-			}
-			key.attr('transform', model.translate(model.keyPosition));
-		}
-
-		var chartSVG = svg.append('g').attr('class', 'chart');
-
-		if (!model.chartPosition) {
-			model.chartPosition = {
-				top: totalHeight + halfLineStrokeWidth,
-				left: (model.numberAxisOrient === 'left' ? 0 : halfLineStrokeWidth)
-			};
-		}
-
-		chartSVG.attr('transform', model.translate(model.chartPosition));
-
-		var footnotes = svg.append('g').attr('class','chart-footnote').datum(model.footnote).call(footerTextWrapper);
-		var source = svg.append('g').attr('class','chart-source').datum(model.sourcePrefix + model.source).call(footerTextWrapper);
-		var sourceHeight = getHeight(source);
-
-		if (model.hideSource) {
-			sourceHeight = 0;
-			source.remove();
-		}
-
-		var footnotesHeight = getHeight(footnotes);
-		var footerHeight = Math.max(footnotesHeight + sourceHeight + (model.blockPadding * 2), model.logoSize);
-
-		totalHeight += (footerHeight + model.blockPadding);
-
-		if (!model.height) {
-			model.height = totalHeight + model.chartHeight;
-		} else {
-			model.chartHeight = model.height - totalHeight;
-			if (model.chartHeight < 0) {
-				model.error({
-					node:chartSVG,
-					message:'calculated plot height is less than zero'
-				});
-			}
-		}
-
-		svg.attr('height', Math.ceil(model.height));
-
-		//the position at the bottom of the 'chart'
-		var currentPosition = model.chartPosition.top + model.chartHeight;
-		footnotes.attr('transform', model.translate({ top: currentPosition + footerLineHeight + model.blockPadding }));
-		source.attr('transform', model.translate({ top: currentPosition + footnotesHeight + sourceLineHeightActual + (model.blockPadding * 2)}));
-
-		//the business of the actual chart
-		//make provisional scales
-		var valueScale = d3.scale.linear()
-			.domain(model.valueDomain.reverse())
-			.range([0, model.chartHeight ]);
-
-		if (model.niceValue) {
-			valueScale.nice();
-		}
-
-		var timeScale = d3.time.scale()
-			.domain(model.timeDomain)
-			.range([0, model.chartWidth]);
-
-		//first pass, create the axis at the entire chartWidth/Height
-
-		var vAxis = numberAxis()
-//				.orient( model.numberAxisOrient )
-				.tickFormat(model.numberAxisFormatter)
-				.simple(model.simpleValue)
-				.tickSize(model.chartWidth)	//make the ticks the width of the chart
-				.scale(valueScale),
-
-			timeAxis = dateAxis()
-				.simple(model.simpleDate)
-				.yOffset(model.chartHeight)	//position the axis at the bottom of the chart
-				.scale(timeScale);
-
-		if (model.numberAxisOrient !== 'right' && model.numberAxisOrient !== 'left') {
-			vAxis.noLabels(true);
-		} else {
-			vAxis.orient(model.numberAxisOrient);
-		}
-
-		chartSVG.call(vAxis);
-		chartSVG.call(timeAxis);
-
-		//measure chart
-		var widthDifference = getWidth(chartSVG) - model.chartWidth, //this difference is the ammount of space taken up by axis labels
-			heightDifference = getHeight(chartSVG) - model.chartHeight,
-			//so we can work out how big the plot should be (the labels will probably stay the same...
-			plotWidth = model.chartWidth - widthDifference,
-			plotHeight = model.chartHeight - heightDifference,
-			newValueRange = [valueScale.range()[0], plotHeight],
-			newTimeRange = [timeScale.range()[0], plotWidth];
-
-		valueScale.range(newValueRange);
-		timeScale.range(newTimeRange);
-		timeAxis.yOffset(plotHeight);
-		vAxis.tickSize(plotWidth).tickExtension(widthDifference);
-
-		//replace provisional axes
-		chartSVG.selectAll('*').remove();
-		chartSVG.call(vAxis);
-		chartSVG.call(timeAxis);
-		if (model.numberAxisOrient !== 'right') {
-			//figure out how much of the extra width is the vertical axis lables
-			var vLabelWidth = 0;
-			chartSVG.selectAll('.y.axis text').each(function(){
-				vLabelWidth = Math.max(vLabelWidth, getWidth(d3.select(this)));
-			});
-			model.chartPosition.left += vLabelWidth + 4;//NOTE magic number 4
-		}
-
-		model.chartPosition.top += (getHeight(chartSVG.select('.y.axis')) - plotHeight);
-		chartSVG.attr('transform', model.translate(model.chartPosition));
-
-		var plot = chartSVG.append('g').attr('class', 'plot');
-
-		var logo = svg.append('g').call(ftLogo, model.logoSize);
-		var heightOfFontDescenders = 3;
-		var baselineOfLastSourceLine = model.height - getHeight(logo) - heightOfFontDescenders - (sourceLineHeightActual - sourceFontSize);
-
-		logo.attr('transform', model.translate({
-			left: model.width - model.logoSize,
-			top: baselineOfLastSourceLine
-		}));
-
-		function drawPlot(g, series) {
-			//null values in the data are interpolated over
-			//NaN values are represented by line breaks
-			var normalisedData = model.data.map(function(d){
-				return {
-					x:d[model.x.series.key],
-					y:d[series.key]
-				};
-			});
-
-			normalisedData = normalisedData.filter(function(d){
-				return (d.y !== null);
-			});	//filter out null values, these are to be interpolated over
-
-			var line = d3.svg.line()
-				.interpolate(interpolator.gappedLine)
-				.x( function(d){ return timeScale(d.x); } )
-				.y( function(d){ return valueScale(d.y); } );
-
-			g.append('path')
-				.datum(normalisedData)
-				.attr('class', 'line ' + series.className)
-				.attr('stroke-width', model.lineStrokeWidth)
-				.attr('d', function(d){
-					console.log('datum ', d);
-					return line(d);
-				});
-		}
-
-		var i = model.y.series.length;
-
-		while (i--) {
-			drawPlot(plot, model.y.series[i]);
-		}
-
-	}
-
-	return chart;
+    while (i--) {
+        plotSeries(plotSVG, model, axes, model.y.series[i]);
+    }
 }
 
 module.exports = lineChart;
 
-},{"../axis/date.js":7,"../axis/number.js":12,"../element/line-key.js":20,"../element/logo.js":21,"../element/text-area.js":22,"../util/line-interpolators.js":26,"../util/metadata.js":28,"./../../../../d3/d3.js":4,"./line.model.js":18}],18:[function(require,module,exports){
+},{"../util/chart-attribute-styles":24,"../util/data.model.js":25,"../util/draw-axes.js":27,"../util/dressing.js":28,"../util/line-interpolators.js":30,"../util/metadata.js":32,"./../../../../d3/d3.js":4}],18:[function(require,module,exports){
+var d3 = require("./../../../../d3/d3.js");
+
+function pieChart() {
+    'use strict';
+
+    function buildModel(opts) {
+        var m = {
+            //layout stuff
+            title: 'chart title',
+            height: undefined,
+            width: 300,
+            chartHeight: 300,
+            chartWidth: 300,
+            indexProperty: '&',
+            valueProperty: 'value',
+            blockPadding: 8,
+            data: [],
+            error: function (err) {
+                console.log('ERROR: ', err);
+            }
+        };
+
+        for (var key in opts) {
+            m[key] = opts[key];
+        }
+
+        return m;
+    }
+
+    function getHeight(selection) {
+        return Math.ceil(selection.node().getBoundingClientRect().height);
+    }
+
+    function getWidth(selection) {
+        return Math.ceil(selection.node().getBoundingClientRect().width);
+    }
+
+    function translate(position) {
+        return 'translate(' + position.left + ',' + position.top + ')';
+    }
+
+    function chart(g) {
+        var model = buildModel(g.data()[0]);
+        if (!model.height) {
+            model.height = model.width;
+        }
+        var svg = g.append('svg')
+            .attr({
+                'class': 'null-chart',
+                'height': model.height,
+                'width': model.width
+            });
+
+        var title = svg.append('text').text(model.title + " - PLACE HOLDER CHART");
+        title.attr('transform', translate({top: getHeight(title), left: 0}));
+
+        var subtitle = svg.append('text').text(model.subtitle);
+        subtitle.attr('transform', translate({top: getHeight(title) + getHeight(subtitle), left: 0}));
+
+        var chartSvg = svg.append('g').attr('class', 'chart');
+
+        if (model.data.length > 3) {
+            model.error('PIE warning: too many segments!');
+        }
+
+        var outerRadius = model.width / 2;
+
+        chartSvg.selectAll('.slice')
+            .data(model.data)
+            .enter();
+        //.append(path);
+
+        svg.selectAll('text').attr({
+            fill: '#000',
+            stroke: 'none'
+        });
+    }
+
+    return chart;
+}
+
+module.exports = pieChart;
+
+},{"./../../../../d3/d3.js":4}],19:[function(require,module,exports){
+//the ft logo there's probably an easier ay to do this...
+var d3 = require("./../../../../d3/d3.js");
+
+function ftLogo(g, dim) {
+    'use strict';
+
+    if (!dim) {
+        dim = 32;
+    }
+    var d = 'M21.777,53.336c0,6.381,1.707,7.1,8.996,7.37v2.335H1.801v-2.335c6.027-0.27,7.736-0.989,7.736-7.37v-41.67 c0-6.387-1.708-7.104-7.556-7.371V1.959h51.103l0.363,13.472h-2.519c-2.16-6.827-4.502-8.979-16.467-8.979h-9.27 c-2.785,0-3.415,0.624-3.415,3.142v19.314h4.565c9.54,0,11.61-1.712,12.779-8.089h2.338v21.559h-2.338 c-1.259-7.186-4.859-8.981-12.779-8.981h-4.565V53.336z M110.955,1.959H57.328l-1.244,13.477h3.073c1.964-6.601,4.853-8.984,11.308-8.984h7.558v46.884 c0,6.381-1.71,7.1-8.637,7.37v2.335H98.9v-2.335c-6.931-0.27-8.64-0.989-8.64-7.37V6.453h7.555c6.458,0,9.351,2.383,11.309,8.984 h3.075L110.955,1.959z';
+    var path = g.append('path').attr('d', d); //measure and rescale to the bounds
+    var rect = path.node().getBoundingClientRect();
+    //the logo is square so
+    var scale = Math.min(dim / rect.width, dim / rect.height);
+
+    path.attr({
+        'transform': 'scale(' + scale + ')',
+        'fill': 'rgba(0,0,0,0.1)'
+    });
+}
+
+module.exports = ftLogo;
+
+/*
+ <path fill="none" d="M21.777,53.336c0,6.381,1.707,7.1,8.996,7.37v2.335H1.801v-2.335c6.027-0.27,7.736-0.989,7.736-7.37v-41.67
+ c0-6.387-1.708-7.104-7.556-7.371V1.959h51.103l0.363,13.472h-2.519c-2.16-6.827-4.502-8.979-16.467-8.979h-9.27
+ c-2.785,0-3.415,0.624-3.415,3.142v19.314h4.565c9.54,0,11.61-1.712,12.779-8.089h2.338v21.559h-2.338
+ c-1.259-7.186-4.859-8.981-12.779-8.981h-4.565V53.336z"/>
+ <path fill="none" d="M110.955,1.959H57.328l-1.244,13.477h3.073c1.964-6.601,4.853-8.984,11.308-8.984h7.558v46.884
+ c0,6.381-1.71,7.1-8.637,7.37v2.335H98.9v-2.335c-6.931-0.27-8.64-0.989-8.64-7.37V6.453h7.555c6.458,0,9.351,2.383,11.309,8.984
+ h3.075L110.955,1.959z"/>
+ */
+
+},{"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
+var d3 = require("./../../../../d3/d3.js");
+var lineThickness = require('../util/line-thickness.js');
+var styler = require('../util/chart-attribute-styles');
+
+function lineKey(options) {
+    'use strict';
+
+    options = options || {};
+
+    var width = 300;
+    var strokeLength = 15;
+    var lineHeight = 16;
+    var strokeWidth = lineThickness(options.lineThickness);
+
+    var charts = {
+        'line' : addLineKeys,
+        'column' : addColumnKeys
+    };
+
+    var style = function (d) {
+        return d.style;
+    };
+
+    var label = function (d) {
+        return d.label;
+    };
+
+    var filter = function () {
+        return true;
+    };
+
+    function addLineKeys(keyItems, label){
+        keyItems.append('line').attr({
+            'class': style,
+            x1: 1,
+            y1: -5,
+            x2: strokeLength,
+            y2: -5
+        })
+            .attr('stroke-width', strokeWidth)
+            .classed('key__line', true);
+
+    }
+
+    function addColumnKeys(keyItems, label){
+        keyItems.append('rect').attr({
+            'class': style,
+            x: 1,
+            y: -10,
+            width: strokeLength,
+            height: 10
+        })
+        .classed('key__column', true);
+
+    }
+
+    function key(g) {
+        var addKey = charts[options.chartType];
+        g = g.append('g').attr('class', 'key');
+        var keyItems = g.selectAll('g').data(g.datum().filter(filter))
+            .enter()
+            .append('g').attr({
+                'class': 'key__item',
+                'transform': function (d, i) {
+                    return 'translate(0,' + (lineHeight + i * lineHeight) + ')';
+                }
+            });
+
+        addKey(keyItems, label);
+
+        keyItems.append('text').attr({
+            'class': 'key__label',
+            x: strokeLength + 10
+        }).text(label);
+
+        styler(g);
+
+    }
+
+    key.label = function (f) {
+        if (!arguments.length) return label;
+        label = f;
+        return key;
+    };
+
+    key.style = function (f) {
+        if (!arguments.length) return style;
+        style = f;
+        return key;
+    };
+
+    key.width = function (x) {
+        if (!arguments.length) return width;
+        width = x;
+        return key;
+    };
+
+    key.lineHeight = function (x) {
+        if (!arguments.length) return lineHeight;
+        lineHeight = x;
+        return key;
+    };
+
+    return key;
+}
+
+module.exports = lineKey;
+
+},{"../util/chart-attribute-styles":24,"../util/line-thickness.js":31,"./../../../../d3/d3.js":4}],21:[function(require,module,exports){
+/*jshint -W084 */
+//text area provides a wrapping text block of a given type
+var d3 = require("./../../../../d3/d3.js");
+
+function textArea() {
+    'use strict';
+
+    var xOffset = 0,
+        yOffset = 0,
+        width = 1000,
+        lineHeight = 20,
+        units = 'px', //pixels by default
+        bounds;
+
+    function wrap(text, width) {
+        text.each(function () {
+            var text = d3.select(this),
+                words = text.text().trim().split(/\s+/).reverse(),
+                word,
+                line = [],
+                lineNumber = 0,
+                y = text.attr('y'),
+                dy = parseFloat(text.attr('dy'));
+
+            if (isNaN(dy)) {
+                dy = 0;
+            }
+
+            var tspan = text.text(null).append('tspan')
+                .attr('x', 0)
+                .attr('y', y)
+                .attr('dy', dy + units);
+
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(' '));
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(' '));
+                    line = [word];
+                    lineNumber++;
+                    var newY = (lineNumber * lineHeight);
+                    tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('y', +newY + units).text(word);
+                }
+            }
+        });
+    }
+
+    function area(g, accessor) {
+        if (!accessor) {
+            accessor = function (d) {
+                return d;
+            };
+        }
+        g = g.append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')');
+        g.append('text').text(accessor).call(wrap, width);
+        bounds = g.node().getBoundingClientRect();
+    }
+
+
+    area.bounds = function () {
+        return bounds;
+    };
+
+    area.units = function (x) { //px, em, rem
+        if (!arguments.length) return units;
+        units = x;
+        return area;
+    };
+
+    area.lineHeight = function (x) { //pixels by default
+        if (!arguments.length) return lineHeight;
+        lineHeight = x;
+        return area;
+    };
+
+    area.width = function (x) {
+        if (!arguments.length) return width;
+        width = x;
+        return area;
+    };
+
+    area.yOffset = function (x) {
+        if (!arguments.length) return yOffset;
+        yOffset = x;
+        return area;
+    };
+
+    area.xOffset = function (x) {
+        if (!arguments.length) return yOffset;
+        yOffset = x;
+        return area;
+    };
+
+    return area;
+}
+
+module.exports = textArea;
+
+},{"./../../../../d3/d3.js":4}],22:[function(require,module,exports){
+module.exports = {
+    chart: require('./chart/index.js'),
+
+    axis: require('./axis/index.js'),
+
+    element: {
+        seriesKey: require('./element/series-key.js'),
+        textArea: require('./element/text-area.js')
+    },
+
+    util: {
+        attributeStyler: require('./util/chart-attribute-styles.js')
+    },
+
+    version: require('./util/version')
+
+};
+
+},{"./axis/index.js":10,"./chart/index.js":16,"./element/series-key.js":20,"./element/text-area.js":21,"./util/chart-attribute-styles.js":24,"./util/version":34}],23:[function(require,module,exports){
+// More info:
+// http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
+
+var commonRatios = {
+    square: {width: 1, height: 1},
+    standard: {width: 4, height: 3},
+    golden: {width: 1.618, height: 1},
+    classicPhoto: {width: 3, height: 2},
+    widescreen: {width: 16, height: 9},
+    panoramic: {width: 2.39, height: 1}
+};
+
+function getRatio(name) {
+    if (!name) return;
+
+    if (name in commonRatios) {
+        return commonRatios[name];
+    }
+
+    if (typeof name === 'string') {
+        var p = name.split(':');
+        return {width: p[0], height: p[1]};
+    }
+
+    return name;
+}
+
+module.exports = {
+
+    commonRatios: commonRatios,
+
+    widthFromHeight: function (height, ratio) {
+
+        ratio = getRatio(ratio);
+
+        if (!ratio) {
+            throw new Error('Ratio is falsey');
+        }
+
+        if (typeof ratio === 'number') return height * ratio;
+
+        if (!ratio.height || !ratio.width) {
+            throw new Error('Ratio must have width and height values');
+        }
+
+        ratio = ratio.width / ratio.height;
+
+        return Math.ceil(height * ratio);
+    },
+
+    heightFromWidth: function (width, ratio) {
+
+        ratio = getRatio(ratio);
+
+        if (!ratio) {
+            throw new Error('Ratio is falsey');
+        }
+
+        if (typeof ratio === 'number') return width * ratio;
+
+        if (!ratio.height || !ratio.width) {
+            throw new Error('Ratio must have width and height values');
+        }
+
+        ratio = ratio.height / ratio.width;
+
+        return Math.ceil(width * ratio);
+    }
+};
+
+},{}],24:[function(require,module,exports){
+// because of the need to export and convert browser rendered SVGs
+// we need a simple way to attach styles as attributes if necessary,
+// so, heres a list of attributes and the selectors to which they should be applied
+
+var d3 = require("./../../../../d3/d3.js");
+
+function applyAttributes(g, keepD3Styles) {
+    var styleList = [
+        //general
+        {
+            'selector': 'svg text',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'fill': '#a7a59b',
+                'stroke': 'none'
+            }
+        },
+        //axes
+        {
+            'selector': '.axis path, .axis line',
+            'attributes': {
+                'shape-rendering': 'crispEdges',
+                'fill': 'none'
+            }
+        }, {
+            'selector': '.y.axis path.domain, .secondary path.domain, .secondary .tick line',
+            'attributes': {
+                'stroke': 'none'
+            }
+        },
+
+        {
+            'selector': '.y.axis .tick line',
+            'attributes': {
+                'stroke-dasharray': '2 2'
+            }
+        },
+        {
+            'selector': '.y.axis .origin line',
+            'attributes': {
+                'stroke': '#333',
+                'stroke-dasharray': 'none'
+            }
+        }, {
+            'selector': '.y.axis .origin.tick line',
+            'attributes': {
+                'stroke': '#333',
+                'stroke-dasharray': 'none'
+            }
+        }, {
+            'selector': '.primary .tick text',
+            'attributes': {
+                'font-size': 12,
+                'fill': '#757470'
+            }
+        }, {
+            'selector': '.secondary .tick text',
+            'attributes': {
+                'font-size': 10,
+                'fill': '#757470'
+            }
+        }, {
+            'selector': '.primary .tick line',
+            'attributes': {
+                'stroke': '#a7a59b'
+            }
+        }, {
+            'selector': '.y.axis.right text',
+            'attributes': {
+                'text-anchor': 'start'
+            }
+        }, {
+            'selector': '.y.axis.left text',
+            'attributes': {
+                'text-anchor': 'end'
+            }
+        }, {
+            'selector': '.x.axis .primary path.domain',
+            'attributes': {
+                'stroke': '#757470'
+            }
+        },
+        //lines
+        {
+            'selector': 'path.line, line.key__line',
+            'attributes': {
+                'fill': 'none',
+                'stroke-linejoin': 'round',
+                'stroke-linecap': 'round'
+            }
+        }, {
+            'selector': '.line--series1',
+            'attributes': {
+                'stroke': '#af516c'
+            }
+        }, {
+            'selector': '.line--series2',
+            'attributes': {
+                'stroke': '#ecafaf'
+            }
+        }, {
+            'selector': '.line--series3',
+            'attributes': {
+                'stroke': '#d7706c'
+            }
+        }, {
+            'selector': '.line--series4',
+            'attributes': {
+                'stroke': '#76acb8'
+            }
+        }, {
+            'selector': '.line--series5',
+            'attributes': {
+                'stroke': '#81d0e6'
+            }
+        }, {
+            'selector': '.line--series6',
+            'attributes': {
+                'stroke': '#4086b6'
+            }
+        }, {
+            'selector': '.line--series7',
+            'attributes': {
+                'stroke': '#b8b1a9'
+            }
+        }, {
+            'selector': 'path.accent, line.accent',
+            'attributes': {
+                'stroke': 'rgb(184,177,169)'
+            }
+        },
+        //Columns
+        {
+            'selector': '.column, .key__column',
+            'attributes': {
+                'stroke': 'none'
+            }
+        }, {
+            'selector': '.column--series1',
+            'attributes': {
+                'fill': '#af516c'
+            }
+        }, {
+            'selector': '.column--series2',
+            'attributes': {
+                'fill': '#ecafaf'
+            }
+        }, {
+            'selector': '.column--series3',
+            'attributes': {
+                'fill': '#d7706c'
+            }
+        }, {
+            'selector': '.column--series4',
+            'attributes': {
+                'fill': '#76acb8'
+            }
+        }, {
+            'selector': '.column--series5',
+            'attributes': {
+                'fill': '#81d0e6'
+            }
+        }, {
+            'selector': '.column--series6',
+            'attributes': {
+                'fill': '#4086b6'
+            }
+        }, {
+            'selector': '.column--series7',
+            'attributes': {
+                'fill': '#b8b1a9'
+            }
+        }, {
+            'selector': 'path.accent, line.accent',
+            'attributes': {
+                'stroke': 'rgb(184,177,169)'
+            }
+        },
+        //text
+        {
+            'selector': '.chart-title text, .chart-title tspan',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 18,
+                'fill': 'rgba(0, 0, 0, 0.8)'
+            }
+        }, {
+            'selector': '.chart-subtitle text, .chart-subtitle tspan',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12,
+                'fill': 'rgba(0, 0, 0, 0.5)'
+            }
+        }, {
+            'selector': '.chart-source text, .chart-source tspan',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 10,
+                'fill': 'rgba(0, 0, 0, 0.5)'
+            }
+        }, {
+            'selector': '.chart-footnote text, .chart-footnote tspan',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12,
+                'fill': 'rgba(0, 0, 0, 0.5)'
+            }
+        }, {
+            'selector': 'text.key__label',
+            'attributes': {
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12,
+                'fill': 'rgba(0, 0, 0, 0.5)'
+            }
+        }
+    ];
+    if (!keepD3Styles) {
+        (g || d3).selectAll('*').attr('style', null);
+    }
+    styleList.forEach(function (style, i) {
+        (g || d3).selectAll(style.selector).attr(style.attributes);
+    });
+    return true;
+}
+
+module.exports = applyAttributes;
+
+},{"./../../../../d3/d3.js":4}],25:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var lineThickness = require('../util/line-thickness.js');
 var ratios = require('../util/aspect-ratios.js');
 var seriesOptions = require('../util/series-options.js');
+var dateUtil = require('../util/dates.js');
 
 function isDate(d) {
-	return d && d instanceof Date && !isNaN(+d);
+    return d && d instanceof Date && !isNaN(+d);
 }
 
 function translate(margin) {
-	return function(position) {
-		var left = position.left || 0;
-		var top = position.top || 0;
-		return 'translate(' + (margin + left) + ',' + top + ')';
-	};
+    return function (position) {
+        var left = position.left || 0;
+        var top = position.top || 0;
+        return 'translate(' + (margin + left) + ',' + top + ')';
+    };
 }
 
-function setChartWidth(model){
-	if (model.chartWidth) { return model.chartWidth; }
-	var rightGutter = model.contentWidth < 260 ? 16 : 26;
-	return  model.contentWidth - rightGutter;
+function chartWidth(model) {
+    if (model.chartWidth) {
+        return model.chartWidth;
+    }
+    var rightGutter = model.contentWidth < 260 ? 16 : 26;
+    return model.contentWidth - rightGutter;
 }
 
 function setExtents(model){
 	var extents = [];
-	model.y.series.forEach(function (l, i) {
+	model.y.series.forEach(function (l) {
 		var key = l.key;
 		model.data = model.data.map(function (d, j) {
-			var value = d[key];
+			var value = (model.groupDates) ? d.values[0][key] : d[key];
 			var isValidNumber = value === null || typeof value === 'number';
 			if (!isValidNumber) {
 				model.error({
@@ -24000,775 +24451,768 @@ function setExtents(model){
 			return d;
 		});
 		var ext = d3.extent(model.data, function(d){
-			return d[key];
+			return (model.groupDates) ? d.values[0][key] : d[key];
 		});
 		extents = extents.concat (ext);
 	});
 	return extents;
 }
 
-function setTimeDomain(model){
-	if (model.timeDomain) { return model.timeDomain; }
-	return d3.extent(model.data, function (d) {
-		return d[model.x.series.key];
-	});
+function groupedTimeDomain(model) {
+    if (model.timeDomain) {
+        return model.timeDomain;
+    }
+    return model.data.map(function (d) {
+        return d[model.x.series.key];
+    });
 }
 
-function setValueDomain(model){
-	if (model.valueDomain) { return model.valueDomain; }
-	var extents = setExtents(model);
-	var valueDomain = d3.extent(extents);
-	if (!model.falseOrigin && valueDomain[0] > 0) {
-		valueDomain[0] = 0;
-	}
-	return valueDomain;
+function timeDomain(model) {
+    if (model.timeDomain) {
+        return model.timeDomain;
+    }
+    return d3.extent(model.data, function (d) {
+        return d[model.x.series.key];
+    });
 }
 
-function setChartHeight(model){
-	if (model.chartHeight) { return model.chartHeight; }
-	var isNarrow = model.chartWidth < 220;
-	var isWide = model.chartWidth > 400;
-	var ratio = isNarrow ? 1.1 : (isWide ? ratios.commonRatios.widescreen : ratios.commonRatios.standard);
-	return ratios.heightFromWidth(model.chartWidth, ratio);
+function valueDomain(model) {
+    if (model.valueDomain) {
+        return model.valueDomain;
+    }
+    var extents = setExtents(model);
+    var domain = d3.extent(extents);
+    if (!model.falseOrigin && domain[0] > 0) {
+        domain[0] = 0;
+    }
+    return domain;
 }
 
-function verifyData(model){
-	return !Array.isArray(model.data) ? [] : model.data.map(function (dataItem, i) {
-
-		var s = dataItem[model.x.series.key];
-		var error = {
-			node: null,
-			message: '',
-			row: i,
-			column: model.x.series.key,
-			value: s
-		};
-
-		if (!dataItem) {
-			error.message = 'Empty row';
-		} else if (!s) {
-			error.message = 'X axis value is empty or null';
-		} else if (!isDate(s)) {
-			error.message = 'Value is not a valid date';
-		}
-
-		if (error.message) {
-			model.error(error);
-			dataItem[model.x.series.key] = null;
-		}
-
-		return dataItem;
-
-	});
+function chartHeight(model) {
+    if (model.chartHeight) {
+        return model.chartHeight;
+    }
+    var isNarrow = model.chartWidth < 220;
+    var isWide = model.chartWidth > 400;
+    var ratio = isNarrow ? 1.1 : (isWide ? ratios.commonRatios.widescreen : ratios.commonRatios.standard);
+    return ratios.heightFromWidth(model.chartWidth, ratio);
 }
 
-function setKey(model){
-	var key = model.key;
-	if (typeof model.key !== 'boolean') {
-		key = model.y.series.length > 1;
-	} else if (model.key && !model.y.series.length) {
-		key = false;
-	}
-	return key;
+function verifyData(model) {
+    return !Array.isArray(model.data) ? [] : model.data.map(function (dataItem, i) {
+
+        var s = dataItem[model.x.series.key];
+        var error = {
+            node: null,
+            message: '',
+            row: i,
+            column: model.x.series.key,
+            value: s
+        };
+
+        if (!dataItem) {
+            error.message = 'Empty row';
+        } else if (!s) {
+            error.message = 'X axis value is empty or null';
+        } else if (!isDate(s)) {
+            error.message = 'Value is not a valid date';
+        }
+
+        if (error.message) {
+            model.error(error);
+            dataItem[model.x.series.key] = null;
+        }
+
+        return dataItem;
+
+    });
 }
 
+function setKey(model) {
+    var key = model.key;
+    if (typeof model.key !== 'boolean') {
+        key = model.y.series.length > 1;
+    } else if (model.key && !model.y.series.length) {
+        key = false;
+    }
+    return key;
+}
 
-function Model(opts) {
-	var lineClasses = ['series1', 'series2', 'series3', 'series4', 'series5', 'series6', 'series7', 'accent'];
-	var m = {
-		//layout stuff
-		height: undefined,
-		width: 300,
-		chartHeight: undefined,
-		chartWidth: undefined,
-		blockPadding: 8,
-		simpleDate: false,
-		simpleValue: false,
-		logoSize: 28,
-		//data stuff
-		falseOrigin: false, //TODO, find out if there's a standard 'pipeline' temr for this
-		error: this.error,
-		lineClasses: {},
-		niceValue: true,
-		hideSource: false,
-		numberAxisOrient: 'left',
-		margin: 2,
-		lineThickness: undefined,
-		x: {
-			series: '&'
-		},
-		y: {
-			series: []
-		},
-		labelLookup: null,
-		sourcePrefix: 'Source: '
-	};
-
-	for (var key in opts) {
-		m[key] = opts[key];
-	}
-
-	m.x.series = seriesOptions.normalise(m.x.series);
-	m.y.series = seriesOptions.normaliseY(m.y.series)
-		.filter(function (d) {
-			return !!d.key && d.key !== m.x.series.key;
+function groupDates(m, units){
+	var i=0;
+	var firstDate;
+	m.data = d3.nest()
+		.key(function(d)  {
+			firstDate = firstDate || d.date;
+			return dateUtil.formatter[units[0]](d.date, i++, firstDate);
 		})
-		.map(function (d, i) {
-			d.index = i;
-			d.className = lineClasses[i];
-			return d;
-		});
+		.entries(m.data);
+	m.x.series.key = 'key';
+	return m.data;
+}
 
-	m.data = verifyData(m);
+function Model(chartType, opts) {
+    var classes = {
+        line: ['line--series1', 'line--series2', 'line--series3', 'line--series4', 'line--series5', 'line--series6', 'line--series7', 'accent'],
+        column: ['column--series1', 'column--series2', 'column--series3', 'column--series4', 'column--series5', 'column--series6', 'column--series7', 'accent']
+    };
+    var m = {
+        //layout stuff
+        chartType: chartType,
+        height: undefined,
+        tickSize: 5,
+        width: 300,
+        chartHeight: undefined,
+        chartWidth: undefined,
+        simpleDate: false,
+        simpleValue: false,
+        logoSize: 28,
+        //data stuff
+        falseOrigin: false, //TODO, find out if there's a standard 'pipeline' temr for this
+        error: this.error,
+        lineClasses: {},
+        columnClasses: {},
+        niceValue: true,
+        hideSource: false,
+        numberAxisOrient: 'left',
+        margin: 2,
+        lineThickness: undefined,
+        x: {
+            series: '&'
+        },
+        y: {
+            series: []
+        },
+        labelLookup: null,
+        sourcePrefix: 'Source: '
+    };
+
+    for (var key in opts) {
+        m[key] = opts[key];
+    }
+
+    m.x.series = seriesOptions.normalise(m.x.series);
+    m.y.series = seriesOptions.normaliseY(m.y.series)
+        .filter(function (d) {
+            return !!d.key && d.key !== m.x.series.key;
+        })
+        .map(function (d, i) {
+            d.index = i;
+            d.className = classes[chartType][i];
+            return d;
+        });
+
 	m.contentWidth = m.width - (m.margin * 2);
+	m.chartWidth = chartWidth(m);
+	m.chartHeight = chartHeight(m);
 	m.translate = translate(0);
-	m.chartWidth = setChartWidth(m);
-	m.chartHeight = setChartHeight(m);
-	m.timeDomain = setTimeDomain(m);
-	m.valueDomain = setValueDomain(m);
+	m.data = verifyData(m);
+
+	if(m.groupDates){
+		m.data = groupDates(m, m.groupDates);
+		m.timeDomain = groupedTimeDomain(m);
+	}else{
+		m.timeDomain = timeDomain(m);
+	}
+
+	m.valueDomain = valueDomain(m);
 	m.lineStrokeWidth = lineThickness(m.lineThickness);
 	m.key = setKey(m);
 
-	return m;
+    return m;
 }
 
-Model.prototype.error = function(err) {
-	console.log('ERROR: ', err);
+Model.prototype.error = function (err) {
+    console.log('ERROR: ', err);
 };
 module.exports = Model;
 
-},{"../util/aspect-ratios.js":24,"../util/line-thickness.js":27,"../util/series-options.js":29,"./../../../../d3/d3.js":4}],19:[function(require,module,exports){
+},{"../util/aspect-ratios.js":23,"../util/dates.js":26,"../util/line-thickness.js":31,"../util/series-options.js":33,"./../../../../d3/d3.js":4}],26:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 
-function pieChart() {
-    'use strict';
+var formatter = {
+    centuries: function (d, i) {
+        if (i === 0 || d.getYear() % 100 === 0) {
+            return d3.time.format('%Y')(d);
+        }
+        return d3.time.format('%y')(d);
+    },
 
-	function buildModel(opts) {
-		var m = {
-			//layout stuff
-			title:'chart title',
-			height:undefined,
-			width:300,
-			chartHeight:300,
-			chartWidth:300,
-			indexProperty:'&',
-			valueProperty:'value',
-			blockPadding:8,
-			data:[],
-			error:function(err){ console.log('ERROR: ', err); }
-		};
+    decades: function (d, i) {
+        if (i === 0 || d.getYear() % 100 === 0) {
+            return d3.time.format('%Y')(d);
+        }
+        return d3.time.format('%y')(d);
+    },
 
-		for(var key in opts){
-			m[key] = opts[key];
-		}
+    years: function (d, i) {
+        if (i === 0 || d.getYear() % 100 === 0) {
+            return d3.time.format('%Y')(d);
+        }
+        return d3.time.format('%y')(d);
+    },
 
-		return m;
-	}
+    fullYears: function (d, i) {
+        return d3.time.format('%Y')(d);
+    },
+    yearly: function (d, i) {
+        return formatter.years(d, i);
+    },
+    quarterly: function (d, i, firstDate) {
+        var years = (firstDate && formatter.years(firstDate, i) == formatter.years(d, i)) ? 'fullYears' : 'years';
+        return 'Q' + Math.floor((d.getMonth() + 3) / 3) + ' ' + formatter[years](d, i);
+    },
+    monthly: function (d, i) {
+        return formatter.months(d, i) + ' ' + formatter.fullYears(d, i);
+    },
+    shortmonths: function (d, i) {
+        return d3.time.format('%b')(d)[0];
+    },
+    months: function (d, i) {
+        return d3.time.format('%b')(d);
+    },
 
-	function getHeight(selection) {
-		return Math.ceil(selection.node().getBoundingClientRect().height);
-	}
+    weeks: function (d, i) {
+        return d3.time.format('%e %b')(d);
+    },
 
-	function getWidth(selection) {
-		return Math.ceil(selection.node().getBoundingClientRect().width);	
-	}
+    days: function (d, i) {
+        return d3.time.format('%e')(d);
+    },
 
-	function translate(position) {
-		return 'translate(' + position.left + ',' + position.top + ')';
-	}
-
-	function chart(g) {
-		var model = buildModel( g.data()[0] );
-		if(!model.height){
-			model.height = model.width;
-		}
-		var	svg = g.append('svg')
-				.attr({
-					'class':'null-chart',
-					'height':model.height,
-					'width':model.width
-				});
-
-		var title = svg.append('text').text(model.title + " - PLACE HOLDER CHART");
-		title.attr('transform',translate({top: getHeight(title), left:0}));
-
-		var subtitle = svg.append('text').text(model.subtitle);
-		subtitle.attr('transform',translate({top: getHeight(title) + getHeight(subtitle), left:0}));
-
-		var chartSvg = svg.append('g').attr('class','chart');
-
-		if(model.data.length > 3){
-			model.error('PIE warning: too many segments!');
-		}
-
-		var outerRadius = model.width / 2; 
-
-		chartSvg.selectAll('.slice')
-			.data( model.data )
-				.enter();
-					//.append(path);
-		
-		svg.selectAll('text').attr({
-			fill:'#000',
-			stroke:'none'
-		});
-	}
-
-	return chart;
-}
-
-module.exports = pieChart;
-
-},{"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
-var d3 = require("./../../../../d3/d3.js");
-var lineThickness = require('../util/line-thickness.js');
-
-function lineKey(options) {
-    'use strict';
-
-	options = options || {};
-
-	var width = 300;
-	var strokeLength = 15;
-	var lineHeight = 16;
-	var strokeWidth = lineThickness(options.lineThickness);
-
-	var style = function(d) {
-		return d.style;
-	};
-
-	var label = function(d) {
-		return d.label;
-	};
-
-	var filter = function(){
-		return true;
-	};
-
-	function key(g){
-		g = g.append('g').attr('class','chart-linekey');
-		var keyItems = g.selectAll('g').data( g.datum().filter( filter ) )
-				.enter()
-				.append('g').attr({
-					'class':'key-item',
-					'transform':function(d,i){
-						return 'translate(0,' + (lineHeight + i * lineHeight) + ')';
-					}
-				});
-
-		keyItems.append('line').attr({
-			'class': style,
-			x1: 1,
-			y1: -5,
-			x2: strokeLength,
-			y2: -5
-		})
-		.attr('stroke-width', strokeWidth)
-		.classed('key-line',true);
-
-		keyItems.append('text').attr({
-			'class':'key-label',
-			x:strokeLength + 10
-		}).text(label);
-
-	}
-
-	key.label = function(f){
-		if (!arguments.length) return label;
-		label = f;
-		return key;
-	};
-
-	key.style = function(f){
-		if (!arguments.length) return style;
-		style = f;
-		return key;
-	};
-
-	key.width = function(x){
-		if (!arguments.length) return width;
-		width = x;
-		return key;
-	};
-
-	key.lineHeight = function(x){
-		if (!arguments.length) return lineHeight;
-		lineHeight = x;
-		return key;
-	};
-
-	return key;
-}
-
-module.exports = lineKey;
-
-},{"../util/line-thickness.js":27,"./../../../../d3/d3.js":4}],21:[function(require,module,exports){
-//the ft logo there's probably an easier ay to do this...
-var d3 = require("./../../../../d3/d3.js");
-
-function ftLogo(g, dim) {
-    'use strict';
-
-	if(!dim){
-		dim = 32;
-	}
-	var d = 'M21.777,53.336c0,6.381,1.707,7.1,8.996,7.37v2.335H1.801v-2.335c6.027-0.27,7.736-0.989,7.736-7.37v-41.67 c0-6.387-1.708-7.104-7.556-7.371V1.959h51.103l0.363,13.472h-2.519c-2.16-6.827-4.502-8.979-16.467-8.979h-9.27 c-2.785,0-3.415,0.624-3.415,3.142v19.314h4.565c9.54,0,11.61-1.712,12.779-8.089h2.338v21.559h-2.338 c-1.259-7.186-4.859-8.981-12.779-8.981h-4.565V53.336z M110.955,1.959H57.328l-1.244,13.477h3.073c1.964-6.601,4.853-8.984,11.308-8.984h7.558v46.884 c0,6.381-1.71,7.1-8.637,7.37v2.335H98.9v-2.335c-6.931-0.27-8.64-0.989-8.64-7.37V6.453h7.555c6.458,0,9.351,2.383,11.309,8.984 h3.075L110.955,1.959z';
-	var path = g.append('path').attr('d', d); //measure and rescale to the bounds
-	var rect = path.node().getBoundingClientRect();
-	//the logo is square so
-	var scale = Math.min (dim /rect.width, dim / rect.height);
-
-	path.attr({
-		'transform':'scale('+scale+')',
-		'fill':'rgba(0,0,0,0.1)'
-	});
-} 
-
-module.exports = ftLogo;
-
-/*
-<path fill="none" d="M21.777,53.336c0,6.381,1.707,7.1,8.996,7.37v2.335H1.801v-2.335c6.027-0.27,7.736-0.989,7.736-7.37v-41.67
-		c0-6.387-1.708-7.104-7.556-7.371V1.959h51.103l0.363,13.472h-2.519c-2.16-6.827-4.502-8.979-16.467-8.979h-9.27
-		c-2.785,0-3.415,0.624-3.415,3.142v19.314h4.565c9.54,0,11.61-1.712,12.779-8.089h2.338v21.559h-2.338
-		c-1.259-7.186-4.859-8.981-12.779-8.981h-4.565V53.336z"/>
-	<path fill="none" d="M110.955,1.959H57.328l-1.244,13.477h3.073c1.964-6.601,4.853-8.984,11.308-8.984h7.558v46.884
-		c0,6.381-1.71,7.1-8.637,7.37v2.335H98.9v-2.335c-6.931-0.27-8.64-0.989-8.64-7.37V6.453h7.555c6.458,0,9.351,2.383,11.309,8.984
-		h3.075L110.955,1.959z"/>
-		*/
-
-},{"./../../../../d3/d3.js":4}],22:[function(require,module,exports){
-/*jshint -W084 */
-//text area provides a wrapping text block of a given type
-var d3 = require("./../../../../d3/d3.js");
-
-function textArea() {
-    'use strict';
-
-	var xOffset = 0, 
-		yOffset = 0, 
-		width=1000, 
-		lineHeight = 20, 
-		units = 'px', //pixels by default
-		bounds;
-
-	function wrap(text, width) {
-		text.each(function() {
-			var text = d3.select(this),
-				words = text.text().trim().split(/\s+/).reverse(),
-				word,
-				line = [],
-				lineNumber = 0,
-				y = text.attr('y'),
-				dy = parseFloat(text.attr('dy'));
-
-			if(isNaN(dy)){ dy = 0; }
-
-			var tspan = text.text(null).append('tspan')
-				.attr('x', 0)
-				.attr('y', y)
-				.attr('dy', dy + units);
-
-			while (word = words.pop()) {
-				line.push(word);
-				tspan.text(line.join(' '));
-				if (tspan.node().getComputedTextLength() > width) {
-					line.pop();
-					tspan.text(line.join(' '));
-					line = [word];
-					lineNumber ++;
-					var newY = (lineNumber * lineHeight);
-					tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('y', + newY + units).text(word);
-				}
-			}
-		});
-	}
-
-	function area(g, accessor){
-		if(!accessor) {
-			accessor = function(d){
-				return d;
-			};
-		}
-		g = g.append('g').attr('transform','translate(' + xOffset + ',' + yOffset + ')');
-		g.append('text').text(accessor).call(wrap, width);
-		bounds = g.node().getBoundingClientRect();
-	}
-
-
-	area.bounds = function() {
-		return bounds;
-	};
-
-	area.units = function(x) { //px, em, rem
-		if (!arguments.length) return units;
-		units = x;
-		return area;
-	};
-
-	area.lineHeight = function(x) { //pixels by default
-		if (!arguments.length) return lineHeight;
-		lineHeight = x;
-		return area;
-	};
-
-	area.width = function(x) {
-		if (!arguments.length) return width;
-		width = x;
-		return area;
-	};
-
-	area.yOffset = function(x) {
-		if (!arguments.length) return yOffset;
-		yOffset = x;
-		return area;
-	};
-
-	area.xOffset = function(x) {
-		if (!arguments.length) return yOffset;
-		yOffset = x;
-		return area;
-	};
-
-	return area;
-}
-
-module.exports = textArea;
-
-},{"./../../../../d3/d3.js":4}],23:[function(require,module,exports){
-module.exports  = {
-  chart: require('./chart/index.js'),
-
-  axis: require('./axis/index.js'),
-
-  element: {
-    lineKey: require('./element/line-key.js'),
-    textArea: require('./element/text-area.js')
-  },
-
-  util: {
-    attributeStyler: require('./util/chart-attribute-styles.js')
-  },
-
-  version: require('./util/version')
-
+    hours: function (d, i) {
+        return parseInt(d3.time.format('%H')(d)) + ':00';
+    }
 };
 
-},{"./axis/index.js":11,"./chart/index.js":16,"./element/line-key.js":20,"./element/text-area.js":22,"./util/chart-attribute-styles.js":25,"./util/version":30}],24:[function(require,module,exports){
-// More info:
-// http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
-
-var commonRatios = {
-  square: {width: 1, height: 1},
-  standard: {width: 4, height: 3},
-  golden: {width: 1.618, height: 1},
-  classicPhoto: {width: 3, height: 2},
-  widescreen: {width: 16, height: 9},
-  panoramic: {width: 2.39, height: 1}
-};
-
-function getRatio(name) {
-  if (!name) return;
-
-  if (name in commonRatios) {
-    return commonRatios[name];
-  }
-
-  if (typeof name === 'string') {
-    var p = name.split(':');
-    return {width: p[0], height: p[1]};
-  }
-
-  return name;
+function unitGenerator(domain, simple) {	//which units are most appropriate
+    var timeDif = domain[1].getTime() - domain[0].getTime();
+    var dayLength = 86400000;
+    var units;
+    if (timeDif < dayLength * 2) {
+        units = ['hours', 'days', 'months'];
+    } else if (timeDif < dayLength * 60) {
+        units = ['days', 'months'];
+    } else if (timeDif < dayLength * 365.25) {
+        units = ['months', 'years'];
+    } else if (timeDif < dayLength * 365.25 * 15) {
+        units = ['years'];
+    } else if (timeDif < dayLength * 365.25 * 150) {
+        units = ['decades'];
+    } else if (timeDif < dayLength * 365.25 * 1000) {
+        units = ['centuries'];
+    } else {
+        units = ['multi'];
+    }
+    if (simple && (
+        units.indexOf('years') > -1 ||
+        units.indexOf('decades') ||
+        units.indexOf('centuries'))) {
+        units = ['fullYears']; //simple axis always uses full years
+    }
+    return units;
 }
 
 module.exports = {
-
-  commonRatios: commonRatios,
-
-  widthFromHeight: function(height, ratio) {
-
-    ratio = getRatio(ratio);
-
-    if (!ratio) {
-      throw new Error('Ratio is falsey');
-    }
-
-    if (typeof ratio === 'number') return height * ratio;
-
-    if (!ratio.height || !ratio.width) {
-      throw new Error('Ratio must have width and height values');
-    }
-
-    ratio = ratio.width / ratio.height;
-
-    return Math.ceil(height * ratio);
-  },
-
-  heightFromWidth: function(width, ratio) {
-
-    ratio = getRatio(ratio);
-
-    if (!ratio) {
-      throw new Error('Ratio is falsey');
-    }
-
-    if (typeof ratio === 'number') return width * ratio;
-
-    if (!ratio.height || !ratio.width) {
-      throw new Error('Ratio must have width and height values');
-    }
-
-    ratio = ratio.height / ratio.width;
-
-    return Math.ceil(width * ratio);
-  }
+    formatter: formatter,
+    unitGenerator: unitGenerator
 };
 
-},{}],25:[function(require,module,exports){
-// because of the need to export and convert browser rendered SVGs 
-// we need a simple way to attach styles as attributes if necessary, 
-// so, heres a list of attributes and the selectors to which they should be applied
-
+},{"./../../../../d3/d3.js":4}],27:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
+var categoryAxis = require('../axis/category.js');
+var dateAxis = require('../axis/date.js');
+var numberAxis = require('../axis/number.js');
 
-function applyAttributes(){
-	var styleList = [
-		//general
-			{
-				'selector':'svg text',
-				'attributes':{
-					'font-family':'BentonSans, sans-serif',
-					'fill':'#a7a59b',
-					'stroke':'none'
-				}
-			},
-		//axes
-			{
-				'selector':'.axis path, .axis line',
-				'attributes':{
-					'shape-rendering':'crispEdges',
-					'fill':'none'
-				}
-			},{
-				'selector':'.y.axis path.domain, .secondary path.domain, .secondary .tick line',
-				'attributes':{
-					'stroke':'none'
-				}
-			},
-
-			{
-				'selector':'.y.axis .tick line',
-				'attributes':{
-					'stroke-dasharray':'2 2'
-				}
-			},
-			{
-				'selector':'.y.axis .origin line',
-				'attributes':{
-					'stroke':'#333',
-					'stroke-dasharray':'none'
-				}
-			},{
-				'selector':'.y.axis .origin.tick line',
-				'attributes':{
-					'stroke':'#333',
-					'stroke-dasharray':'none'
-				}
-			},{
-				'selector':'.primary .tick text',
-				'attributes':{
-					'font-size':12,
-					'fill':'#757470'
-				}
-			},{
-				'selector':'.secondary .tick text',
-				'attributes':{
-					'font-size':10,
-					'fill':'#757470'
-				}
-			},{
-				'selector':'.primary .tick line',
-				'attributes':{
-					'stroke':'#a7a59b'
-				}
-			},{ 
-				'selector':'.y.axis.right text',
-				'attributes':{
-					'text-anchor':'start'
-				}
-			},{ 
-				'selector':'.y.axis.left text',
-				'attributes':{
-					'text-anchor':'end'
-				}
-			},{
-				'selector':'.x.axis .primary path.domain',
-				'attributes':{
-					'stroke':'#757470'
-				}
-			},
-		//lines
-			{
-				'selector':'path.line, line.key-line',
-				'attributes':{
-					'fill': 'none',
-					'stroke-linejoin': 'round',
-					'stroke-linecap': 'round'
-				}
-			},{
-				'selector':'path.series1, line.series1',
-				'attributes':{
-					'stroke':'#af516c'
-				}
-			},{
-				'selector':'path.series2, line.series2',
-				'attributes':{
-					'stroke':'#ecafaf'
-				}
-			},{
-				'selector':'path.series3, line.series3',
-				'attributes':{
-					'stroke':'#d7706c'
-				}
-			},{
-				'selector':'path.series4, line.series4',
-				'attributes':{
-					'stroke':'#76acb8'
-				}
-			},{
-				'selector':'path.series5, line.series5',
-				'attributes':{
-					'stroke':'#81d0e6'
-				}
-			},{
-				'selector':'path.series6, line.series6',
-				'attributes':{
-					'stroke':'#4086b6'
-				}
-			},{
-				'selector':'path.series7, line.series7',
-				'attributes':{
-					'stroke':'#b8b1a9'
-				}
-			},{
-				'selector':'path.accent, line.accent',
-				'attributes':{
-					'stroke':'rgb(184,177,169)'
-				}
-			},
-			//text
-			{
-				'selector':'.chart-title text, .chart-title tspan',
-				'attributes':{
-					'font-family': 'BentonSans, sans-serif',
-					'font-size':18,
-					'fill':'rgba(0, 0, 0, 0.8)'
-				}
-			},{
-				'selector':'.chart-subtitle text, .chart-subtitle tspan',
-				'attributes':{
-					'font-family': 'BentonSans, sans-serif',
-					'font-size': 12,
-					'fill':'rgba(0, 0, 0, 0.5)'
-				}
-			},{
-				'selector':'.chart-source text, .chart-source tspan',
-				'attributes':{
-					'font-family': 'BentonSans, sans-serif',
-					'font-size': 10,
-					'fill': 'rgba(0, 0, 0, 0.5)'
-				}
-			},{
-				'selector':'.chart-footnote text, .chart-footnote tspan',
-				'attributes':{
-					'font-family': 'BentonSans, sans-serif',
-					'font-size': 12,
-					'fill': 'rgba(0, 0, 0, 0.5)'
-				}
-			},{
-				'selector':'text.key-label',
-				'attributes':{
-					'font-family': 'BentonSans, sans-serif',
-					'font-size': 12,
-					'fill': 'rgba(0, 0, 0, 0.5)'
-				}
-			}
-		];
-
-
-	for(var s in styleList){
-		s = styleList[s];	
-		var selected = d3.selectAll(s.selector).attr(s.attributes);
-	}
-	return true;
+function getHeight(selection) {
+    return Math.ceil(selection.node().getBoundingClientRect().height);
 }
 
-module.exports = applyAttributes;
+function getWidth(selection) {
+    return Math.ceil(selection.node().getBoundingClientRect().width);
+}
 
-},{"./../../../../d3/d3.js":4}],26:[function(require,module,exports){
+function Axes(svg, model) {
+    this.model = model;
+    this.svg = svg;
+    this.margin = 0.2;
+    this.tickExtender = 1.5;
+}
+
+Axes.prototype.rearrangeLabels = function () {
+    var model = this.model;
+    var showsAllLabels = this.timeScale.domain().length === this.svg.selectAll('.x.axis .primary text')[0].length;
+    var allPositiveValues = Math.min.apply(null, this.valueScale.domain()) >= 0;
+    if (showsAllLabels && allPositiveValues) {
+        this.timeAxis.tickSize(0).scale(this.timeScale, this.units);
+    } else if (!showsAllLabels) { //todo: should/can this be in category.js?
+        this.timeAxis.tickSize(model.tickSize * this.tickExtender)
+            .scale(this.timeScale, ['yearly']);//todo: pm: swap for groupDates[1]
+        this.svg.call(this.timeAxis);
+    }
+};
+
+Axes.prototype.getColumnWidth = function () {
+    var model = this.model;
+    var plotWidth = model.chartWidth - (getWidth(this.svg) - model.chartWidth);
+    var range = this.timeScale.rangeBand ?
+        this.timeScale.rangeBand() :
+        d3.scale.ordinal()
+            .domain(model.data.map(function(d) {
+                return d[model.x.series.key];
+            }))
+            .rangeRoundBands([0, plotWidth], 0, this.margin)
+            .rangeBand() / 2;
+    return range / model.y.series.length;
+};
+
+Axes.prototype.addGroupedTimeScale = function (units) {
+    var model = this.model;
+    this.units = units;
+    var plotWidth = model.chartWidth - (getWidth(this.svg) - model.chartWidth);
+    this.timeScale = d3.scale.ordinal()
+        .domain(model.timeDomain)
+        .rangeRoundBands([0, plotWidth], 0, this.margin);
+
+    this.columnWidth = this.getColumnWidth();
+
+    this.timeAxis = categoryAxis()
+        .simple(model.simpleDate)
+        .yOffset(model.chartHeight)
+        .tickSize(model.tickSize)
+        .scale(this.timeScale, units);
+    this.svg.call(this.timeAxis);
+    this.rearrangeLabels();
+};
+
+Axes.prototype.addTimeScale = function () {
+    var model = this.model;
+    this.timeScale = d3.time.scale()
+        .domain(model.timeDomain)
+        .range([0, model.chartWidth]);
+
+    this.columnWidth = this.getColumnWidth();
+
+    this.timeAxis = dateAxis()
+        .simple(model.simpleDate)
+        .yOffset(model.chartHeight)	//position the axis at the bottom of the chart
+        .scale(this.timeScale);
+    this.svg.call(this.timeAxis);
+};
+
+Axes.prototype.addValueScale = function () {
+    var model = this.model;
+    this.valueScale = d3.scale.linear()
+        .domain(model.valueDomain.reverse())
+        .range([0, model.chartHeight]);
+
+    if (model.niceValue) {
+        this.valueScale.nice();
+    }
+
+    this.vAxis = numberAxis()
+        .tickFormat(model.numberAxisFormatter)
+        .simple(model.simpleValue)
+        .tickSize(model.chartWidth)	//make the ticks the width of the chart
+        .scale(this.valueScale);
+
+    if (model.numberAxisOrient !== 'right' && model.numberAxisOrient !== 'left') {
+        this.vAxis.noLabels(true);
+    } else {
+        this.vAxis.orient(model.numberAxisOrient);
+    }
+    this.svg.call(this.vAxis);
+};
+
+Axes.prototype.reduceExtendedTicks = function () {
+    var model = this.model;
+    var self = this;
+    var extendedTicks_selector = ".x.axis .tick line[y2=\"" + (model.tickSize * this.tickExtender) + "\"]";
+    this.svg.selectAll(extendedTicks_selector)
+        .attr("y2", function (d) {
+            return (d.toString().indexOf('Q1') < 0 ) ? model.tickSize : (model.tickSize * self.tickExtender);
+        });
+};
+
+Axes.prototype.repositionAxis = function () {
+    var model = this.model;
+    var xLabelHeight = getHeight(this.svg) - model.chartHeight;
+    var yLabelWidth = getWidth(this.svg) - model.chartWidth;
+    var plotHeight = model.chartHeight - xLabelHeight;
+    var plotWidth = model.chartWidth - yLabelWidth;
+    var vLabelWidth = 0;
+
+    this.valueScale.range([this.valueScale.range()[0], plotHeight]);
+    this.timeAxis.yOffset(plotHeight);
+    this.vAxis.tickSize(plotWidth).tickExtension(yLabelWidth);
+
+    if (this.timeScale.rangeRoundBands) {
+        this.timeScale.rangeRoundBands([0, plotWidth], this.margin);
+    } else {
+        this.timeScale.range([this.timeScale.range()[0], plotWidth]);
+    }
+
+    this.columnWidth = this.getColumnWidth();
+    this.svg.selectAll('*').remove();
+    this.svg.call(this.vAxis);
+    this.svg.call(this.timeAxis);
+
+    this.reduceExtendedTicks();
+
+    if (model.numberAxisOrient !== 'right') {
+        this.svg.selectAll('.y.axis text').each(function () {
+            vLabelWidth = Math.max(vLabelWidth, getWidth(d3.select(this)));
+        });
+        model.chartPosition.left += vLabelWidth + 4;//NOTE magic number 4
+    }
+    model.chartPosition.top += (getHeight(this.svg.select('.y.axis')) - plotHeight);
+    model.plotWidth = plotWidth;
+    model.plotHeight = plotHeight;
+
+    this.svg.attr('transform', model.translate(model.chartPosition));
+};
+
+module.exports = Axes;
+
+},{"../axis/category.js":6,"../axis/date.js":8,"../axis/number.js":11,"./../../../../d3/d3.js":4}],28:[function(require,module,exports){
+var textArea = require('../element/text-area.js');
+var seriesKey = require('../element/series-key.js');
+var ftLogo = require('../element/logo.js');
+
+function getHeight(selection) {
+    return Math.ceil(selection.node().getBoundingClientRect().height);
+}
+
+function Dressing(svg, model) {
+    // TODO: don't hard-code the fontsize, get from CSS somehow.
+    // TODO: move calculation of lineheight to the textarea component;
+    this.svg = svg;
+    this.model = model;
+    this.blockPadding = 8;
+    this.defaultLineHeight = 1.2;
+    this.titleFontSize = 18;
+    this.footerLineHeight = 15;
+    this.subtitleFontSize = 12;
+    this.sourceFontSize = 10;
+    this.halfLineStrokeWidth = Math.ceil(model.lineStrokeWidth / 2);
+
+    this.headerHeight = 0;
+    this.footerHeight = 0;
+    this.sourceFontOffset = 0;
+}
+
+Dressing.prototype.addHeader = function () {
+    this.addTitle();
+    this.addSubTitle();
+    this.addSeriesKey();
+    this.setPosition();
+};
+
+Dressing.prototype.addFooter = function () {
+    this.addFootNotes();
+    this.addSource();
+    this.setHeight();
+    this.addLogo();
+};
+
+Dressing.prototype.addLogo = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    var logo = svg.append('g').attr('class', 'chart-logo').call(ftLogo, model.logoSize);
+    var heightOfFontDescenders = 3;
+    var baselineOfLastSourceLine = model.height - getHeight(logo) - heightOfFontDescenders - this.getSourceFontOffset();
+
+    logo.attr('transform', model.translate({
+        left: model.width - model.logoSize,
+        top: baselineOfLastSourceLine
+    }));
+};
+
+Dressing.prototype.addSubTitle = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    var subtitleLineHeight = this.defaultLineHeight;
+    var subtitleLineHeightActual = Math.ceil(this.subtitleFontSize * subtitleLineHeight);
+    var subtitleTextWrapper = textArea().width(model.contentWidth).lineHeight(subtitleLineHeightActual);
+    var subtitle = svg.append('g').attr('class', 'chart-subtitle').datum(model.subtitle).call(subtitleTextWrapper);
+    if (!this.subtitlePosition) {
+        if (model.subtitle) {
+            this.subtitlePosition = {top: this.headerHeight + this.subtitleFontSize, left: 0};
+            this.headerHeight += (getHeight(subtitle) + this.blockPadding);
+        } else {
+            this.subtitlePosition = {top: this.headerHeight, left: 0};
+        }
+    }
+    subtitle.attr('transform', model.translate(this.subtitlePosition));
+};
+
+Dressing.prototype.addTitle = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    var titleLineHeight = this.defaultLineHeight;
+    var titleLineHeightActual = Math.ceil(this.titleFontSize * titleLineHeight);
+    var titleLineSpacing = titleLineHeightActual - this.titleFontSize;
+    var titleTextWrapper = textArea().width(model.contentWidth).lineHeight(titleLineHeightActual);
+
+    var title = svg.append('g').attr('class', 'chart-title').datum(model.title).call(titleTextWrapper);
+    if (!this.titlePosition) {
+        if (model.title) {
+            this.titlePosition = {top: this.headerHeight + this.titleFontSize, left: 0};
+            this.headerHeight += (getHeight(title) + this.blockPadding - titleLineSpacing);
+        } else {
+            this.titlePosition = {top: this.headerHeight, left: 0};
+        }
+    }
+    title.attr('transform', model.translate(this.titlePosition));
+};
+
+Dressing.prototype.addSeriesKey = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    if (!model.key) {
+        return;
+    }
+    var chartKey = seriesKey({
+        lineThickness: model.lineStrokeWidth,
+        chartType: model.chartType
+    })
+        .style(function (d) {
+            return d.value;
+        })
+        .label(function (d) {
+            return d.key;
+        });
+    var entries = model.y.series.map(function (d) {
+        return {key: d.label, value: d.className};
+    });
+
+    var svgKey = svg.append('g').attr('class', 'chart__key').datum(entries).call(chartKey);
+    if (!this.keyPosition) {
+        this.keyPosition = {top: this.headerHeight, left: this.halfLineStrokeWidth};
+        this.headerHeight += (getHeight(svgKey) + this.blockPadding);
+    }
+    svgKey.attr('transform', model.translate(this.keyPosition));
+};
+
+
+Dressing.prototype.addFootNotes = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    var text = textArea().width(this.model.contentWidth - this.model.logoSize).lineHeight(this.footerLineHeight);
+    var footnotes = svg.append('g').attr('class', 'chart-footnote').datum(model.footnote).call(text);
+    var footnotesHeight = getHeight(footnotes);
+
+    var footerHeight = Math.max(footnotesHeight + (this.blockPadding * 2), model.logoSize);
+    var currentPosition = model.chartPosition.top + model.chartHeight;
+
+    footnotes.attr('transform', model.translate({top: currentPosition + this.footerLineHeight + this.blockPadding}));
+    this.footerHeight += (footerHeight + this.blockPadding);
+};
+
+Dressing.prototype.addSource = function () {
+    var svg = this.svg;
+    var model = this.model;
+
+    var text = textArea().width(this.model.contentWidth - this.model.logoSize).lineHeight(this.footerLineHeight);
+    var sourceLineHeight = this.defaultLineHeight;
+    var sourceLineHeightActual = this.sourceFontSize * sourceLineHeight;
+    var source = svg.append('g').attr('class', 'chart-source').datum(model.sourcePrefix + model.source).call(text);
+    var sourceHeight = getHeight(source);
+    var currentPosition = model.chartPosition.top + model.chartHeight;
+
+    source.attr('transform', model.translate({top: this.footerHeight + currentPosition + this.blockPadding}));
+    if (model.hideSource) {
+        source.remove();
+    }
+    this.sourceFontOffset = sourceLineHeightActual - this.sourceFontSize;
+    this.footerHeight += sourceHeight;
+};
+
+Dressing.prototype.getSourceFontOffset = function () {
+    return this.sourceFontOffset;
+};
+
+Dressing.prototype.setHeight = function () {
+    var model = this.model;
+    if (!model.height) {
+        model.height = this.headerHeight + model.chartHeight + this.footerHeight;
+    } else {
+        model.chartHeight = model.height - this.headerHeight - this.footerHeight;
+        if (model.chartHeight < 0) {
+            model.error({
+                message: 'calculated plot height is less than zero'
+            });
+        }
+    }
+    this.svg.attr('height', Math.ceil(model.height));
+};
+
+Dressing.prototype.setPosition = function () {
+    this.model.chartPosition = {
+        top: this.headerHeight + this.halfLineStrokeWidth,
+        left: (this.model.numberAxisOrient === 'left' ? 0 : this.halfLineStrokeWidth)
+    };
+};
+
+module.exports = Dressing;
+
+},{"../element/logo.js":19,"../element/series-key.js":20,"../element/text-area.js":21}],29:[function(require,module,exports){
+var d3 = require("./../../../../d3/d3.js");
+
+module.exports = {
+    intersection: function (a, b) {
+        var overlap = (
+        a.left <= b.right &&
+        b.left <= a.right &&
+        a.top <= b.bottom &&
+        b.top <= a.bottom
+        );
+        return overlap;
+    },
+
+    overlapping: function (dElements) {
+        var self = this;
+        var bounds = [];
+        var overlap = false;
+        dElements.each(function (d, i) {
+            var rect = this.getBoundingClientRect();
+            var include = true;
+            bounds.forEach(function (b, i) {
+                if (self.intersection(b, rect)) {
+                    include = false;
+                    overlap = true;
+                }
+            });
+            if (include) {
+                bounds.push(rect);
+            }
+        });
+        return overlap;
+    },
+
+    removeDays: function (g, selector) {
+        var dElements = g.selectAll(selector);
+        var elementCount = dElements[0].length;
+
+        function remove(d, i) {
+            var d3This = d3.select(this);
+            if (i !== 0 && i !== elementCount - 1 && d3This.text() != 1) {
+                d3This.remove();
+            }
+        }
+
+        dElements.each(remove);
+    },
+
+    removeOverlapping: function (g, selector) {
+        var self = this;
+        var dElements = g.selectAll(selector);
+        var elementCount = dElements[0].length;
+        var limit = 5;
+
+        function remove(d, i) {
+            var last = i === elementCount - 1;
+            var previousLabel = dElements[0][elementCount - 2];
+            var lastOverlapsPrevious = (last && self.intersection(previousLabel.getBoundingClientRect(), this.getBoundingClientRect()));
+            if (last && lastOverlapsPrevious) {
+                d3.select(previousLabel).remove();
+            } else if (i % 2 !== 0 && !last) {
+                d3.select(this).remove();
+            }
+        }
+
+        while (self.overlapping(g.selectAll(selector)) && limit > 0) {
+            limit--;
+            g.selectAll(selector).each(remove);
+            dElements = g.selectAll(selector);
+            elementCount = dElements[0].length;
+        }
+    },
+
+    removeDuplicates: function (g, selector) {
+        var dElements = g.selectAll(selector);
+
+        function remove(label, i) {
+            if (i === 0) return;
+            var d3This = d3.select(this);
+            var previousLabel = dElements[0][i - 1];
+            if (d3This.text() === d3.select(previousLabel).text()) {
+                d3This.remove();
+            }
+        }
+
+        dElements.each(remove);
+    }
+};
+
+},{"./../../../../d3/d3.js":4}],30:[function(require,module,exports){
 //a place to define custom line interpolators
 
 var d3 = require("./../../../../d3/d3.js");
 
-function gappedLineInterpolator(points){  //interpolate straight lines with gaps for NaN
+function gappedLineInterpolator(points) {  //interpolate straight lines with gaps for NaN
     'use strict';
 
-  var section = 0;
-  var arrays = [[]];
-  points.forEach(function(d,i){
-    if(isNaN(d[1])){
-      if(arrays[section].length==1){
-          console.log('warning: Found a line fragment which is a single point this won\'t be drawn');
-      }
-      section++;
-      arrays[section] = [];
-    }else{
-      arrays[section].push(d);
-    }
-  });
+    var section = 0;
+    var arrays = [[]];
+    points.forEach(function (d, i) {
+        if (isNaN(d[1])) {
+            if (arrays[section].length == 1) {
+                console.log('warning: Found a line fragment which is a single point this won\'t be drawn');
+            }
+            section++;
+            arrays[section] = [];
+        } else {
+            arrays[section].push(d);
+        }
+    });
 
-  var pathSections = [];
-  arrays.forEach(function(points){
-    pathSections.push(d3.svg.line()(points));
-  });
-  var joined = pathSections.join('');
-  return joined.substr(1); //substring becasue D£ always adds an M to a path so we end up with MM at the start
+    var pathSections = [];
+    arrays.forEach(function (points) {
+        pathSections.push(d3.svg.line()(points));
+    });
+    var joined = pathSections.join('');
+    return joined.substr(1); //substring becasue D£ always adds an M to a path so we end up with MM at the start
 }
 
 module.exports = {
-  gappedLine:gappedLineInterpolator
+    gappedLine: gappedLineInterpolator
 };
 
-},{"./../../../../d3/d3.js":4}],27:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],31:[function(require,module,exports){
 var thicknesses = {
-  small: 2,
-  medium: 4,
-  large: 6
+    small: 2,
+    medium: 4,
+    large: 6
 };
 
 var defaultThickness = thicknesses.medium;
 
-module.exports = function(value) {
+module.exports = function (value) {
 
-  // fail fast
-  if (!value) {
-    return defaultThickness;
-  }
+    // fail fast
+    if (!value) {
+        return defaultThickness;
+    }
 
-  var lineThicknessIsNumber = value &&
-      typeof value === 'number' &&
-      !isNaN(value);
+    var lineThicknessIsNumber = value &&
+        typeof value === 'number' && !isNaN(value);
 
-  if (lineThicknessIsNumber) {
-    return value;
-  } else if (typeof value === 'string' && value.toLowerCase() in thicknesses) {
-    return thicknesses[value];
-  } else {
-    return defaultThickness;
-  }
+    if (lineThicknessIsNumber) {
+        return value;
+    } else if (typeof value === 'string' && value.toLowerCase() in thicknesses) {
+        return thicknesses[value];
+    } else {
+        return defaultThickness;
+    }
 };
 
-},{}],28:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 //example:
 //http://codinginparadise.org/projects/svgweb-staging/tests/htmlObjectHarness/basic-metadata-example-01-b.html
 var svgSchema = 'http://www.w3.org/2000/svg';
@@ -24777,7 +25221,7 @@ var xmlnsSchema = 'http://www.w3.org/2000/xmlns/';
 var rdfSchema = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 var dcSchema = 'http://purl.org/dc/elements/1.1/';
 var ccSchema = 'http://creativecommons.org/ns#';
-var prismSchema = "http://prismstandard.org/namespaces/1.0/basic/" ;
+var prismSchema = "http://prismstandard.org/namespaces/1.0/basic/";
 var rdfsSchema = "http://www.w3.org/2000/01/rdf-schema#";
 
 function create(svg, model) {
@@ -24818,54 +25262,55 @@ function create(svg, model) {
 module.exports = {
     create: create
 };
-},{}],29:[function(require,module,exports){
+
+},{}],33:[function(require,module,exports){
 function isTruthy(value) {
-	return !!value;
+    return !!value;
 }
 
 function normalise(value) {
-	var d = {key: null, label: null};
+    var d = {key: null, label: null};
 
-	if (!value) {
-		return d;
-	}
+    if (!value) {
+        return d;
+    }
 
-	if (typeof value === 'string') {
-		d.key = d.label = value;
-	} else if (Array.isArray(value) && value.length <= 2 && typeof value[0] === 'string') {
-		d.key = value[0];
-		d.label = (typeof value[1] === 'string') ? value[1] : d.key;
-	} else if (typeof value === 'function') {
-		d = value();
-	} else if (value.key) {
-		d.key = value.key;
-		d.label = value.label || d.key;
-	}
+    if (typeof value === 'string') {
+        d.key = d.label = value;
+    } else if (Array.isArray(value) && value.length <= 2 && typeof value[0] === 'string') {
+        d.key = value[0];
+        d.label = (typeof value[1] === 'string') ? value[1] : d.key;
+    } else if (typeof value === 'function') {
+        d = value();
+    } else if (value.key) {
+        d.key = value.key;
+        d.label = value.label || d.key;
+    }
 
-	if (typeof d.key === 'function') {
-		d.key = d.key();
-	}
+    if (typeof d.key === 'function') {
+        d.key = d.key();
+    }
 
-	if (typeof d.label === 'function') {
-		d.label = d.label();
-	}
+    if (typeof d.label === 'function') {
+        d.label = d.label();
+    }
 
-	return d;
+    return d;
 }
 
 function normaliseY(value) {
-	if (!value) return [];
-	return (!Array.isArray(value) ? [normalise(value)] : value.map(normalise)).filter(isTruthy);
+    if (!value) return [];
+    return (!Array.isArray(value) ? [normalise(value)] : value.map(normalise)).filter(isTruthy);
 }
 
 module.exports = {
-	normaliseY: normaliseY,
-	normalise: normalise
+    normaliseY: normaliseY,
+    normalise: normalise
 };
 
-},{}],30:[function(require,module,exports){
-module.exports = "0.0.6";
-},{}],31:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
+module.exports = "0.1.0";
+},{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -26415,7 +26860,7 @@ module.exports = "0.0.6";
   }
 }.call(this));
 
-},{}],32:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -26440,14 +26885,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],33:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],34:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -27035,7 +27480,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":33,"inherits":32}],35:[function(require,module,exports){
+},{"./support/isBuffer":37,"inherits":36}],39:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -27082,7 +27527,7 @@ Handlebars.noConflict = function() {
 Handlebars['default'] = Handlebars;
 
 exports["default"] = Handlebars;
-},{"./handlebars/base":36,"./handlebars/exception":37,"./handlebars/runtime":38,"./handlebars/safe-string":39,"./handlebars/utils":40}],36:[function(require,module,exports){
+},{"./handlebars/base":40,"./handlebars/exception":41,"./handlebars/runtime":42,"./handlebars/safe-string":43,"./handlebars/utils":44}],40:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -27326,7 +27771,7 @@ var createFrame = function(object) {
   return frame;
 };
 exports.createFrame = createFrame;
-},{"./exception":37,"./utils":40}],37:[function(require,module,exports){
+},{"./exception":41,"./utils":44}],41:[function(require,module,exports){
 "use strict";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -27358,7 +27803,7 @@ function Exception(message, node) {
 Exception.prototype = new Error();
 
 exports["default"] = Exception;
-},{}],38:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -27579,7 +28024,7 @@ exports.noop = noop;function initData(context, data) {
   }
   return data;
 }
-},{"./base":36,"./exception":37,"./utils":40}],39:[function(require,module,exports){
+},{"./base":40,"./exception":41,"./utils":44}],43:[function(require,module,exports){
 "use strict";
 // Build out our basic SafeString type
 function SafeString(string) {
@@ -27591,7 +28036,7 @@ SafeString.prototype.toString = SafeString.prototype.toHTML = function() {
 };
 
 exports["default"] = SafeString;
-},{}],40:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 /*jshint -W004 */
 var escape = {
@@ -27693,15 +28138,15 @@ exports.blockParams = blockParams;function appendContextPath(contextPath, id) {
 }
 
 exports.appendContextPath = appendContextPath;
-},{}],41:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime').default;
 
-},{"./dist/cjs/handlebars.runtime":35}],42:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":39}],46:[function(require,module,exports){
 module.exports = require("handlebars/runtime")["default"];
 
-},{"handlebars/runtime":41}],43:[function(require,module,exports){
+},{"handlebars/runtime":45}],47:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('./Datatypes.js');
 
@@ -27727,7 +28172,7 @@ var Axis = Backbone.Model.extend({
 
 module.exports = Axis;
 
-},{"./../core/backbone.js":75,"./Datatypes.js":48}],44:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./Datatypes.js":51}],48:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DependantAxis = require('./DependantAxis.js');
 var IndependantAxis = require('./IndependantAxis.js');
@@ -27836,7 +28281,7 @@ var Chart = Backbone.Model.extend({
 
 module.exports = Chart;
 
-},{"./../core/backbone.js":75,"./Axis.js":43,"./Dataset.js":47,"./DependantAxis.js":49,"./IndependantAxis.js":53}],45:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./Axis.js":47,"./Dataset.js":50,"./DependantAxis.js":52,"./IndependantAxis.js":56}],49:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Axis = require('./Axis.js');
 
@@ -27851,21 +28296,1197 @@ module.exports = Backbone.Model.extend({
 
 });
 
-},{"./../core/backbone.js":75,"./Axis.js":43}],46:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./Axis.js":47}],50:[function(require,module,exports){
+var Backbone = require('./../core/backbone');
+
+module.exports = Backbone.Model.extend({
+    defaults: {
+        rows: []
+    }
+});
+
+},{"./../core/backbone":62}],51:[function(require,module,exports){
+var Datatypes = module.exports = {
+    CATEGORICAL: 'categorical',
+    NUMERIC: 'numeric',
+    TIME: 'time',
+    NONE: '',
+
+    isCategorical: function (value) {
+        return value === Datatypes.CATEGORICAL;
+    },
+    isNumeric: function (value) {
+        return value === Datatypes.NUMERIC;
+    },
+    isTime: function (value) {
+        return value === Datatypes.TIME;
+    }
+};
+
+},{}],52:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var Axis = require('./Axis.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var Datatypes = require('./Datatypes.js');
+
+function captitalizeFirstLetter(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.replace(/^./, function (match) {
+        return match.toUpperCase();
+    });
+}
+
+var defaultDatatype = Datatypes.NUMERIC;
+
+var DependantAxis = Axis.extend({
+    initialize: function () {
+        this.columns = new Backbone.Collection();
+
+        var fn = (function (model) {
+            model.set('axis', this.get('name'));
+            model.collection = this.columns;
+        }).bind(this);
+
+        this.listenTo(this.columns, 'remove', function (model) {
+            model.set('axis', Axis.NONE);
+            model.collection = null;
+        });
+        this.listenTo(this.columns, 'add', fn);
+        this.listenTo(this.columns, 'reset', function (collection) {
+            collection.forEach(fn);
+        });
+        this.listenTo(this.columns, 'add remove reset', function () {
+            var numCols = this.columns.length;
+            var warning = '';
+            if (numCols === 0) {
+                this.set({
+                    datatype: Datatypes.NONE,
+                    suggestedLabel: ''
+                });
+            } else if (numCols === 1) {
+                var column = this.columns.at(0);
+                var typeInfo = column.get('typeInfo');
+                this.set({
+                    datatype: typeInfo.datatype,
+                    suggestedLabel: captitalizeFirstLetter(column.get('property'))
+                });
+            } else if (numCols > 1) {
+                var current;
+                var last;
+                var types = {};
+                for (var i = numCols; i--;) {
+                    current = this.columns.at(i).get('typeInfo').datatype;
+                    if (last && current && current !== last) {
+                        warning = 'Mismatching datatypes';
+                        break;
+                    }
+                    if (!types[current]) {
+                        types[current] = 1;
+                    } else {
+                        types[current] += 1;
+                    }
+                    last = current;
+                }
+                types = _.pairs(types).sort(function (a, b) {
+                    return a[1] < b[1];
+                });
+                var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
+                this.set({
+                    suggestedLabel: '',
+                    datatype: mostPopularType
+                });
+            }
+            this.set('warningMessage', warning);
+        });
+        this.listenTo(this.columns, 'all', function () {
+            var length = this.columns ? this.columns.length : 0;
+            this.set({hasSeries: !!length, multiseries: length > 1, numSeries: length});
+        });
+    },
+    defaults: _.extend({}, Axis.prototype.defaults, {
+        name: Axis.Y,
+        datatype: defaultDatatype,
+        hasSeries: false,
+        multiseries: false,
+        numSeries: 0,
+    })
+});
+
+module.exports = DependantAxis;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Axis.js":47,"./Datatypes.js":51}],53:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var Chart = require('./Chart.js');
+
+var Graphic = Backbone.Model.extend({
+
+    initialize: function () {
+        this.chart = new Chart();
+    },
+
+    defaults: {
+        title: 'Untitled chart',
+        subtitle: '',
+        source: '',
+        footnote: '',
+        noSource: false
+    },
+
+    subtitleSuggestion: function (save) {
+        var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
+        var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
+        var result;
+
+        if (label) {
+            result = !units ? label : label + ' (' + units + ')';
+            if (save) {
+                this.set('subtitle', result);
+            }
+        }
+
+        return result;
+    }
+});
+
+module.exports = Graphic;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Chart.js":48}],54:[function(require,module,exports){
+var Backbone = require('./../core/backbone');
+
+var GraphicType = Backbone.Model.extend({
+
+    initialize: function (attributes, options) {
+        this.graphic = options.graphic;
+        this.variations = options.variations;
+        this.controls = options.controls;
+    },
+
+    defaults: {
+        typeName: ''
+    }
+});
+
+module.exports = GraphicType;
+
+},{"./../core/backbone":62}],55:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+
+function getKeyLabel(d) {
+    var property = d.get('property');
+    var label = d.get('label') || property;
+    return {key: property, label: label};
+}
+
+var GraphicVariation = Backbone.Model.extend({
+
+    defaults: {
+        svg: null
+    },
+
+    initialize: function (attributes, options) {
+        this.variation = options.variation;
+        this.graphic = options.graphic;
+        this.graphicType = options.graphicType;
+        this.errors = new Backbone.Collection([]);
+    },
+
+    createConfig: function () {
+        // FIXME: is it still necessary to make a copy of the data?
+        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
+            return Object.create(d);
+        });
+
+        if (!data.length) return;
+
+        var xAxisProperty = this.graphic.chart.xAxis.get('property');
+        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
+
+        if (!xAxisProperty || !yAxisProperties.length) {
+            return;
+        }
+
+        var g = this.graphic.toJSON();
+
+        var config = {
+
+            width: this.variation.get('width'),
+            height: this.variation.get('height'),
+
+            title: g.title,
+            subtitle: g.subtitle,
+            source: g.source,
+            hideSource: g.noSource,
+            footnote: g.footnote,
+
+            data: data,
+            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
+
+            x: {
+                series: {
+                    key: xAxisProperty,
+                    label: xAxisProperty
+                }
+            },
+
+            y: {
+                series: yAxisProperties
+            }
+
+        };
+
+        return this.graphicType.controls.overrideConfig(config);
+    },
+
+    toJSON: function () {
+
+        var d = Backbone.Model.prototype.toJSON.call(this);
+
+        d.graphic = this.graphic.toJSON();
+        d.graphicType = this.graphicType.toJSON();
+        d.variation = this.variation.toJSON();
+
+        var svg = this.attributes.svg;
+
+        if (!svg) {
+            d.svg = null;
+        } else {
+            var svgRect = svg.getBoundingClientRect();
+            d.svg = {
+                width: svgRect.width,
+                height: svgRect.height
+            };
+        }
+
+        return d;
+    }
+});
+
+module.exports = GraphicVariation;
+
+},{"./../core/backbone.js":62}],56:[function(require,module,exports){
+var Axis = require('./Axis.js');
+var Datatype = require('./Datatypes.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var Column = require('./Column.js');
+
+var defaultDatatype = Datatype.TIME;
+
+function convertPipelineIndexHeader(property, datatype) {
+    if (property === '&') {
+        if (Datatype.isCategorical(datatype)) {
+            return 'Category';
+        } else if (Datatype.isTime(datatype)) {
+            return 'Time';
+        }
+    }
+    return property;
+}
+
+var IndependantAxis = Axis.extend({
+
+    initialize: function () {
+        this.on('change:property', function (model, value) {
+            this.set({
+                suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
+                label: null
+            });
+        });
+    },
+
+    defaults: _.extend({}, Axis.prototype.defaults, {
+        name: Axis.X,
+        datatype: defaultDatatype
+    }),
+
+    useColumn: function (column) {
+
+        if (!column) {
+            this._column = null;
+            this.set('property', null);
+            return;
+        }
+
+        var typeInfo = column.get('typeInfo');
+        var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
+        var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        this._column = column;
+
+        this.set({
+            property: column.get('property'),
+            datatype: datatype,
+            dateFormat: dateFormat
+        });
+    },
+
+    createColumn: function () {
+        var attributes = _.extend({}, this._column.attributes);
+        attributes.property = this.attributes.property;
+        attributes.datatype = this.attributes.datatype;
+        attributes.label = this.attributes.label || this.attributes.property;
+        attributes.axis = Axis.X;
+        return new Column(attributes);
+    }
+});
+
+module.exports = IndependantAxis;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./Axis.js":47,"./Column.js":49,"./Datatypes.js":51}],57:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+var Chart = require('./Chart.js');
+var TickStyle = require('./TickStyle.js');
+
+var LineControls = Backbone.Model.extend({
+
+    defaults: {
+        thinLines: false,
+        flipYAxis: false,
+        startFromZero: false,
+        nice: false,
+        tickStyleX: TickStyle.AUTO,
+        tickStyleY: TickStyle.AUTO
+    },
+
+    overrideConfig: function (config) {
+        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
+        config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
+        config.y.flip = this.attributes.flipYAxis;
+        config.niceValue = this.attributes.nice;
+        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
+        return config;
+    }
+
+});
+
+
+module.exports = LineControls;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./Chart.js":48,"./TickStyle.js":58}],58:[function(require,module,exports){
+module.exports = {
+    // works out best set of ticks to display
+    AUTO: 'auto',
+
+    // end of the domain round up/down to nearest unit
+    NICE: 'nice',
+
+    // only 2 ticks. a tick at each end of the domain, no other ticks in between. no rounding
+    SIMPLE: 'simple',
+
+    // an amount of ticks to be display
+    AMOUNT: 'amount',
+
+    //  uses array of values for ticks
+    ARRAY: 'array',
+};
+
+},{}],59:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+
+module.exports = new Backbone.Collection([
+    {width: 300, height: null, variationName: 'regular web inline'},
+    {width: 186, height: null, variationName: 'small web inline'},
+    {width: 600, height: null, variationName: 'large web inline'},
+]);
+
+},{"./../core/backbone.js":62}],60:[function(require,module,exports){
+var Backbone = require('./backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+var CollectionView = Backbone.View.extend({
+
+    _views: [],
+
+    initialize: function (options) {
+        Backbone.View.prototype.initialize.apply(this, arguments);
+        var itemView = options.itemView || this.itemView || {};
+        this.itemContainer = options.itemContainer || this.itemContainer || null;
+        this.template = options.template || this.template || null;
+        if (_.isFunction(itemView)) {
+            this._ItemClass = itemView;
+        } else {
+            if (itemView.template && !itemView.render) {
+                if (!!itemView.bindings) {
+                    itemView.render = function () {
+                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
+                        this.stickit();
+                        return this;
+                    };
+                } else {
+                    itemView.render = function () {
+                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
+                        return this;
+                    };
+                }
+            }
+            this._ItemClass = Backbone.View.extend(itemView);
+        }
+
+        this.listenTo(this.collection, 'add remove reset sort', function (e) {
+            this.itemsDirty = true;
+            this.render();
+        });
+    },
+
+    itemsDirty: false,
+
+    removeViews: function () {
+        this._views.forEach(function (view) {
+            view.remove();
+        });
+        this._views = [];
+        this.itemsDirty = false;
+    },
+
+    createView: function (model, index) {
+        var o = model instanceof Backbone.Collection ? {collection: model} : {model: model};
+        return new this._ItemClass(o);
+    },
+
+    createViews: function () {
+        if (!this.collection) return [];
+        return this.collection.map(function (model, index) {
+            return this.createView.call(this, model, index, this._ItemClass);
+        }, this);
+    },
+
+    renderItems: function () {
+        var isDirty = this.itemsDirty;
+        if (isDirty) {
+            this.removeViews();
+        }
+        var el = this.itemContainer ? this.$(this.itemContainer)[0] : this.el;
+        if (!el) return;
+        var render = isDirty || !this._views.length;
+        if (render) {
+            this._views = this.createViews();
+        }
+        this._views.forEach(function (view) {
+            if (render) view.render();
+            el.appendChild(view.el);
+        });
+    },
+
+    render: function () {
+        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
+        this.renderItems();
+        return this;
+    }
+});
+
+module.exports = CollectionView;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":62}],61:[function(require,module,exports){
+var Backbone = require('./backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+var last;
+var RegionView = Backbone.View.extend({
+
+    initRegions: function () {
+        this.regions = _.extend({}, this.regions);
+        _.each(this.regions, function (region, selector) {
+            region = _.isFunction(region) ? {factory: region} : (!!region ? region : {
+                factory: function () {
+                }
+            });
+            region._dirty = false;
+            region._view = null;
+            this.regions[selector] = region;
+        }, this);
+    },
+
+    initialize: function () {
+        Backbone.View.prototype.initialize.apply(this, arguments);
+        this.initRegions();
+    },
+
+    renderRegions: function () {
+        _.each(this.regions, function (region, selector) {
+            var el = this.findRegionContainer(selector);
+            if (!!region._view && (this.regionsDirty || !el)) {
+                region._view.remove();
+                region._view = null;
+            }
+            if (!el) return;
+            if (!region._view) {
+                region._view = this.createRegion(selector);
+                region._view.render();
+            }
+            el.appendChild(region._view.el);
+        }, this);
+        this.regionsDirty = false;
+    },
+
+    createRegion: function (selector) {
+        return this.regions[selector].factory.call(this);
+    },
+
+    findRegionContainer: function (selector) {
+        return selector === ':el' ? this.el : this.$el.find(selector)[0];
+    },
+
+    removeRegions: function () {
+        _.each(this.regions, function (region) {
+            region._view.remove();
+            // TODO: remove from the DOM too?
+        });
+    },
+
+    remove: function () {
+        this.removeRegions();
+        Backbone.View.prototype.remove.apply(this, arguments);
+    },
+
+    render: function () {
+        Backbone.View.prototype.render.apply(this, arguments);
+        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
+        this.renderRegions();
+        return this;
+    }
+});
+
+module.exports = RegionView;
+
+},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":62}],62:[function(require,module,exports){
+var $ = require("./../../../bower_components/jquery/dist/jquery.js");
+var Backbone = require("./../../../bower_components/backbone/backbone.js");
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+
+// this nasty little line fixes Boostrap's jQuery plugins and Backbone
+// as they both are not fit for using with Browserify
+window.jQuery = Backbone.$ = $;
+var Stickit = require("./../../../bower_components/backbone.stickit/backbone.stickit.js");
+require("./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js");
+
+$(document.body).tooltip({selector: '.has-tooltip[title]'});
+
+var handlers = [
+    require('./stickit-handlers/btn-group-radio.js')
+];
+
+handlers.forEach(function (handler) {
+    Backbone.Stickit.addHandler(handler);
+});
+
+module.exports = Backbone;
+
+},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":35,"./stickit-handlers/btn-group-radio.js":63}],63:[function(require,module,exports){
+var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
+
+module.exports = {
+
+    selector: '.btn-group-radio',
+
+    events: ['click'],
+
+    update: function ($el, val) {
+        $el.find('.btn.active').removeClass('active');
+        $el.find('.btn[value="' + val + '"]').addClass('active');
+    },
+
+    getVal: function ($el, event, options) {
+        var $target = $(event.target);
+        var val = $target.val();
+        var currentVal = options.view.model.get(options.observe);
+        if (val !== currentVal) {
+            options.update($el, val, options.view.model, options);
+        }
+        return val;
+    },
+
+    onSet: function (val, options) {
+        var v;
+
+        if (!options.type) {
+            return val;
+        }
+
+        switch (options.type.toLowerCase()) {
+            case 'number':
+                v = Number(val.replace(/(^[^\d]+|\,|[^\d]+$)/g, ''));
+                v = isNaN(v) ? val : v;
+                break;
+            case 'string':
+                v = String(val);
+                break;
+            case 'boolean':
+                v = /^true$/i.test(val);
+                break;
+            default:
+                v = val;
+        }
+        return v;
+    }
+};
+
+},{"./../../../../bower_components/jquery/dist/jquery.js":5}],64:[function(require,module,exports){
+var svgDataURI = require('./svgDataURI.js');
+var util = require('./utils.js');
+
+module.exports = function download(name, svg, types, bgColor, callback) {
+    callback = callback || function () {
+        };
+    window.requestAnimationFrame(function () {
+        types = types instanceof Array ? types : [types];
+        types.forEach(function (type) {
+            var filename = util.createFilename(name, type);
+            var download = util.fileDownloader(filename);
+            if (type === 'svg') {
+                download.dataURI(svgDataURI.elementToDataURI(svg, {
+                    encoding: 'utf8',
+                    bgColor: bgColor
+                })).start(callback);
+            } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
+                svgDataURI.elementToImageDataURI(svg, {type: type, bgColor: bgColor}, function (err, datauri) {
+                    if (err) {
+                        console.error(err.message);
+                        return;
+                    }
+                    download.dataURI(datauri).start(callback);
+                });
+            } else {
+                console.error('Unsupported format:', type);
+                callback();
+            }
+        });
+    });
+};
+
+},{"./svgDataURI.js":65,"./utils.js":66}],65:[function(require,module,exports){
+var utils = require('./utils.js');
+
+
+var bentonFontDataURI = "data:application/font-woff;charset=utf-8;base64,d09GRgABAAAAAGkgABMAAAAA32wAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAABqAAAABwAAAAcYlPd80dERUYAAAHEAAAAIwAAACYB+gDyR1BPUwAAAegAABBUAABCRm+V6WJHU1VCAAASPAAAAGsAAACMhS6URU9TLzIAABKoAAAATwAAAFZoWVT3Y21hcAAAEvgAAAGOAAAB6v7OtAhjdnQgAAAUiAAAADAAAAAwC3MPimZwZ20AABS4AAABsQAAAmVTtC+nZ2FzcAAAFmwAAAAIAAAACAAAABBnbHlmAAAWdAAASr0AAIroTPfXY2hlYWQAAGE0AAAAMQAAADYAUFNlaGhlYQAAYWgAAAAgAAAAJA/MB3JobXR4AABhiAAAAlEAAAOi4w5QhmxvY2EAAGPcAAABygAAAdTtxhGCbWF4cAAAZagAAAAgAAAAIAIGAZNuYW1lAABlyAAAAMQAAAGIHXU5T3Bvc3QAAGaMAAAB6QAAAuMsQgd8cHJlcAAAaHgAAACfAAAA5Kj45lh3ZWJmAABpGAAAAAYAAAAGU7lQUwAAAAEAAAAAyYlvMQAAAADMUWqKAAAAAMx5BDd42mNgZGBg4ANiOQYQYAJCRoYnQPyU4QWQzQIWYwAAKuoC7QB42u2abWhc15nHj2xpk2gt68UjS5asF9uqt1FXZLGEvbE9STbrlSdunLVlxY3kScmKxFsa0UVmd1NIPoTCVFAvBOrSD0Mp2UUg4w9DMf4wmGCwpqlXkCFVAr4rh8EZjGwaLqIMrPCHRbO/57lnRmN1zo1r+kYRl/+cmXvvnPM/z3nezoupMcbUm+fNt8zmI8MvjprIP597403TO/lP//od89emlqemWDTy1tr3morvm8zmN9849x0T0c8O/ezloTwx+j+j/9hsHjdNpt3etWXNR0H5lZ/w/bLWupm3flrzVbPHbCumTFtxxuyg7KDsLObNXr73F5NmHxgC+4ueOVCsN39bzJini4PmIDgMhvl9FMTAC+AYfTxuImaE76PgdNE336Aco45xEKeec/y+zvc5Sm81a26BJb7fBbt/52wenUlbMWb6qHVvMUHrCTPA032UQ0AYHNEWB2lxkBYHgxYpT4CTYAScAqPgZXAavALGinEYxM0ZEC9OmVdpR5hM82wWXKf+OcoSExnTRtNsWkzNnmd07P7RXDRXzS9rdtfE6rrrXn+ie8v/NOznerHh3NadW3/Q2NR4telI86bm15u/19LX8sm270a6Iz9vnWi9v/2/2g63/0X7L3f8e0es45PO3s7xzsnOX+wc2vn9rkjneNd412vcGe+63DnZvaV7e/d3u7/o6evp7/lRz0rvUO8POz7p/aj3i96PdkV2HdsV33V31/3dUt7fPbr7+3tM8Nn7xa4IHNsYsT76NUA/pinrHrhzuvhrvRvRux2M0l7k2Q8G6O8+yiFQOZqBXj1VMZoecvSRo2/i1HOd3zKKT6y1s5o3L6DjYzwdpzxDDXFKafd/VctcEO1zQbTSBdFWF0SLXRDtdkG03oV9IRgKgeiuC2JVLoi1uSBW6MLBEBwOgYy/C0dDEAvBCyEQHXNBfJoLopMujIZAPJIL4qlcEA/mwngIxOO5IP7HBfGQLojNuSAe1YVbIRC/58LdEDSbCIy2I70OPGgf1jNAeUC1cAptS5hD3BPNilKWvMcZ/hmnfBVMc395wzds+Ibfyjds2P+fhv0va8bmgmRyLkiG50J/CCQjdEEyRReGQhBmgZJxujAcgqMhiIUg1CJ47sKJEJwMwUgIToVgNAQvh+B0CF4JgWTwLoyH4EwIZCbggswQXAiz3GnNvqtjNgQyA3FBZiYuPKrltpkt+NGtxR+bxtV7pokeN1O2UOO24sdkWPWmtThPZPew5AnTXvyUmJrV+LizuGK6qKEb9OCPeomLr/P/Nyi/xftp6qwjQsWJRD4RJ0FkSRJB4swU+vjPAL8O8O7TvHsQHOLeYX5H+T7N935Th4zrQQNo4slu/rGHJ0EETmHPKew2hX0uUFOMduYfaOdZtUEPW8thUx6246PPHrqZs57eQ6d8dCeFjnyALjCj4fukemUfmaeQrWduUo9H/YuUtyhvc+8O5RLv3AWdppHPZtDCkz7Y7EU2/WAAOe2jHAL7i7+CpWelsQDLJfr8GUyz9NmHbQZvsgKzpYoMybcZ0hIyWYDRitlltnCnkZqaQdDiDVr0adGnxRu06NOiT4s+LWZsixla/IAWL9PigkpZWnyOZ8PgKIiBYyojHxn5OtM7Y/Oz1zRHuwEDH5nQFiw8WCRhkYRFKeubsa1eotUCrf6MVj+k1Qu0eoFWs7SaoFXxqKWWC+WWT4CTlsEpZVHAWwRxORipAnIpwEpiZ8Ey8zR7nLXMbvLbA4vgFtiN7ojOpJFPGtmkkU0aljkrFx+GPux8yygLoyyMsusYZS2jrGWUQ39KrK7A6opldUVZTdLmrOpQGlZZdCbDHLpWR25QtbmZsgUt6kIe3WCPzp5fgek1mF4jksl8/Bpsr8E2C9MCTAvI0oNtAVnmYTwB4wkYT8B4AsZxGCdgnIDxBIwTMJ6AcQLGE5rDvML3seJ7MH4PxjEYvwfjKIxT5h1sdhoOs7x7nXbnKG9z/3Put1u9q9R00beVCh3LwvAzGN6A4Q2r1UnVsfKKAVYQ6JKMlM9I+YyUz0j55rF1Wi21ezr28vZX8QMZ6wd8pOUhqYtI6iJSuoiULtpMWSzMs1xy8BA9L2lb5RqVX7GiURrLlYo1qmTZDwTjeFEzq5uSXSnnjHIWX1DyA1/DYw3isQbVNhpWV9Sf7oZxwHa9Bn4K2yhsxQfGYXsetk+r13pO12CuWbbXNOqPUAZs8+q5ShEvDsQGJsuraqJx16zXGrReazDwWqtnyxHhyYe04BTMMoxp8kst+Mutt+TVvPK878us98lA68jq1GYoW4o9MI1jH5fVitdGPKeWHDD1rIfzVfuOIJNhdPgoz2KUxyhP8PwkGOH3KY0KSdiKvqVh61XxNZ5q7qRG92/DWOT8Y7XskizFqlN/BFk+nCf8K7WptUjhrYsUJTnO23gsfiZTEZtKFjQfrAvyfE2GGSvDeStDz8rQg6VnWXp2pl+yKD+Yq1jr/8o661+oYLqyjqnIMwfTKzCdh2kaphdh+mkF0wcjy4iV4WmVXYmVX8FqoYJV4JsWNc41Msduwn6aKVvQuy7QDfbY1c69sOkHA8UdsLwEy0uwvAQr9G71/8zwKkxADBwDJ1YL5iQY4fspylHKlylPA81IKMeKnTCMwLAehp0wNOhdAv+c1FXUWeq9Thtzq+KBEvjnpNkL0wwsM7DMwNKHpQ/DeRgWYFiAoeRMBRgW1HLWIopvI0oO2eWRXQ7Z5ZFdTv1kIL8c8svbvEmsIqcWMcnvcyq/eeSXh1UB+eVg5Zf94j4b86ZszBusiHky0olyRjdQfL4iq0up1Qi7qNpwHGZRmEVhFrUzoZh5kTqOqy6W4l7Uxr2ojXtTNtOTuDeDXGdgL9n9DD2I04Ok+s131HoS9CJuM78ovUgiW6/sM0s9SVT0JElPkrYnjIJkrprdnqYnGXqSoSeZdT1J0pMpevIWPZmiJx49SdATn56I7afoSYqeTNGTFD15i56k6EnCxilZQ0vTkzQ9SdGTND1JaAQ/R11BT5L0RFYKZEVgykZx6YlHT8SvNmlckswoWLcK/EFpLSqNlfnrMqQlmEtcmoH5DMxnLPNKbzVjvdWM9VYZK3vJaRMwTlirS5SzJGE8C4I1jRn1pyWWQ1begxXyrrS+OOwvwP4C7COwvwD7C7CfsfJeCuRNJB5ezWOF97DCPKyTsK6vkHcM9jEsMg/7GBZ5D/Yx2O+B/RLsY7Afgf2InS+OwH4Q9nHYJ61V/htWuUIvLmCVefW94ndv845Y5xK4CyQbTdp8IAtzWa3Iwnpec7zAq/lqlWKRgSe7hLxTyPuSlXUetnlkfQm2eWSdgm1e41agHfkK7ciodkyqjMW7zSPjS5oLbGNGl3iI3Z8mc9zEHbs/PeXdn63lFZvKfbpg9vfgTmEw2xJeGZ3V1mrGs5Yf+mY70TRT9mZBPhR49RdsBBxjbjpevEP/rvKPjxmNDNEvo57oHRtfSiPweYUn6rRxOogzB4pPwuxtzbwOFX8Nu5Fy9nUE6Q8Xl5HDMnJYpv/L9H+Z1pfXZQbL5dgbxN3lcuyIPNDaWs3LFf1YpKZlalqgprzNMdayzlIfSvz3IK0Is+oo8/IoM/eoaQCSdzQxskHu4WEjefQsipYRuc1Z8xzfA8uVubCnc+Fj5blwkGFrH0xUNSWQoBfMffEU5FJmkfKWiarmiETvmLdNM61Kv4apPfNA7Ws1/8rOIINIMaveiKwE/reARIka3cmJ2LqmrM4v2LoWqGvR1rWk+r1+bjxpZTXHuyXJ335ILcpSU56a0tSUfWgt2qS1HUeb2m0bcZ1jNlO20IMgp5O2FunJvM2Y5jVjknmkZEmSxY8hgXHdG623I5+x80bPxtCM2Wl1KJh1remQb7WzoNq5FqWXy1lOIKs7Vr8+o4d3fkO/5qro2FbTaOp1NJopn0WnhqkxaImsBQQtSJZyj9rvUfM9aiowksKvQzP2BkZU5hZNylzmFymexm02nrPz7I/tPLskl4+p93Z5vSEY2ZzOn2/ihzywCG4BGeF221LTupYyFS1JNoPnp+8xymPqN8Vn3lnT+nJLeVrKayulFhqpvV7HVmoMpJ6mtqvUlrYST1PbVR3PNU1M67/bHPxSqucBP7HKD62GfGgl8aHVkNsV3DyVQiW3rVrjmsVU+Gybka/317M2435M198OaK6f0Vw/yPODdTfZVUqWV+UOa66ytj5UWhua0571qRdN2DwhyT9Sdh0vrvWtt9Vp7tXqekHwdrDi51qh8f7gKzS1v8HY5cMrvUj+t/Lhm0yEtzqIO1uQ31RFBO4pR+AxxlhOTsipiXeLZ5HblEbabmbCZ5kFnzV95BrlrFn3PEpZc6YssWAkgplwoGnnkdx5JHceycmKwnmkdZ5evK+SGmeeFUhoxUxTf5CVpVRnGqusuvq6wxvMGUvxPY5fbKpYRQlWUTeZHUStOj2H9Zf4iQYuOVnTgsQ7uB43XfTtCeJbP88HzFNkJ/uIXdvNETNs+kzMfJ3Z63HzkvmaOWG+yRvf5jpsJrmi5l+4njHvcD1r3uV6zkxz/Z15n+t5M8v19ybNdcRcN3PmH/Aln5mj5rb5nBprOr/Qcz29ZDofcM3VnNj8vdp3a3/w+Gv1zzTcb77c/N8tm1qaWrpbDre81PJa5G7kfuvW1khrR2tH29+07W+Ltb3U/r4AT92mu9TV0af7YNUh53JckNmeCzVokYfMfh/tyjkhF8I4/UcoGzlv5MJezYmroz8EAzrbqo59OqepjqEQ/D72uMPPuDzlxKPvcXtOjNk8qhrGQyDnvVy4rt6iOsL2qp99dP1lnuWCnD9zQc6luTBuPW81yDk2F+LWW1dDmL2sRYONk3Ebp182Tsb9uZ2MeUtPxrkgJ+ZckJN0LvSpZ6wOOXnnguRrLshJPRcO6q56dRzSnL86wiwpqnv91fGo8UnWu1yI24y+Gl4NgeyouLBxYnHDZ2+cWNw4sbhxYnHjxOLGicU/zInFuvI5i1bNlGT2NG+2mjqePY7e11M2UMqa4jZ9o4BNXyGy+rpeIqeB3uTfUzx/G2zWt9q420Fdm6lddlLm+fWpeYxafWr1qVXOPuV5Iu1l+HfK1HInx50cd7JmJ2/UVvx7njtL5j/1fKULcu7SBTmP6YLspbsg5zddaLG7qNUg5z1dkHOgLsj5UBfk3KgLcp7UBTln6oKcP3UhLDuS86oudOmJieroDoGce3VBzsO6IOdkXZDzsy7IuVoX5LytC7UVuptTTa1mRVldUUzpZ8IkdH/YhT//1bomJ2Q/3IU/rdW6HicedbVOdEP83Da1YB+rW9HV2xp+xc2o7mi48Og60+PEo+rMmK4DVkfYGmDYOp/s1LggOzguhI3FJ7rj40JzCGSHyIXwmaIb4TlsyomhEOy3J6Sq4Wm7/1cNB0NwSE9ZVsdh3dWsjmgIjoRAdtZcOBqCWAiOad5cHbJz58JoCGSnz4Vv2DMD1SA7gy6csec7q0F2El2QHUYXZu2ZsGqQ/UQXwjzXJrxUHRldsAe52TSYnfzuNbtMq3mGq818k6vdvGHOmh1miqvT3DQeby2aW6b7/wFWsHjNeNpjYGRgYOBisGPwYWB2cfMJYRBJL0rNZpDLSSzJY9BgYAHKMvz/DyQwWSCdjDmZ6YkMHCAWGLOAZRmBIowMemCaBWi6EIMUgwLDCwZmBk8Gf4bnYNqH4RkDE5D3FEj6AFUyMngCAM9uE34AeNpjYGTuZ5zAwMrAwmrMOouBgVEeQjNfZ0hhEmBgYGJgZWYBUSwNDAzrAxgYvBigICDNNYXBgYH3Nwubzz8fBgb2eYxnFIAGgOQA4nYMAwB42mNgYGBmgGAZBkYGEHgC5DGC+SwMJ4C0HoMCkMUHZPEy1DEsZvjPGMxYwXSM6Y4Cl4KIgpSCnIKSgpqCvoKVQrzCGkWlBwy/Wf7/B5vEC9S5gGEpYxBUPYOCgIKEggxUvSVcPSNQPeP/r/8f/z/0/+D//P/ef//9ffng2IODD/Y92Ptg14PtD9Y/WPag6YHZ/YMKT1ifQN1JAmBkY4BrYmQCEkzoCoBBwMLKxs7BycXNw8vHLyAoJCwiKiYuISklLSMrJ6+gqKSsoqqmrqGppa2jq6dvYGhkbGJqZm5haWVtY2tn7+Do5Ozi6ubu4enl7ePr5x8QGBQcEhoWHhEZFR0TGxefkMjQ2tbRNWn63EULFy9dsmzFqpWr16xbu37Dpi2bt27ftnvXnr0MhSmpGXfKF+RnPS7NZGifyVDEwJBWBnZddjXD8p0Nybkgdk7N3aTGlmkHD125evPWtes7GA4cZnh0/8HTZwwVN24zNHc39XT29U/onTKVYfLsObMYjhwtAGqqBGIAq76MHwAAAAAEOQXsAKYAiQCPAJgAoACiALAAngCiAKoAsAC0ALcAlgB3AGoAjQCEAK4ARAUReNpdUbtOW0EQ3Q0PA4HE2CA52hSzmZDGe6EFCcTVjWJkO4XlCGk3cpGLcQEfQIFEDdqvGaChpEibBiEXSHxCPiESM2uIojQ7O7NzzpkzS8qRqnfpa89T5ySQwt0GzTb9Tki1swD3pOvrjYy0gwdabGb0ynX7/gsGm9GUO2oA5T1vKQ8ZTTuBWrSn/tH8Cob7/B/zOxi0NNP01DoJ6SEE5ptxS4PvGc26yw/6gtXhYjAwpJim4i4/plL+tzTnasuwtZHRvIMzEfnJNEBTa20Emv7UIdXzcRRLkMumsTaYmLL+JBPBhcl0VVO1zPjawV2ys+hggyrNgQfYw1Z5DB4ODyYU0rckyiwNEfZiq8QIEZMcCjnl3Mn+pED5SBLGvElKO+OGtQbGkdfAoDZPs/88m01tbx3C+FkcwXe/GUs6+MiG2hgRYjtiKYAJREJGVfmGGs+9LAbkUvvPQJSA5fGPf50ItO7YRDyXtXUOMVYIen7b3PLLirtWuc6LQndvqmqo0inN+17OvscDnh4Lw0FjwZvP+/5Kgfo8LK40aA4EQ3o3ev+iteqIq7wXPrIn07+xWgAAAAABAAH//wAPeNrtvX1gE9eVKD53ZjT6/hh9Wv6W5Q+MMYoljKMQIKGUJZSlrB/lsZRSSikhJIRQl6Usj8d6XUoodQglIS4hlDqu62VZdkYWDiFAoZRHKetQ4me8lEdpQlPqhk0pm6UE7OGdc+9Ilo1N6Hbf768fRtJoJN0599xzz/c5w/HcVI7jlxg+xwmckRurEi7yaMIo+v8tqkqG//NoQuDhkFMFPG3A0wmjFOh7NEHwfEwOySUhOTSVL9SKSZO2zPC52/84VezkYEjuNMeRFsM1Ou5/4xIix1UkDQKXL1Yk4NMKopgiinhe4aJJo5MrEysUkjpq542iqSIpWLg8OC1Ekjw9Us2kglM5g+xW+PhDVZ6YEBaqY77TF2N1VV2Ga3eOanO7ujh67S3Cu/wuuLaBs3IPcQAsV6EYY3h5E4xoiRLFFlG486pg61UElyoRGNzaq9rhAjAwDCqECX3e0hZeTKa3hhcZ6tau1Z4l38Fndo2JHGeYC9fI4QrIZ7lENswv4fMHY7FYwgjXS5isNjw2EK6iXTJb7MWBmCoaetsFV35BcSCa5Ei2wQ5zlXPz8CMOPvIGsnLgI6IURpTs82rQ2qsEXaoRoDNZexNGk6Wi/TGjaK5QTC7VD2d9cNbnx7M+D5z1uVQrnLXBTEKkQhmffWjSwX9/nPNVWA5N+ocbt/FAyXa189lGT0W7QJ8lfIaLtJuDJjjwu9otfqsHh2q3+2zwBRd9lumzF5/xOwH6HfhVFv0VjJmTGic3NU4efqc9P/XNAjwvPObiBcSFS8ap5ublF4wd8k95LJsuQcgThkdMwEfMFxJC8Ah78FET8oQmEutn+knu/Ob5ZPnnvz//pvbhLGLSLi5onq81wdMx8vRM7RWiNJJVjUTVPouPRm1rozabKPiA87iGArfw7hRxr9TIFXMVXBW3mUsUwSoqBXShlDHRhAsJxx5T/VKvUg7rEo0olvNqCVBNiUsVSUXCHhoVjUaTYyiBJpz+AninjHGpY2Edcm29agxeSyxAsSSujh0Dr564kisr7jinikWyW80Px+OKX37MzBGL25M7anRVcQBpuyafBOSxQvW48TVAh2LAOJaUyfmCzysafeHqscTj9QdkByHF1eNKyxY2TG9bv+xbjdOun91A3NvqJzQsW7XtuzPvclc2dNx4+YUtW14gL5AJe14leXOXf93GzyioWdj4xZaLtu2v5Fz90sKv2PqvF0z4yitP7b/iSCQdrULXstUV5A+mDXdaA71rN1QBmXOL714zLpd42E0BoPcyLsrt5BJZSPEl8KRWiL2JINK8AE+qT+xNmp0lgh02FRwWVNHDArGXKDG662yWXsXmUt2AGwkOJZeaC4ej4HAUw1yRpVcdB69um+xuF8y4KQB9o+BNsKAkG95wqjkL3uUWjRqLH/kK4A1nc0sMeePGx6J+n5cPF5XWeP2x6HhAUrhI8pCYmQz3WZG0+HhL8+HDLW1v7X5y0YKlSxcu+kqXsHlP3xq++hh8cLSl9dCupYsWPvnksSVipFu73XXuLne7Z+c/J7ftVBJ3agzXbntJB54/q929071T7di+c38C6St294qhUTJxhUBf47kNXCIf6Ss7phYDQQWjCRPia5wBMFNDMRNy9Cohl2qAuY8BIgNCqoJDK/ABq0v1sh2vPoyfIhcU4kqVnDTlF492wMQVq1t1lwI5eWU1kBsHHI0rlt0HOKuQO3psCjE1pWU6BiSjP+APjPfEeKM/5istk0JFxRQj8BV45/EGJhGGt9iPWpaS48qefaeSocWbnlkdaqnY0fRyb/Itre+mdiu5v+3QN1Y1L4jcvDF383fm1S58iqzZdXFuR0vTO3vrt3fOj63fv2IP4bUzp1e/atq65+KZjVuWL/+X1Z/eyi95fvv07U9NX0T3IkGeTWKUZ4cZx9bZNVGkFK+mD2MGk0b2zDgzG2OJtoA/JFk4C+fhiGKlv5OcvaqN/cbFlQQ42UWM3BLCE262toK8Mqdf42MkRC73zNPqNa7/ttYwhygw1iwYqxnGstKxQF4I51WzMy0kxrthoBoRh5t1tEdbUUvgNxqnKUlyhog8T9bP69FC2uX+Hq2WwjaFPyq0Gm5wMucFaYiMRYoRxR1RPfqEDEJNDgkIJb4Sj9FKyjxTyFe7Vu9+bfU5skrbeq7ue7tXnxODG3JIZJqWILOmaedyNmRp56aSWVpiKonQa9Rxu8V6sQNgruUULgIyTyVAaYZoAvgLiAnOYq5IEA4PiWCuoNOynFf4qGqG3SdGE2YLfmY2wtcsZjy0cOaKtFwMySDxfSE5LNeRQ03ksDa1iV/0EvmxNuklbRL5MVuDprvlZDnXw0nAJxRDJEkEzoKraMTVSApUwusvqokOHIO1NIZrmt5ZVlvTc/R6DxtnOT+Rn86fhl1UhHNRidiLD6KIEZUjdAgzDGFIweZbTn7JT/z2tykM8IQwCFw1BxsRaAmgQA6dcYwD3QuRIQ1R0zs9PThWDseJU6ke42djUeKkYOhfJjGSIzz3Zt9WZARUN5h794p4Gva9EWhnBpcwIpO0GnsZf5SNMAlvRCHnVRPsd5DlDtjRBnOv6oNXhwl5nmTkKZuTrfCOiAaObmC3CzgJPASXOxYF+gMuxs8lET5IKrTu/qvrznUcfPvsG4fPkEb+HNmrze2PaHMFj3ZOO0SmkioSIZ/SfkRxOx+YUwnMycZ9js1JJcZe0IsYQ5JMrsJjMDuE0x5R+POqxdybsPCUHmxAGjylEh5JA0G38MCMTACtxLgS4i8kS+Hq8TUxOeabT/Iadhz9cpu2R9w6bY/0hdvJPQjDNMBrBHAUBE2KwRAADDkRAAteORvI97zqhisb3VTxwcvloApoCQBSRJvdTZESqx7nLtF5lbHMbWDMTTSGfNN6SHbihaaNvd/akiBzzn3U2qPV5wgFoQR5/EDdD1ev3/7xXMDL1SNNVzd99DMKUwjWbYokAQf6EpcIIUwCwOTXVy1ptYT8IMqsEoBXHFGk82o+LKCz8LysBh0AexDhdMIeU0sonILsho2XHwembJWV3LgCcDs93iCFezLRxU8FqJp4YADwx4d08GWvGC4qDjU03dlz8OKtidOvHNO6uratPk7K3r+2awuZqV35cK927dbiC02b9ryyY2PDDbJvxeXu1sZDBVO0N0/cfJHpqOWA4wSss4VzcPO4hBmpl0fWylnNvL1CEUHvhIWXQLVxRhTzecUWVU1m0ImBEuj2N0mw3GaqeJoR/y6cl5WjCo3Cy4odxUo1SbEFMAbC5Xyih3B3uf3913ivSBZuFg19rt1aM1m4W8gDHFcBjmcATNncGqZDUBzbEccuU2/SY86yA449iOMcimMf7Ixcps9O/vmdAqrG2sc6FNsxg+qyfOxQ5GOcapPHjiXtNtAsdS2SqD4JFCyHEyWhWUAFgVh9gzGPBOMJGUPC+ELO5+UA4VVr2y4pbx54+dz6+gnCw87+p0pWk71E1C7fbNFuvr+yq2v33g6lUshr1nIbtBvvXtO6v53a75uBln1ciFvOJTw4q6Ck73cTUI69wINKkB1nVUTFkhXQ7I+iXEflxwVzDKPOCPs9IQkeJBmXrBgA9oIgUpHLCqdUkx0wL8UVAT+iAi0UDRhhHrwwPhB10zlwoDumdZ65ZAGxXNoxf33ziV7x4IdXbmsXrtzSzia9nbt3dTS31b3DXyTLyYk1GxdqzdqHx4mmXbikvUsablz/4FDLDmUVrBfYhyIH6yUBH04YUvxP5Uy9yNMpCwerUd/4yIdJmEwVDvdvPsjXGWY0N93eZ5iBulD13cviJskGGmQRN5Z7klN8ETUHhNOYiGpGtEQoWrJgQ2W5lDDuKQlQJEXUsBlPqXmoEMJhOX5kA3w9BCfKw7K7wyz4snMKnZRhjslBnUeyuQtL0zrPWGAOxbGoiBsrn4AOHS5EVacQcVTmoLp0StepPnms+TViunSZCLtbzhzWerS7nNadPEdmnu04c6JtSqPSuvG1HdubSd3207Uzf/iNHb+89MqGthnzfvTa/t/8+tDq7VvXrnp1zrxd/N7F62fOWLdo4bc20n04BeijTqePFWwfqo4UfRRIQPVBs5CiekYffqQPlyoD4edGERWUPvyAaNVqA+qQ5XazQ/DQSTvMgH5rXPHIii3OCEbiZCAYnD8Xi4KSwoWKymqA7N0eCaiFqb6AGJjyFFL665ukSvuBdrN357wtrcd7DUAot/Z/b2/ducfdna/t6hBtl0iBtl7bou3QJjZ8cwVZRDzHCX9pxz8/N+/6796E+e0C5rlSjFNbf8JgiYv2b1LUJa4JpwZ6hi5tgfHoJj+17ZncRZt+V1dXV0+PsOjCBcbHdoFOgeNLwMkiXMKEYxr1MamWpxjTY5qjSQsb05apXbBhn659ZHZXz+Eb6bEJ8MUt4naxBcbmgJP5zMQ3T5zQ923ha/yCNeTcbu072rbdCEMdWS6uF87QOWYzjQSMRNQCUH83RfQp0B0AjzrRcuemaCHLX3iBdL3wArvWYrjWbnatmmozgcstFlb3bREf3bKbrCTP7tYia+h8a2DD9FLZmMd9mfkWkjnMd4LsGyUlUfIjigP4iKW3fZQj21GRzHNyo2D+uqWA+kQBGg8OoBg+AMzDmwd0YZZNceSIgRzkiAYrk0Uety53HMQXLkWrMyVQUc+uOUPKzv6hYcP6CVul+UvqF77S0LPj7DkDrELnDzb94InpDfsnz1ixbcLsFUuWrvnJnQXUCcNzM+9ekdbDHCq5GiJxiTE4hzKR84jMTEyG2HE1rqVH5Arg2EeQu+AJ+0NjPHZ4oedhSRW7K5lDf0CUh1F1ShZbODd8VOxCmaSOBfV1rEvNB71Qoh+ocV1iTLv5RZQYDiXqUvzH1CzDx0rgmAHetfuifk/Focmzb7bCF6ztMXybgOfCbxV+KywB2uJc0h/IisaoY4Ic8A28YQImf6zsfgP2rSdUNnoM3Yj2MkB2+WjYnjmywsXV6odkd1Jy5RdbU/pbqJCTvbAFy+ABiAY9LlATEyQqkNinyNNrAlK40IPGmKfUWCTNJMfIfDKP/OjUa6eqdiU3t/zbm03POF78vG32nOXPa+u0n2tntfWknlRePlJxRtNaYuTolvqJCxvX7yFN/EFyUKvVlK7bu7a1fu9DMuGZBf3NMxce2k8qyFrY1J3w2799esY6/s1frSNNK8i/49pVgtGfA7aKESyJMWw/K0KMWWWwpARYlYQkaItQ20AloLQqljjThcNCSEBPTSUfPMwH33q5v3VHJ/ngD6Lhxm0HSWiz+Nn8KdhFrSBX+kCuOEGvzgd5wHRAF+gCVL7kg9QM+OmlAsgVCyhXBDmpBKKKy4VWE0oBJRvFARJ7IZzIdgH+zSYkcD8cAjdUAjJoNLAg+W4qMkFTYYLAxyRBSajQ4yqHDVtYA/QeauULbhPbrvU7ktq/fawtI1vIUqJ9TdsJYnQp2fumtsdw7fih7WqOmNfx2vFLu4mNuHZpDatxby8AW78MkBPgvsAlfDgXp6BzeLMAE8hivg8n9X3I1LvRq7hdioGKOhsVdQawb4PoFrHBVhWcPrpVzU4gIgMH2gzbq0gmHiPybl4GQ6DQEwCFtZBbQL5C8snh1ftiyT1dt271kIlf3BvX/vWqdlFr5vuAZ+/TIpFEm3ZAu6p1a0mysuyqdoe00b0Ka2GogrUwgXX6sL4SZpO+EjJC76bQm0E6m1245qrB0UstV1VG4aOjlpFvWYy9hlvJVlJHNmt12raLN0iQZGlXtN9+aLimbYK/jVp9M9jdNaSSFCD+kB7qAAYrWkwMAkGHQBR6kwZGdgZTb8p5i8CgyUrNWbPVjM+CWTdfdZuVKabs0So097v5yv4uIWi41qqVNfdfaNGvi34HM/dYhn13zzUtw1xz4GrWIVdrFRr7y/hg/1W8UlZz/1TG/5FGwkAj+dw3uEQAr5VLCcU0QChJjzc3rQoUZNJMAOW/hWoFqAfBikixhJu6f93o/nW7KP0U6o4zoJ9cVCMDshIEKvLmwjJlxRWzDGxfsg0lJVwwVAlCYLmFq8MOQinqSaCoQ2vaqg/uPqHdJPy55C94rYW37BZjPc1ARAmgqyWkTauoONgMjKQLHh2/e7upv+LKiu3kDYZb4CO4ppN1LmJkXEQxxNC/j9gVhPSKWgG7PNWJQasEPKtGR296ITHYEAMbA5CbFGwHDvR9ZLjWv5Ffd9vLn+mvZvg9hHoItdVDQ2x16kGC0fBhSI946IBussNv8+5eEWZSm7iCS1hTdolEfw9WsIFa62jvgp0L5oTKkbhuSxQGwQBCpp63dtlOwiWvnLmxd+lWUiJOu7O/69c6bRvKKR4eGoIHMTZ48jo/RTVPMMfjDEx0XIbNBCbO77/Qf4uffVYzabcM1/r+IDj7j/bNFULaZY3LoGVDimsjdnUcSCkcJARKvYIB6NY4gFwfjH4B0HGwheEDxpJqYCwPWOpsLKM9ll496sGA8TzWXsVD10s16h4Mkwc1DgOyLpxHQjAzVRSuAtIBlzAsGcFIKC0Ly60fkF+KpPv3CdE2W3v5+9rLU3JFgOGPBvNtr3im6jd9M4WksuJORMdhhOJw+j20lMahjXpKRYTGRklHFa0IDUoAo0ydFINxS3DuYQKQHBXyxL3Nfafg+nf+SvxnuP7ZO1XAG3HPrqG+HHnAl5PasC6dNxLqG0Te6BjgjVQvH/DluIb15fC47+AgXLSArOInkhXa9v4TbxFDdxeYnXfe6SZb+U5g3dSXI47vP4S+P34a+UyKb4tnqH3v4aZkci8PMBKzle4vs+5uAvRYgMSsUcXiUp0DHicO1jCDg4NwFMuBV4eYCQkSkSccCWvnwBA6SmYeevPNw1qH4Vr3L97v6d8ghOpf3vr3TEdfoG2gePICd/trLuHGFTLH1KyUmZMn9CrOiGob4Gt+B2VmOSjwnIxx5fgRY7LbjA5tSVbtDiSjvCxYMomLp1gWMiuw5CaAslpUWlbKuTNwuJrkAPRf1Y71OV5/9andl38n3tQ6k8TYfQ7w2f9ON38TWNZ+0Ih2aR3agty183adbg2R1/knAbUKma2jVsftJcoPfNzndYozMYpTfYBeq52i14ro9TM+DVzZHk2Jd0QvsmwZeLFqMQIBGmTFjEoiotsYV3xyBtJdBtgRoUy0m4hIAtr3yOqfaC9rewcw/4u3tb0z+hfwjf11QuW6l7f+D/TngX2JilmYm5/ht3LqoFJnlQ1sa2ZIY7QzH4ArgdcsG3PlSPIBweL05IYQ76AqYYDKJ6ApTWxuT74elHIz6MqKS5lBHTDyoSLJB/YzU6aKiuc3rSITm4/tuaR9dI3IPZ3EMnlrnfa7xh+2XOvr1c7f6Na6ycpPaeca1qza9OnaAx37rxzcNZtw6xev/psZs050HP5dN+U9oH+KrYB7I/cIB6Zs2ucgoGuKmpHSedxlCYOErMwAgjghGfBQQi/VgCWGTqlKca2Wd8AwrbX19iHDNN1H/T7VPWWwtBJOjvo8GZ9ULLGUsgOsEoPDZqZo0g2NfiTFGcfBgW2w+BEeIE02JY+eOH44oV3SboCG9RveJvyqL370VxeOC2f6im9pndRFj3O7e1vU6NxCjJvQcDgVBLoRqXLGdIybUI268iBpF0lyf/8HPwTuBOz9toOOBWLP6IWxAkCfVJ9QPDE6XIKYXbFYLKV1EuBNhFlKMlMx0TY6/sfrn6LeNM4FNpEDvqHwxw4d775+Bs8aFM9Yh+I9Bjv2Y4Nihg9O/UFESwm4XLvFbPNgiMCWYSy18xabl5pKHbzZYvN4A2MzjCUXkRlZcQE4EOnkPP5AbHwNvLrhNQcnin/Vb1ye4hcLaro6LsywiK6pl/ZpK1u1s6J2Ckiib9utdc1nhVV9m7Vzj9YSj7AeGPVHd2xcim4MEpURpQM7lh+QEUy68igBRAuVAGbC/oN4reRN2sNvg86z6EfaBN7yE22O9ldCOX+i/1/4cf2T+7r5Xf1L4BpBneeaUJYPrJ8AFzBTl7UE3N+CPI2t4qDlhGsRIMngMbKLfPeIxiVBh/k0/1bfvv5lfBObw0QYfxvVR8em5C6wUAwYqYJEFVGqbapG5oUFRZX6BNHRQULofAj5Jgpr+k6I2X0vCs9tELubvnFn7A49NqMt5U9Q2qvidDVX7EVXhkHs1b0zyLcSBi61rRQpmtpOunLbxFdom8B0XGr85jc+rm+g47oA5ngqRiKkcJIRIwFCDrveFJ47OKBvTQVYVqZgYdMDWIwRldNhIRSVCSKlwlUKl4YFAKnGxBPyde15vqK/W+uV1n/z1t/iuEmxTZgGtqsE1MAsVgDLjokk0YwglFGPPjHXJXWmIv2VGZPEVE/MT1++JLaRGVrHsWMw5t1r2g3h2t11MFCAUwQKIgMzPUEjIMcrcn3cxs0cIby4n98JMGDsisEgUBhSMSfeiTEx/ack5gkTvuf4asMN7TCTPdPuXhfeF2dzOVwx9zfMn5wIIikUiL0JO0GnstSbFIqCdjsMTZ0kRCmhy5cLTD7XRRUxIRSNUs9yKXqWkegt1jjKnYTJHqQeZsxH4FQhCB+5AnDCJCcsVqfuOCwuqR4XLgrTqEShR/YG0DNULaUi5zWyKE0js0nDGULOHP7CRZC7y0h+MitxvbFl/6K5nc1aTx/h9l1+uOqnrz97WntFCx+d+ZlPC0Lr1l2zaneTSOQlNtdNd6+Lc4AO7FwWN1fXYSzUFWBgLJm6EDEFgyhBOkU7TIl3RNEpRLmyCd5nw6vHDvMwWFLWf7vRZBNYiAh49PhY1I0BszKfPOD936TsOn3iP/rOHt7xnbZtzW2bW5pgP3bs1y73X9bee3ULCbd0njv9Tiul1xl3e+maBLiYbt9TD66+GClOazVT9sqBsTDUagdLHV31KC/R0go40OyaQcp+SirWv1x7sqFj75Zlz8e2Tft5y2ntt3we8ZIC7dyknp92n7y4ZHV8+/dhVOZXu073movL4xYwS4WJMK+BmSsMphyJuQhhF8lAErJutfujNMJDXYN2GTVhJ113xQpYy/HSMInBrmuo6J1C8YYrD+susGUvRaKQZmpnT35LLTwYfPX0iU/v3dz8yos/IGRbC7HwIVKyh3/0Tv7xJ6bN2cuXnzrXSq6/fo7Cjji8CTj0cbncLD1OYgew6QpnA0n7LR4DKFV+3Ft5TGelcRKgCBp9NIN0z6exNVxrl0yzZxSO0uskHoOivhANf9QEpFAR5wlRF/eMeVv3zjtzq18UO7as3PH4k3u0q53ar5P8bMt36lfv4/MaLzdMBQvq/WLl1Nz5839DyshTO/7pdVjzAgB6o+E66LSf1XehARmVFSkTQFYcNG9LcQFn8UUUD42ku6kWmHB7qGHuwmytaMJDQ5geVE78qfyFalcoiqkXYDeSmA+sIrngMJnmmiUFY/s//FAR2rZ9h5QYt0qvvLitb57QhjEUh7ZInA34KwbZ8wixw+oj4uLAFBx44JR6lXBEHQV81B9RxyESJ0QU03k1CnYRh36mEjDXoi7mNBOt1H2dTU+p43EDWXvbKzzjTRVqobU3UViBMBc6AeZHmcLwx28ee5E5UyMupfKYmuf6WMk/dujOuGNjqWIQcbWPjVSCYgDPmV7UvPzKsRHmRc04pmpB1ITmmRSPq+OzZXeHxeoPj4rFUQv1yKpNpnsZE39EPrsQz46TVSkLVt3pbjfJVePxlAOjHg9VBcbVAH/Cx/jCwPgaX5HRH2CeVthwBUSkcR8P3XvjSiO85Pb6dTbgOLlgU+stUr9h5bZln68hN39UO/8zj8+5RHZr793ov/l6x6k9BxvaOifumbXj4++8WL9+e8tnKhYumrX87b0XV82Rd4VnPbO/Kzv8UHGhyZN3Z0cLKaudPf+laTaHFBcm9G7atHrNZso/NoGMdFCd8y903cQcy+BvDintZcP9ykdxy6IaYdZ1T4tMBRWnOlLBNp2t+X1AOpSdyZsSh3+x8wfKoqWtbwIj23dw786+j/j3Vyzd33eT7r+tAMh0QyfL9WQ5mfTqNJoh9A7kZKIxj8SMNr15IOEGLrj1zQOqIbRv3+3LYvzOKY6/e1lbQse0AUcaw7HhQEfhgQjtEdWBo8p0VDsb1RnFzC8YUfAHomUy85yU4fChktBKoq7aXPWI8qZ2w0TWi113Qms2mKXkvn1cGocWqt9FB/sAEiLhKtJeAPOAJ0UcxpNCAFEK+fVPtd1k82HtWA9olVV8rra+fwYfu6ol4Trb4WJTR/YjAVLwMeBH2q4O6DUAo7Qf9mget1jX3+w+9JuQFK7BKAZWp7ijlD/DeHlsvfP0pE5452N+BLvOqP15dOnRYjQCAWTTORn1OfmABIDeM8kgTQ7KoTPXJp7o3PNdZc6yHQeVOU9tPyLGXz/0o6NkXxNSxsolQBn6S5pGAfbBNEr+PBr1jUijYvz7Q0iUyQixBmBAT8ITXMKEGLSlJK0bIfAxf4uZ+lvQk4HRUUSd0yy7E0aTQN3mNHmQGKS0u4W6CAqFjIzAGSTc3UWKwGT7fF3b7qZ/bHt15z7i5n2kXOvp/0Dr4cd1/PbdI4ned6meoi0V5wBcqKfM4TJUFJKhosBG+k9rKR6GKqalBMn9tBRtqaHr5X26mtJ/kT+S1lNAPwA4gxTObITThnDKqBqQlGqQBXCaIzS9AvDoADw6mJlr8OjaAaYkmDFwKNgQziyZ6QWWDL2gGh15wygFh7er6q6f3qsS7N50u5IfN0gfoPTGf0RhjaX2GUKJoKoW9Lo7UqjEDe2kgp8Sv5gi/tj4UMyoE7u4lXgCdqlS2yDGf3q5hf+ofxpcI373mtAC1yhBL06Y+kYAGy68hA8jt6URxX5ezbJR3wjmWheChVyGvhE7840Y5aRgdeWGUdYUulW3Jz7gHLG7PYUDOSWxQvSOYLoB7kljaZnuHBF8yONK409/6yThiVi/49Ths/tutS7Y8s8rn1mzefnfrau5cbTxty3LX947a3ZR5PmtG9p2ra4ntY9Nf6Igp+IvV9U2/WAJ4y3Buzf43YZDoD99jkvIdGekVBEDU0WM0UH5ff6I4mX5fWYWuPCm8vsURzThpTk+XtRKAikmr6f40VX10SClHDyskKB2dcbCidFJC1o3gWJC6rUN2/o3zq91bLM1bOObEbb1d6+JohhnvMOW1kqlFIDmAceKmTpWbARVI6ox02Ce7ltRCejMLLFI97HUoIuWGh7rlUVPth5MJN66uPMHpFKw9QeBcQi2O6eaO36IMHjv9gkglzJ9K+STfCveIyQiAija6oQY73tJeObOCYZrjjOcgLEC3HvMt6J6/MDHccCEaUTvijXtXZnkuP7X1LtiGutQDMdUn/yxQfEfO/Tjz/zeQM+n3Csic69M/N+/X0u1KIOr3WgweSoO/XiMfibtcIHzA3rVEPfLAYPRYvP6mMuFPGYxGE3UC+PzD8quZ54Y1R2Ij+CL0V9JWIC/YEfj5AKxMrr5uy9UVorV5S+1ah0t74u/bRbjmvjupoMJcru/b9dPzjbypjunhFl9CUansM2ES4C7wX4Y8mB+mDBQ13ePExOR3tJeIRuOAnu+zEd4i7aabOm/1X8Wvbdgk98GXRjpzY3xGswIUWwx0DSYk8QTwSQIMG1RIHFo4KiEXkjAJJjxkwlhq482mFQ+bX7tgsJy7YuHyESRTEpoVRO+t6NOW9fo/ovap8XJfTuE5Xdm7twC85oA8wJ8ZfpmgLxR90Cm8kC+mQn82v43heL+b/LfXS48tvXZvh83MpxFtKX8UdA5CrhFHK0gUS2gQmVH1ABz0dDc18KIkosJNKrP0avYoglfLq3+CFIrA6s+VB/G+Vz62qreXNCVicwsJQvIHTu17avRb+kKgdVRFJD1YLjsRX96oQBiOrJuGXG+Nn8PmTN//pzvzX9NuwGm/dWGJ7eSVSTnG69pmxrXFYgF6xq1TbsbwOxftXUpB1tcW0r2UZ2pQK+4QVkoDsrd1h0eqIhx+9CDhC4b5NEw99Pw2xBXy9GiC9UJkw5RRwuIUzVLZHlRwnnFGqX6kjdK86HyBOpL59QgpaU8mGWWrJqM1EJQrV4621i0WsZCCmDM8rgKUkbVEWAsPmDPMPsKEp+/p3bBgtrvfl5q27zuqXXwf3Ob1rubNGypg3l+9dukoWX985u1jVufbFi6Vdu4+XmEeY8wRZgGtOBCfkdp2xhT7WJvu4G3m9jicVGq+3Lnky6WreKiEiZpYikqWABhdKW0ATRhA2AQRqtjyOrQUbDn8JSflM15ihya8pOSyjJh2kfkq8/++1djE6icPwlA7NHrq/QIHbVOMdkKE4UIGa7ISkgXWRFaZMUzUPT0K9j+mCd1MvbV8T1d4pQ7Rw3Bri7UybRbwlVDDui0xSSXS/hTug8tARF08VMEakUomvJD5YNAzXeBdVmRDLLJB2noIWlkVyxlXHLiP3x4EbmhqGSPVYxjlWyXGnR/rBjhu27gi9mudkO2BLwQvneB8sKgq90UxNIlO3124LOhPQtfDk1s/fDn9Eu0Igl+1l6Iz4b2EL4k4NQAv1QK4wn4MR7Z4xgYfMwsGU12RzA7pzDNL8kbBjiVlVMYGsRBJXSYCS7koEWwfkkLZ/V4024ezOgB2xPEv8AcPbyhqEwIe0r5Gm/AQ9XOsp+WeeIrH9s/f+vEpy9V1Cx9oWbLVq1r8qTpz81ZvaVtU3dw41E+j7hJiO/89eSeSU2VfZcdS9fEtU4iaxqpmEKEA7dWCtLPkA7Cd6+IByUTV81NJgYuEUFuG4up5aAy43EyznKr4hHkFPFKc0VCpilkUm9yohCR7RXJifQbSasF3ymFMdUKtJsPK/kYpd3xrA5vPLNJss29CUc2juWwmLH2i+pMYUtvImzEs+FCOBt2qWPgbKWlt91bOcZE61Yw39ML4vFxHASdY2ZQLieiUmWUVcME2LFh9wE5kB8qwRoosHXU8ghWs7iVCsBzeRw2elVcmSi3l3DjJ+A3BGoTWdAmUgOYN+vw+qjrsoaqX6A8l4WqY6VUGYPl4KnrLZ8EQL3xB7zGfB4XJ8aHisokY8qnidsuvGnl4jXSLO3msYUX3jrzE+/rwasr1pbllJPF2qUJJByJzy9fVGv+nkU7sf2flr+1oLFhYtXf1SyfXj2pY/nf11ZObGhq2Lth/4WLrVmEr19RtaZ6VsPGTesWl5WXrG3Ulr60naxcFqlZt2AizTkAewv98X7u61zCkRFLSLpkB2entqJLxKBt0uujJ2CfedFNDqsToPl/bvTo2TGrwRSNJuwOXAO7lTruEw47XSf0QQG/zEKL0pGKSfgGxSQAJ/QvXB1if3nHyA6y/YhmIQ3aWrJJW3tAWw+H68l6w7X+z/Jq39GGZMP16/AENJjB+42Yn2lIcf9UvicttJToC9PCDMiuCdXiURoITCLsA5kgTOs7JD6Gz4CK+fC+E2h7DBfndnOsOsGOxBlRi1EkPEJZDZCZUulSQujUKoTjwogaghdOz61y2fBjLChD4cEyaJQc/KQMPimLqDnwMg4MWUuvOgFwFCqUkebUMtjaj1lNdt6TlV88+qHow0h0ObLixRhusex+w2CxAmeg55F51zDFf8DLS6OiNONYArmaTssGAwGIDYuv4E2ESPNvL6t9ex+ZP337hM4Vzzz30qW9t5bOOLlPUz6ztaDuaysWP/Pipb271//MFTiz/syo0/ycM/WzGuY1HNZ6qruXzJj2tTn1bRvObphZP3/jW6Q8uuzJRTOnf622vq2pds1ak21hI7x4FyKfuCzuFSyG5XSNqml1kBjDJN0K2NuGKBZbVaRTdFOxT5pI4cx0AWE27eXk8Q5x77FjGBsRuNq7V6SVsEZWsErG4iphdnPSmZHp6aXHyTElmOOcHMO4TbCAvgvqSZ00+ztpZ5LCTj0hySLGeIpcaI4pudHkaHYiJ6qMpuWDqVxPzAQvKwKDTHB6zUGWillQgqvH2cCIk3L8uWWjBzKeaHJaIceyMfFJQBbB8qCYd74GVgcYQ2ktOUWeINPJSS2uHdQ6tEeXki2kgOSRzdpq7Yr27l/+pLVv2sq8xXNW/H39cy3V42vAAu5r+Qn/EZlBfqbVaG/Cb6rJaX5F/1HtabKNf5zs6J936j+063lLvnRo556D5xwOol2+ReX5bP46f00Swd4owOwwK821pNgBzpnMZpmweREM9yBm8wTc23kyWnmFFHlZDDtZzN0g5EajSQcrnEa9MAt3HM2E9MiqFRil4nArMiZXZGN9gQNLDmhiExg3dj0CNL4EeCjGf2KFPhoFKGPRH0BQtYPM/oA4N2//HzObzhE+50UX37Bz6ZpNazfVnWsWEut2lRRuJqtmbtO0jvoJVdV/s3Tlkys6C56GeU4GoukGvQlrs3NZRYFiYV4m0KDS1gENyIExwJ4nk/EJrYtUJtaAQa6dJVUKX8Bn9/+m/93UK4d1qvh0DfhQBXChGFcD+vodVtPL0Fk2ushqr1CDlSAfy8ReNacYa3cfwpMJ3vcwmHTqGBG0morxWNQrCfiB4ompErAcGTjuoxGl7LwqjYYPixlmTZXRKOYgjyUVCUu4Cn82jtUC2wsfxlpg4CsFBI3tZC5bHldUnQjLUVyG5MpXjHkohmxlLKxJESxAwThYJVsojlXCb3h9WcHq8fFHKD2Pxh8UFIbHjqvGH4yRwSYtxzUTHkJW6o9jEscbZovdEY09MoESu1xtKDNWB8pixoAQE2rgtcZXZizxlQTgNRCuKfOEPUZ4he/UxApIdVms2kgmk3B1LELIKvvkGvElw9n8owVn4fXhxxxYhuh47GHDS+LZgqP5Z+G1ZrJ9sa3nypUeMq/b/t579m5+x9GCc/Dt8ZPYtyeNh2+dg293wmv8cbsGFoT98Th8o7Pb9m79r+39p2zd9T32P6/eTxzEg4q4cu5/jciFEuWYXh5gx4Z0vnk4ZA4ANwqz86Ew7q2QH+QmqkGjR+ZN4SiyJ9Blkzk6bxrEmCpgpUuRMZmdXqEwTxcgBXHF7VbyYVFDTlg7O9pmYTkh5XEYlC13J2zunHh8ZG4l02R9owftc5ApsEfDn8SoePLQ9uYfdTb8+IBy4uT++/GnO/uEhRvWHI1oGzEVjXS+vJUw+/S4eEMIGDYMrI+hFx+Z62MctD7H+bnijcZG5G2LhEN8UpLAbnZzf8Wx9ZAZbzNFMMufygAPTey3MkRaqWsXEYn7DCsanJjJh85dTpXtg3y7VMNDFxuPMR30mS7aW79h794N9bGlu5YsmTVbXKy1tmptZF3b8uVtTzE/cwHHSbWG61wZcIsXuUQp2jShUbEYjaGq3nJgBjZDr5IVpRSiOvNi1MOmFoSjQBNjIkopdayVoPs0migtQZIp5YBkSlxqEaEbPYSx+GgiVETJqQA+C0SxvnsUzKbC3KtWYq17Cea2AV9WR4XQYM9mpmB1jOmtenwwlPEu4GPRQsxtQuWp4PCuV92fkdzjm0ly907XdJPr4T3k8mVVm6mIp2gYcctO41bxlRe+3bibvtJwInvQsAXhVvHV/E2J44LcJE4vwWROh4A4UIlpoci4fzGmJ7N2pCxVaS4ZQ75VG5UltbP/omFuXd2lzXtWbO70kot8dfmq089NWTR56uzmqe82/e3iHbXrVzZgTQ4fFkwATwhz6Vn5pUj1OkwRsUSSVj3loYgmguUBZA5ahAlWiCOYsk3QQZAuwszTizBzsAgz4fEG2QaryazBHAS10U+dtvOeWrB9/pfXbH7ksauzZ69dvGjTkR3f3Z08uPN9vnf29nnT58396ncmTq+bt7txxZ6amkTDHrpXyERxP989KP+Du0/+hycGvzjeo10S95Op2mH0i2tLRQf1pT7B7AKQkJijw6SkKUaV66GBGCsQnTGKAXOWmG9wUE+QQlh8lHpT085Uo1Qmb1JONx9WlI5kwyMYUOgPdu8XHHdO7U9YxMlanNYrARxxmpsxndOLGQ24ANSN58Da8aSZbVezK8lRBoCKpZlZ+ga2d6nb3mShjjjWnQEpF//GksW3LvH8ls7GjzRx+sFrt/5WuvmxRZwqnsNcJb6MrOQ1QNxY5Dd6PdkDFG+jmtrUw5dh+TaMc01byd+AIz/G4zBbAtUppkQpxoguIqg1ZT2ftDEmb6M9GJJuNoEs2lQFi6fsrCJD8DGvolFuJ2YLUr7i1F3WNf5AtGacEcioJmYcH4gyKro2asGqRlIbGze5elF+5FMT/vvWVTu0g1Mnki9MI+UFe5cXkBmPL1jI+GwbH+MbDL20NluXg4olqhgiqIakshxN5op0bbblT6vNRh9/uja7bd+0xfXVm3bysXq+qaCej/edqQfeOJW/LrhA+TSDPE3xa889/JpmvSYtjAAs1AGeWnNMfHVZMJeXNxmp/sLCXpyuWBYiXgoHteeY+jZ56O1zWvfPNz+3YumauuVL14hrj3Z2Hj109u0j61r2bFjbuofy7XmgP344oD9S77Kke5dNmfpj2qcM/+eRiHYuQR7WftqHRwoe3aNBilwbxxnzaM6vi8vh8rnjXMKO4wdjCQdPx0/KuXYHaIW+GGVJgWgiV0aE53rNsMkJ/Qz2KiaISQ5WRi+yhOf7LRViLw+2b3ZU9TE268ujjt0AfC3Pl9L0aYo0rqhqAhVdyZOTDqfLk0vxmyvT/EqgWxl1C1AG711tASz9EqzWBgECpn5JSE6t/zFhy56+r5Ee0ta8c+fL2r8TZyZF9HeinLj8Zf7r/S0bLl/eQJpgVyKuZum4Gs11sHgUNssZhekoOrY4Ig9gJFmYg+/UwiHIqfhk5GQxH5NSHk1kUeUsC9ExZhA6suQOQEd+YekoihBuFOxYn780zjzgWegbzmEdd0bYDIie0IgCbDCq+CcbEiDPnmiYu2r1BZRnZ10gz+7BWcWq/7WKybdpl3esX/Rybf2KBqAzoGHjPCrfSriHwFLp0jsPjY0lwpjNkBJ5ydKqIj/gb3RMLRVpR6KqUpx9VTlQW6GAnyE2QWfCw7RYHHc/sYh5BlGgtUhUHY2Ok2hidBQ/Gz0GsB4djYfRUkBuNcEadsBTSVyN5sFWDhePqqKYrSqFs2VxKlrbQbRSC+Y/IVvN95DjiNKWRGg/HtJN2r6PBPoRcYwggPsv3UOrPNoHogi0ivW0X9OjeW5jbyIHGVs285dL1F/OMjKcmKei9wWzYJpB+yhzngO+ykpssyN6sS3NzsgGJT4h2jDrQDVL6dia5EbFQ3dJehhVxVJFtszJgC4G7DNWi7W1L0rzv1y/qKmh5+W1Z7QLZ/9Adv6czN3UMgPLaz+zYtuEWc9+Zemak1+5y3WKT7E+ZwKr0zQ20jpN572VmraBSk1XBIsSOJVgwr8js1Iz5sGXzGrNup5jXzudWbFpbNSO9En8qQe5pmmYaw5XHQoXJkMrRB9BJSizTBS+/yntyNC5OsCKuOe6zoHrpoJ/BBZGkTOvy1J8h0x3QyrjNy9zztJU8oT2xrFjfbZB866B62eB3Fk39PrB1PVRLzOxSJDP7tYjQc4ozWc0US+Nm3lpnJTh66EhzGpUszAZTgpi8Eo+QOy8Owd5O6bpYk4NCcJ0cjKnMzReNGRiawaFj/yDZ4expI/qYhP0+Yn6/CR9XT2pitxhqAl9hK5Y0sx8h+gY8dIsQ6xgs7I4uMfJasGsJlaF65LbeeJw0rw+1JSGI0RMMMMGb/CaMYnEgZ0I+JKONOjTYFEsQBsR5n9kcJdQmPO4r+hQW2Ogn2I1sZIb0d1odHML55NetgJeF0bqU7E43MhegSV8BOV2yeChap0JCReEqwu9NSYLcftZQjHBsAJlZQMErecTFkmVvGnOyrZn5/DmAdL+yqMLJ0ycP8lwsvqZ2hUrap+pvj0hTeSfrZo8uSry2OS0XWpspXXRHsxYwUwKhYsNLoZ1uGy4Fg4j1qja0jWqXizzgQVJZ3vYBpepsjJZWvSFcxgojYWHmYBWXiAsFLR+L2bUC4G+Go3TbpHFpJVP18uSLq2Sr+Pfx1pWbSWtd67kXmP50EpFDDNQ9UpWCb30ukNFKYsks/Q1GJtZ0loyyHFyn6LoCPbRA4rByTh9/vzC0RVUFJWFZXcyJ1RSju5d0AAUf/yB6qWdJK2bl6HKXs1U9mJa85qbrqK+3U3iX95bo125HIxMnThn68qm5yoWrGysjcUmVWia1sn3kYVkvxaJJNu1vdr7Wjf6GMquaP3SXzKV/omUjr8tj7QM1JXVAR/DXVb7SZXOrgeodEa0mTm6z4ZUPGNlQUbVc18PMPb0UiJTHwrPjP8ieIbCAbw+A47+71I+nwJEmqEz+UxY3J+MG88DwOIdETdmJgsy0XMIBYFp+eUM0HQhwOn9CuqAPzLu+Nz9ocNMVGCR9kEs8pOgRbvZho4uB9U+MvjoUHzqgZhM4P944NgbA3BPY9EZwOndM1gTDTjFuE9ZKud3oAErrbHG5D+jiEFtnrqfBFQK5JhcDQQz7gBSyscdLMOVxxprftXAeBnZsenQER1PoBkZxnhcz5FFgX/owA629Le9+qpT+PgFMB72dinXs7ZMdDwr9TtZHLR/n2oxgj5FsK6YQsiWD50a1WzZfnVp44HUen18OJWPK9zVYPxyWDeBSrZPZWAAXRWmdAzMPNAVNiP4BYdGl2qygihL9/7DFAm8MEoqPmk6IHYgvj8+RKc1Tcc7/LGeCjbQOp/UK8rtqbphLCAlnFUA3T4rRhvJ+KPU0WalTkU7XNYXTditNJqbBYq5lYZyrWgO2RmnxHXLSReLG+W4bs4wj3E5kT2pNgxINXzLQC8GbVVyoBsDepz4c9v557WN8LdZq+fP9Z9L9WXQ8ren+0NEQPdBi3vTPdXX6AiwUXu4PSj7QeNxgMbjiaYqOPSibFhDjIGg6M2lIaoMQZwq2M7XPS2qGehQ9eTCkeyHI9FL7bURi7fv0YQGqrnnDVKCMmu7B3Qgqt/ROm+qX8qcj5s5bKW3f7hK74Be6X0AK73d3geq9cYNNny99yrYciPVfPPllE/+fwwrJgMOD+vXcTOPBOxv6P4eDGvWCLAGh4M1exCsvgeCtYyxheHBXZNiFCOB/KsUtx/AcQ2Fu4hrHAZuUC0Vdwx95O0FgVyge8zMCALdhzOn42bRIjeLZKPKmc3eZQ9MtRgDAW7cxkD3qH+6Alaq+meDPUAjHp848dQO8Oo7YHgU1NPdsIxthhHRkLEvRB0Pkk5rQa5+OEyAzeOPJT2MkwYYKxuEApqw6GMVDkEn7WudmnwObeymT171+7CwywpHDsyyesDZ6wJx+ElPTR7vGGmu7+mCknBJ7pQ4QZwFPM7LpXLaMqPRZlJjJgEzMZpJkszXWp8i88n8ZVorWQBPWgupwvdPwcGCp+B96zKyQGtmdNRjWCN5QWfI4cLofUCPIrY3YtgLGll9PkcVdy+mNrpowB4L34xRWqXvRa7ncgNphOQDBrtTCFDisAB6aK+jfPStOmVKOgdMFjfnD7MEKdVgjKf7BNYEjH7WCA403VKPN0CAUDjsMsXJpWWAOlLw0Q83ffmlndp27b0b+zd+ZceuxAL+jbWHu7U/Nm840kUksoC/SZaSfa/+8Ikj3doRrUn73K62GYe7yLQbe4T6Bk3t+7eNpJaEf78HZAatsYd9j1QzYbgqe/9wVfYBvco+4XR7maS/t9IeXRZDqu0/7jm+epiKe2kt03H/38GCqu0QWMhPkC0OA41hPFN0M+HJGh6e4HDwZA/A4xsRN4wBDgHpqq7Z/nI4qB4a0HEZXJK+0794L2TDbvQBSIff6Cn4caPT7S05R8Kmvo+HYjQbdvBwoEfp7uVZTb5xN2cCbWvc0Kp8e7oq36FX5Sd4i40Gcu6tzEctdaA6f9Yxqq0OlOgLP6YRuszeK9gf5DMZenC6MQioeIJvoMWR3iMEwODt0XSXEMyuwtoL1Wenmcx6Mx4b7aeR2Q8kSWYSjpRonZp2jEw/dPDgYQ0UTu0DvvvC1V9oO3lL/Y6tG2hNzd1e2j+ghPtbHSoXx2pdWJV9kdSbzM1xiQBXrsjqXwAuDGOXMD+73drbbrRngTwrAM2tIIKaWaKAJncW5IBNhbUxmF2VFF0Wn5sFHzCL2eIBBlQk65NItxln+W+s+yRNf6tm7vXCINl0q+d0b+M65d2Lh7tXLVr4zZUbr1/b17J1g/a+6L3yH0f2rn49HDxztPPGuqfnNW9K7LFs5DetWlannbpzBWiV1sgbbnABEAbF3N+x+AMrzM4RexMh9KPT8lgJS+XzfdZ7SuX1fig0WyovGsVKKFoqn5kq1W71hSgz1bOl8uURs6WwXt6YWS1fM6hWHrkWrZfvzKiWD5LMcnkLcDFWMn+apGvmZ00fqJgXVyDxDZ17w9C5F/3XzD0Jcy8qZpNX5XD8z5o+tvf4hOlfgt32y/vOXyjXt98gHOSDHfrNTBwUpe5HMICDkkE4GEVxUAA4KNBxUKzjoByJm6MTy4pTLByw+oLZufkpNOQgGkr+VDSkPM+DGifci4nvETPw6acvX1owqIHCEGyI5awzRV/dQCOFFD52AT5GcVXc65n4wKS2AVREMlCBGRRggOaBCluSVwRbPhtU2AJ2pwvAULm5tz2rnDNVJEcxnbWcoishFIyNMoQlC5n/FG904QG8dZjMVl9e0RhaLCfTLRP5k5E1DlNdomVpXfaT0Lbt8JSTZXPIU4emnCyuLJt9f9x9VLfyo7pxEzKQJ+q4W67vp1Fc89AdNfxmUkIRpSSWLGLSsBTQVp65uVCLKwZpWDx4n7WPcngA0yUgHEsi6igQAKPxi5j9k4N5mSXYjEEZ9WfzG12WfsKmi6ByfN89V5LyJel4kgoonkaDpE0+IJ7KI8mxzBMciySLdU9w9RBcJSsYjVW4MKE3WcrelQ5hUtinIJQFstIXVypozPEhdzJcPKrcSiXRCPhSY2MBvaWhB8Mcc+1L9JTu0/8ELG58tm3lyrZn501Y+Oik+RPvj8+LGACY8+yzc5jb/zHYu1Pv9koJva9DDdekR4PzY+ooloGGaFVcMcSsUh1NVvloHmsViu+HM8U31jGOiapVVuo+qhJprNhrpt1w1ZI0axflhLVoFLK3KnfCXjia6kK+UVjRmpNbWEJ96VWyOmYsJpW62wXAITW8ajIwFw1MIoP7bRgK8SYiqUKK6nE1olTC+m9MJZ8l3wDkff4iCfbVVB9ZebK/XxLf2LJy+5Sle7Tfatf+50XtBkVmd0eBoF3Q+J/xsyzb6lf/4+39V3REnp2/GtTBq/kd2KLjffKb37z46sy/Ojpv9QRn1c5b2K2D9mjRVtIeLZV4r5V0TELUi8fN4v1jEuYhMYn/VNTB7cns9zKQUk7rgIzDRh1K+VQXmMqGJ7ENzNLnq7dt1q5kD405VO5/P90Xpm5lV/fJq8+sjWsXLHOHBBt25ZBCKhNovxWQkajNF2JsLN1xxZ9uPJEPuzWbtV3JRoIKpduuZA9qu1KENim60v3xjPYrar6H5kKpfgPtLzpSIxbscXS/Ziyvguqj3Ry5I4v4nna4/wxb58x55cK8vpAxr/z0vIa2kwmN0E6maFA7GTVbn08+zifvExrLoFJz/+YyJ6ktOEKHGfIyVWcGzyc8aJ0C6fmEYD55bD55YspnQOeTN2g+JcOvU0ifV8BAPxppXqkI+f2WKqWk1I68XEITU1H6z7ElA9nB5rhcX7Ni9CPdr/8POo9DsWQ+k61F6brCexZQz51SC0HSFupC18mUWazkabd7DOyWUX9SyyBZl573X90DxzpGXNttzDa920x7idyg8YdxevSBS61qOghjHhqEGbjRXSoYs7Dn2NeiKjYJu1PLeq9gnxJ+9sDY6RrQgeJPvV3J4IAMSxIT4wOBme3qt2kCKgyrJ6HS2BHAzsdoLzULN163q2m7FRPJCNCY7w3QsJwPRHJGoGZhyv+6SU01V7szj84E4zTdaFTr9UkZcRryYHEaM4vTkJHiNBVJiyrRqqU7c+ks96biNDPBXq6WeC6bK+WW6nckyTewFLakUJyFGWsCbrgyetEcuFIOIzO8MQmmcodyqJPa4vJk6ZWLshtxUJyPuohPQv3DwXQRz8BNGfyBUuqIQ0lQEzC6ZRe9eUdGRuRMYutc1PFwbG3XeLXmS3PXzjsVa3lX+82Fi9r7yr6dO/5p/8tN+3nTbRL8Uu25b9U+O7V60jPT5sx+bqp2VXvoLqe9TcpuK5cvduzrOUf7l9D+Q7uoN/vvRujucj+PdmausVJUeF7G9FjU0NyRlH97oBuMEsQvMEc39W4Hi2ArGrwOmqw4XFsYgSn9Aw7sjD4xcdDvS+fo6v2QpjFim67Q63JBrAF6xd4xWXjHm3T3GF+6MZpbGgg4DG4hk623kEkaTYIvQHlGZhMZ2vNDGbGZDIq44RrKYGe/YZvKCDkp3j8CzP7/Apj9AlWVR4CZyq9hYP6ABnaGA5r0MO6QCbeTy8GdQ+H2SJjFmYI7iHDnUrixc7+LuQURbuTYtCWoGdlxh9FksdqdAu36S4P1atCTMQvMNIRvZs4iw6C+t5tPOtKzdLi2PuKPdOG0Ot3eJz2fXRzedaOEe16fT16q81AYdocnggW5DtgdfmrCYZ009n4rpTPMBtPOnE1M6YL3bBdN2IXptstSIZxPdQGIJGW2M9CV5gqC1Ww0WQVPXpiuXzhv+MZFqQ0iZVrF9859w6CA56LhEaDvmQEMiPr8l+t0SDPc7um9hK2XgrGkn3HibBbiHSBKzPhiN/ChdzHIddJWlClSpRluPpqOrgTlhM2NGZNKLuvf8ADdmlIG7XAEW4lW7LD02pWqU63jLoj14lpdvozjFDGCRa81Iut+JmFaG+a01YiskZh4HltqGJ2YfT9wBzyae4GCpU509G8/fvw4v+ill7S1R47wV44c0enooFgjrtfjPc+l4j0GHYtBQ1p3Gxzs+ZMjPW9gpCfgz70n1hNjsR4fjYyhiKnBWI8RMOivQWSWIQZb/ufT81Zu0C6907J+5dxVDfsnk7O1X92pNNSu3vlPE8HKsJDy+ZtmbNn5B+2mdv7z357RuPOj3av4p6aTq/3vTyO9R3YtB5lCe/7Qexr6UAsf3PXHnVJEaOsf/witfwK6ZqK444pNxtujsUiv3gVIcWPB9XC9gJDfZvYD2ox8dkhPIMMXkVd9ApyeB4YTWxS1O90en57w7M2A04N3dR0OTowQDepbtIwy1yGQijmMr2bCmsUtuT+swRFgzR6E0yTg1J/F7hAKouABQNatgEyo16Vj50MB96Xa5ALtM9iX6/GjuhH6QI0YRGITcVvTQaSBObUHrTbguH4nbW0ZdLJoku8Bekal2EbmbBRkF0MnEhjImaK9hWAN3Jwf9V5vSuXNbDEUiGC05J4WQ9iwwjN8oyGkhBGaDRE3EsU9LYekWWldnPWf0/vkDuo/x//X9Z+TH7j/nPGb/QeHa0An6LhbTnGXjXcCGIw4FKKBWNLLFj8rStvQedI3AwjQhHrWgS7gB53ZYjWymqsH6OSUWuoRkLwXVv1eFM/QY4gL7l4xbab37wlx29j9C+gdfGizmxxTr96TKXVPn0K8BYDDj7dqsZpYdyIQhEEHjXgCvrHdhdNKb6rppK1gnWbM83Pa6bPMyhNVTxBrpNz+PHYfNycWVHiCeVTnoTkPUlZ++tZRYDLImTm7eJMWfvCtD/b8cYawvd9DcwL9fVNn/HGP9v7xgZsfkG38abL/u88TQyqf17Rp96C7SlA9yBgSZ3P53GiuKnWfGiUvhk0EwQ5nqRGgBo2CtYxEkxWOAOKgAi2kKMWBHlZBceaw9SoV0YSDFsc6YOrshtgFQIF5ArYgkFUJC15VB+0w6PWhpa5UyGpBSRxd4LCv4yl1wH+vw7EIb9+ntyDUlQSD7rkghV2b/7Wm6sKGk1q/iU++sHLb40+B7V5/KRL/35u6nn19d9Pe1l1N/yBE+Floye9lysPWdatfzvQyvrh6zQugSvzu3R+BKrEQXRmCHmuWaKzZhR2rM6PN2ALeHktaGHU7WP8nMw37om8RW+VIDnrLa+zG7AJCd9+/U7ygk/RATPotoOJBIen9Kb71/6T3ObdHbIExd8FcP83RuyDRStR2u8EC/JjXe9E8SJcrPtXlKna/LlcZ9lxmTwBuUMX/n/PZKj4mbuXPsl7uTPPDR2azevjJKjGfj+3axb4vdX3y96XF+vd3ihPJUnq/zHJOv9nqoDsgS04uJlboL/odkD3VNTFjzLdzeW38CXHiqd/+q34P5EFjpe6JPfhuyjFW/po5Fr3f4c5/WVZbY/D+66nfpsa6W06W3u++zPeMFMsYqedkbw+TQwATf5PCRKuC6d0VzDFaPqUYY/qtHhVrVG/eqU8USR6Jws7qpmhNsIjFUsTEElcpAmIZeDixfHbNDIYMHSGDrz1N7zKHVYbsmkasklWssdSV2WRQpcArWzKuzNJILXrKLE4ylDFXMq3z6dkPM9yl8Mcj/vibFH927F2u58Dq9cjY41u/xbZozpz9A8EQGwkGxDrDPOE6STd/VDgFfGcsh4XLgoD9MPQXeu8JuJyBNsnQX9AZQzfceOyOUFTaueVCY+OFLXznisYXLmzBDO4mjjMcpffJRptojp7TLppiqXmpBnM0Oviu2baMwmvd/ZZqLsc8cEkrq8a2p4kopD+a3iH//R3y1+/00H8wp8mA2DJay1uYurcsSd+rCqvkcRbGjG4w6T4wGW1f6D08OX4KHadC94LyA+MofDQppoeiHaEVEk8XCA+UBg8eM3D3imE67T31fS5RzjEXQMJG765k7E1ypNxmpzE67FFYGE2ajPREVkw1iSydu5K6dnPMvYkcGonLKaQdIBJiDr4TMZcbSDaH9g9Ry0BXcGHVCygN2E5GzUFXsHkMvRFw0uYPhctZWWsYA5llmB6N1WJOl07EGHALV8fcVFKyuBPekwKDT9jZC2/dQwsOOSHwe57/fX8FGdd15oOa5qotW7e/XUQ6tAk8T05qM6eSxxubK5vXaesuaN2VvPv50OPVwY0kSAovd8b2vvJ258ZAlXua63ltRasS0SaSHOLV7zXNb5Y20/t5eLGbGS2KMNuAkjgWAxbSOwTvKW1yyNEoa5svnderxoe/m49iYFTlZXVCXtYXRO9sRLs+ezH5yKb3zWD3/CFyLIfeakwIC3I5v0271cDn7fvDR/vqP1jxgWHdqlX9Dv5Gv0P4cv9f8G/2vca/1P8M/53+Z3HdMVgxUZyIsqNKDsl4fOcE7WrJCTcM16llk4d35fAiB8jW+4Vgq5AALp9f6NUbhuSwhiG0+iM/1YfXw9qFeGgfXo+MRR/RhNeT6sOL91IDJR3Ih3a5zIqyClMPbSM6TF8Q1gmE6L3ZaSeQJ0zu8c3vvafwiw+0qxndP2jXD1KXSNx+X/e501oz4bo+p2X6jPxsRqCkDzQXdg7MJPtPmAnNAUwl/n3SHO6Bf8k90Ov9SuhaSHP03i0R7nup7i1j9O4tijfVu4XdLXqUviYJZ15lbFAbl4f+nDYuY+DjUVE1Ah+PjqpVg5q5jPnPNHPJXMYRGrqcTCbu29Ilc4H//x43aZr5v3ANfNUAAAB42mNgZGBgAGKXQ00i8fw2XxnkORhA4EwlizmM/r/oXwxHJ/s8IJeDgQkkCgAbaQqgAAAAeNpjYGRgYJ/3z4SBgePc/0X/2zk6GYAiKOAFAKAWB1B42m2TS2hTQRSG/8ycuTd0IUWKT0oquohIECmhlBBKmqq0BJEKIZQQpHQhxYVBV4KLbAwaJEgoBl/4gFI3XUhwISJxIfgWSiWISChZdJGCiIigaPznpilt6YWPf2buuWfOnP+OWsEI+KhHgK9OPYPXOoiCmUHUbEfGfYdJ8xD9vioK2o8pckIvY1i+47xSKKvHmLYqGew1fUjqJCakhGNyB/vkDQ7KFRyhJmUAI/IcYY6HVRduW5gjZfOQSYlgwHmFhDmOkMlg1lxE2hQxK0/IFOfznFcxq4J4qpfQa+Ltdecr3y16pI1/VWPUXaxjgblKKJtDCLmjCJt+hKSB3bKEKM9RllF0U0f0H1R0rbWiaz4lcdZ+H3npwxg1ITGMqRsIyDlskwLyvhqKvlqrLkFvXHJDjOW65Lz4vP1GdyGvv2FQfeFeBVzSP9FjOOY++2VP67duIqJ+4bCa94E6yH7eW+39SznAPIuMq6PXvuc+E4yvO1WM6zBOSghDpslY9t1bq+GF7sFpp4GAvoAsSfEcUZlhLQuYVA7KjFnROzCnT9GDEFJuDnP0dc59xv5HMO71fAvcJgLWB8+Ddahg6631oa2tf/RJrXmwCXpb8cbWh3VYH0w3831mnbbnW+D8Zb3Wh9hG2P8HtvdtbX1i7xNrHmzG/l9W6cMG6IPnF9X/AWl3mjENz6OK9UN/BNy7QEfVVd6PZXK0DX5QL1PPtr3oYICsG0eWd+JmB11cRwHvnSTK9luVwxBJ2bzmFnY6Td6XKCDX+b9dQ8B6isB/12vi6QAAAHjaY2Bg0IHCLIY5jHVMQkzrmF2Y05h7mLcwP2PRYPFhyWKZwLKK5RerDWsb6zs2C7ZF7ALsJuybOJQ4gjgaOKZwbOM4xanDxcVlw7WEm4nbhbuBexuPHk8aTwvPJp5nvDy8IbwTeO/xqfD18D3i9+Kv4t/Bf08gTWCGwAmBb4JKgjaCGYKTBFcJnhJyEJoidEPYTLhP+JrIFpFvogqiYaJdoivE2MQ8xKaIvRC3Ey8QvyahIpEm0SOpJRkjOU3yiJSKlJPUHKk7UnekhaQfyOyTVZL1k/0ipyB3RN5CPk3BRSFJUUTRSLFGiUnJS2mV0illPmUf5QLlEypcKhEqbaoyqrvUitTuqUuoh6hP0WDRSNA4oSmjuUOLQctNa4rWB20JbQftAu01OkI6LTq3dA10e/QE9Fr0Nujr6Bfp7zJgM0gymGPwwjDG8JZRjNET4yYTMZNDpmmm78yizA6Zm5hvML9nwWfhYtFg8cUyzfKAlYxVizWLdYn1Chs5myKbE7Zqtl22V+w07FrsOexn2D9zEHDwwwFjHLIcKhwmOKxwOOfwxVHCMcxxiuMVx39OdkCY5NTj1OOs4tzhPMX5n0uUyzvXEgDj04rNAAAAAQAAAOkAQAAFAAAAAAACAAEAAgAWAAABAAFPAAAAAHjajZBBDsFAGIU/irCxEutGbIk2KmJp0QNowsaGpKSJIMXWYZzCEbiDUziB1+nYNBYW8+a998/7558B6mxwKFUalGiB5WWaUjl3WNKxvEKXq+VV2twsr8m/W/6Q/7L8yYA3U2L2nDkII1bCEzN5Wy7spFNCUzubPZUf4+LTV9plovWrQ6/QIz/pEagy1vKV9oS/sm4hO5dK5SfmVNYlu/ufWxdSa/1hPv83GaqSSEWqHo07NOhpxoCRcGjeZmf8AMalNuV42m3QRWzTcRTA8e/bKlvn7hvu8v//207wlrW4uzPY1hbGNjoKDCdsOARCwg2CXYDgGkjgAAS3IAEOnPFwAK7Q8f9x410+eS95kkcMf+O3lW78Lz6CxEgssViwYsNOHPE4SCCRJJJJIZU00skgkyyyySGXPPIpoJAiiimhHe3pQEc60ZkudI3u6U4PetKL3vShLxo6Bk5cuCmljHIq6Ed/BjCQQQxmCB68DKUSH36GMZwRjGQUoxnDWMYxnglMZBKTmcJUpjGdGcxkFrOZw1zmMZ8qsXCUFlrZzwc2s5sdHOA4x8TKdt6xiX1iEzu7JI6t3OK9xHOQE/zkB784winuc5fTLGAhe6jmITXc4wFPecRjnkR/VMsLnvGcMwT4zl5e85JXBPnMV7axiBCLWUId9RyigaU0EqaJCMtYzgo+sZJVNLOatazhKodZzzo2sJEvfOMaZznHdd7wVhySIImSJMmSIqmSJumSIZmSJdmSw3kucJkr3OYil7jDFk5KLje4KXmSz04pkEIpkmIpsQXqmhuDuj1SH9I0rdLUoylV7jWUTqVbWdGmEW1U6kpD6VS6lG5lqbJMWa78N89jqqu5uu6oDQUi4ZrqqqagWTL8pm6/xRcJN7QlPnWH32veEdVQOpWuP52GnWoAAAB42tvB+L91A2Mvg/cGjoCIjYyMfZEb3di0IxQ3CER6bxAJAjIaImU3sGnHRDBsYFZw3cCs7bKBQ8F1FwMzoxgDkzaYz67guoljM5TDBuSwx0I5rEAOmwWUwwLksOpAOIwbOKGG8QBFOQ8waW9kdisDcrmBXJ4IOJcLyOV2gHN5QTZz1v9ngIvwgUR4GQURIvxALXwrYNzIDSLaAL9fQLAAAAFQU1O4AAA=\n".trim();
+var svgSchema = 'http://www.w3.org/2000/svg';
+
+function svgStyleElement(stylesheet) {
+    return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
+}
+
+function fontFace(name, fontDataURI) {
+    return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
+}
+
+
+exports.fontFix = function () {
+    var svg = document.createElementNS(svgSchema, 'svg');
+
+    svg.setAttribute('version', '1.1');
+    svg.setAttribute('width', 11);
+    svg.setAttribute('height', 11);
+    svg.style.position = 'fixed';
+    svg.style.top = '-20px';
+
+    var fontface = fontFace('BentonSans', bentonFontDataURI);
+    var style = svgStyleElement(fontface);
+
+    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
+    var text = document.createElementNS(svgSchema, 'text');
+    text.setAttributeNS(null, 'font-family', 'BentonSans');
+    text.setAttributeNS(null, 'font-weight', 'normal');
+    text.setAttributeNS(null, 'font-style', 'normal');
+    text.setAttributeNS(null, 'font-size', 11);
+    text.setAttributeNS(null, 'x', 0);
+    text.setAttributeNS(null, 'y', 11);
+    text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
+
+    svg.appendChild(text);
+
+    return svg;
+};
+
+var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
+
+    opts = opts || {};
+    opts.encoding = opts.encoding || 'base64';
+
+    // we're about to modify the SVG with export hacks
+    // and background color etc so we need to make a copy
+    svg = svg.cloneNode(true);
+
+    svg.setAttribute('version', '1.1');
+
+    var fontface = fontFace('BentonSans', bentonFontDataURI);
+    var style = svgStyleElement(fontface);
+
+    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
+
+    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
+
+    if (!transparent) {
+        var rect = document.createElementNS(svgSchema, 'rect');
+        rect.id = 'backgroundFill';
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', 0);
+        rect.setAttribute('width', svg.getAttribute('width'));
+        rect.setAttribute('height', svg.getAttribute('height'));
+        rect.setAttribute('fill', opts.bgColor);
+        svg.insertBefore(rect, svg.firstChild);
+    }
+
+    var xmlSrc = utils.svgToString(svg);
+
+    // 2. Ensure the SVG can make a picture.
+    //    TODO: do we also need to check
+    //          - the svg has child nodes
+    //          - has visibility and size (w & h)
+
+    // 3. Modify XML exporting so it is more portable
+    //    TODO: modify SVG XML acording to all the Hacks we'll need to suuport
+    //          eg when SVGs get imported into Adobe Illustrator and Inkscape
+
+    return utils.toDataURI(xmlSrc, 'image/svg+xml', opts.encoding);
+};
+
+exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callback) {
+    opts = opts || {};
+    opts.type = 'image/' + (opts.type || 'png').toLowerCase();
+    opts.quality = Math.max(0, Math.min(1, opts.quality || 1));
+
+    if (opts.type === 'image/jpg') {
+        // although jpg is a recognised file extension
+        // it's not the correct mime type
+        opts.type = opts.type.replace('jpg', 'jpeg');
+    }
+
+    var noTransparencySupport = opts.type === 'image/jpeg';
+    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
+
+    if (noTransparencySupport && !transparent) {
+        opts.bgColor = '#ffffff';
+    }
+
+    // NOTE: this technique of using Canvas to save an image of an SVG
+    //       is known to not work in some cases: mostly when some
+    //       of the funkier SVG features are in use.
+    //       If this becomes a problem look into using CanVG
+    //            - https://code.google.com/p/canvg/
+    //       Here's an example of it being used
+    //            - https://github.com/sampumon/SVG.toDataURL/blob/master/svg_todataurl.js
+
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    var image = new Image();
+
+    function drawIntoContext(element, width, height) {
+        // TODO: understand more about canvas dimensions. read this.
+        //        - http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5
+
+        var w = canvas.width = width;
+        var h = canvas.height = height;
+        var s = canvas.style;
+        s.width = w + 'px';
+        s.height = h + 'px';
+
+        context.drawImage(element, 0, 0);
+        var datauri = canvas.toDataURL(opts.type, opts.quality);
+
+        // TODO: Research use of canvas.toDataURLHD.
+        //       Is canvas.toBlob/canvas.toBlobHD more
+        //       performant than canvas.toDataURL ?
+        //       - https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement
+
+        callback(null, datauri);
+        document.body.removeChild(image);
+    }
+
+    image.onload = function () {
+        drawIntoContext(image, image.width, image.height);
+    };
+
+    image.onerror = function () {
+        callback(new Error('Error creating image'));
+    };
+
+    image.style.display = 'none';
+    document.body.appendChild(image);
+
+    var src = elementToDataURI(svg, {bgColor: opts.bgColor});
+    image.src = src;
+
+    // var o = document.createElement('object');
+    // o.setAttribute('type', 'image/svg+xml');
+    // o.setAttribute('data', src);
+    // o.style.position = 'fixed';
+    // o.style.zIndex = 5;
+    // document.body.appendChild(o);
+    // drawIntoContext(o, 200, 200);
+
+};
+
+},{"./utils.js":66}],66:[function(require,module,exports){
+/* globals unescape, MouseEvent, XMLSerializer */
+exports.createFilename = function createFilename(name, ext) {
+    ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
+    return (name || 'untitled')
+            .replace(/\s+/g, '-')
+            .replace(/&/g, 'and')
+            .replace(/[@£$%€^!]/g, '')
+            .replace(new RegExp('\\' + ext + '$', 'i'), '') +
+        ext;
+};
+
+exports.fileDownloader = function fileDownloader(filename, href, target) {
+    var a = document.createElement('a');
+    a.style.display = 'none';
+    a.target = target || '_top';
+    a.download = true;
+    var me = {
+        filename: function (name) {
+            a.setAttribute('download', name);
+            return me;
+        },
+        dataURI: function (datauri) {
+            a.setAttribute('href', datauri || '');
+            return me;
+        },
+        start: function (callback) {
+            document.body.appendChild(a);
+            var evt = new MouseEvent('click', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            a.dispatchEvent(evt);
+            document.body.removeChild(a);
+            if (callback) {
+                setTimeout(callback, 0);
+            }
+            return me;
+        }
+    };
+    me.dataURI(href).filename(filename);
+    return me;
+};
+
+
+var svgSchema = 'http://www.w3.org/2000/svg';
+var xlinkSchema = 'http://www.w3.org/1999/xlink';
+var xmlnsSchema = 'http://www.w3.org/2000/xmlns/';
+var svgProcessingInstruction = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
+var svgDTDElement = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+exports.svgToString = function svgToString(svg) {
+
+    if (svg.nodeName.toLowerCase() !== 'svg') {
+        throw new Error('A root SVG element is required');
+    }
+
+    if (!svg.hasAttribute('xmlns')) {
+        svg.setAttribute('xmlns', svgSchema);
+    }
+
+    if (!svg.hasAttribute('xmlns:xlink')) {
+        svg.setAttributeNS(xmlnsSchema, 'xmlns:xlink', xlinkSchema);
+    }
+
+    //var source = svg.outerHTML; // although it's fast, not sure using outerHTML is completely safe
+    var source = (new XMLSerializer()).serializeToString(svg); // this may break when SVG elements are not strictly XML because they follow HTML validation rules instead
+
+    return svgProcessingInstruction + svgDTDElement + source;
+};
+
+var utf8ToBase64 = exports.utf8ToBase64 = function utf8ToBase64(str) {
+    // unescape and encodeURIComponent are used when unicode characters appear
+    // in the SVG. Othewise the SVG -> PNG/JPG wont work.
+
+    // This method of converting to Base64 should suffice for now.
+    // If it proves not to be robust enough or slow then read these articles
+    //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8
+    //   - https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
+
+    return window.btoa(unescape(encodeURIComponent(str)));
+};
+
+exports.toDataURI = function toDataURI(data, type, encoding) {
+
+    if (!type) throw new Error('Content MIME type required');
+
+    encoding = encoding.toLowerCase();
+
+    var isPixelImage = /^image\/(jpg|png|gif|jpeg)$/.test(type); // dont include SVG and other text based image formats
+    var encodedData;
+
+    if (isPixelImage) {
+        encodedData = window.btoa(data);
+    } else if (encoding === 'base64') {
+        encodedData = utf8ToBase64(data);
+    } else {
+        encodedData = data;
+    }
+
+    return 'data:' + type + ';' + encoding + ',' + encodedData;
+};
+
+
+},{}],67:[function(require,module,exports){
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+_.templateSettings = {
+    interpolate: /\{\{(.+?)\}\}/g
+};
+
+module.exports = {
+    WHAT_IS_CSV: '<p>Comma Separated Values (CSV) files are used to store tabular data in plain text form.<p><p>Most spreadsheet applications can "save as" CSV.<p>Here\'s an example:<pre>Countries,      GDP Per Captia<span class="pilcrow">\n</span>United States,  "53,142"<span class="pilcrow">\n</span>United Kingdom, "39,351"<span class="pilcrow">\n</span>Germany,        "45,085"</pre>',
+    WHAT_IS_TSV: '<p>Tab Separated Values (TSV) files are similar to CSV files. They are used to store tabular data in plain text form.<p><p>When you copy and paste cells from Excel the format used is TSV.<p><p>Here\'s an example:<pre>Countries<span class="tsv-tab">\t</span>GDP Per Captia<span class="pilcrow">\n</span>United States<span class="tsv-tab">\t</span>"53,142"<span class="pilcrow">\n</span>United Kingdom<span class="tsv-tab">\t</span>"39,351"<span class="pilcrow">\n</span>Germany<span class="tsv-tab">\t</span>        "45,085"</pre>',
+    LINE_SERIES: _.template('<p>Line data series&nbsp;{{ index }}</p>'),
+    BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
+};
+
+},{"./../../../bower_components/underscore/underscore.js":35}],68:[function(require,module,exports){
+require('./../polyfill/bind');
+
+var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
+var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
+var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
+var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
+// first letters of all months and days. ordered by amount of occurrences and then by months, days
+var firstLetters = /[jmsfatondw]/;
+var types = {
+    'month':'month',
+    'year':'year',
+    'day':'day',
+    'ampm':'ampm',
+    'weekday':'weekday',
+    'time':'time'
+};
+
+function normaliseSeperators(value) {
+    if (!value) return null;
+    return value.toString().trim().toLowerCase().replace(/[\/\ ]/g, '-');
+}
+
+function DateParts(value){
+    this.parts = [];
+    this.value = normaliseSeperators(value);
+}
+
+DateParts.prototype.isYears = function(value, tokens){
+    //eg like 2000
+    return (/^\d{1,4}$/.test(value));
+};
+DateParts.prototype.isShortYears = function(value, tokens){
+    //eg like 02 or 99
+    return (/^\d{1,2}$/.test(value));
+};
+DateParts.prototype.isMonths = function(value, tokens){
+    //eg like jan
+    return (this.isShortYears(value) && value<=12);
+};
+DateParts.prototype.isShortMonths = function(value, tokens){
+    //eg like jan
+    return (tokens.length === 2 && shortMonths.test(value));
+};
+DateParts.prototype.isNumbersButNotYears = function(value, tokens){
+    //eg 12345 or 1.1 or 1,000
+    return (/^[\d\.\,]+$/.test(value));
+};
+DateParts.prototype.isUnknownMonthsAndYears = function(value, tokens){
+    //eg like 00/00 or 14/14
+    return tokens.length === 2 && /^\d{2}-\d{2}$/.test(value);
+};
+DateParts.prototype.isMonthsThenShortYears = function(value, tokens){
+    //eg like 12/12
+    return this.isUnknownMonthsAndYears(value, tokens) && parseInt(tokens[0]) <= 12;
+};
+DateParts.prototype.isMonthsThenYears = function(value, tokens){
+    //eg like 12/12
+    return tokens.length === 2 && this.isMonths(tokens[0]) && this.isYears(tokens[1]);
+};
+
+DateParts.prototype.matched = function(){
+    var value = this.value;
+    if (!value) return null;
+    var tokens = value.split(/\-/g);
+    var numTokens = tokens.length;
+
+    if (this.isYears(value, tokens)) {
+        return '%Y';
+    } else if (this.isNumbersButNotYears(value, tokens)) {
+        return null;
+    } else if (this.isMonthsThenShortYears(value, tokens)) {
+        return '%m/%y';
+    } else if (this.isMonthsThenYears(value, tokens)) {
+        return '%m/%Y';
+    } else if (this.isUnknownMonthsAndYears(value, tokens)) {
+        return null;
+    } else if (this.isShortMonths(tokens[0], tokens) && this.isShortYears(tokens[1], tokens)) {
+        return '%b/%y';
+    } else if (this.isShortMonths(tokens[1], tokens) && this.isShortYears(tokens[0], tokens)) {
+        return '%y/%b';
+    } else if (this.isShortMonths(tokens[0], tokens) && this.isYears(tokens[1], tokens)) {
+        return '%b/%Y';
+    } else if (this.isShortMonths(tokens[1], tokens) && this.isYears(tokens[0], tokens)) {
+        return '%Y/%b';
+    } else if (this.isYears(tokens[0], tokens) && this.isMonths(tokens[1], tokens) && numTokens===2) {
+        return '%Y/%m';
+    }
+
+    // trick the parser into thinking the last
+    // token is a year if it matches the pattern 00-00-00
+    if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
+        tokens[2] = '99';
+    }
+
+    var part;
+    for (var i = 0; i < numTokens; i++) {
+        part = new this.Part(tokens[i]);
+        this.parts.push(part);
+    }
+
+    return false;
+};
+
+function timeParts(timeElements){
+    var timeStrings =[];
+    timeElements.reduce(function (result, timePart, i) {
+
+        var len = timePart.length;
+        var zulu = timePart.substr(len - 1) === 'Z';
+        var lastTwo = timePart.substr(len - 2).toLowerCase();
+        var am = lastTwo === 'am';
+        var pm = lastTwo === 'pm';
+        var ampm = am || pm;
+        timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
+        var num = Number(timePart);
+        var format;
+
+        if (timePart === '' || isNaN(num)) {
+            format = undefined;
+        } else if (i === 0 && num >= 0 && num <= 23) {
+            format = '%H';
+        } else if (i === 1 && num >= 0 && num <= 59) {
+            format = '%M';
+
+            // How the hell can a minute have 61 seconds?!
+            // https://docs.python.org/2/library/time.html
+        } else if (i === 2 && num >= 0 && num <= 61) {
+            if (/\d{2}\.\d{3}$/.test(timePart)) {
+                format = '%S.%L';
+            } else {
+                format = '%S';
+            }
+        } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
+            format = '%L';
+        }
+
+        if (zulu) {
+            format += 'Z';
+        } else if (ampm) {
+            format += '%p';
+        }
+
+        timeStrings.push(format);
+
+        return result;
+
+    }, timeStrings);
+
+    return timeStrings;
+}
+
+DateParts.prototype.Part = function(d) {
+
+    var len = d.length;
+    var zeroPadded = len === 2;
+    this.num = NaN;
+    this.type = null;
+    this.format = null;
+    this.guessYear = false;
+    this.guessMonth = false;
+    this.guessDay = false;
+    this.twoDigit = false;
+
+    this.guess = function () {
+        return this.guessYear || this.guessMonth || this.guessDay;
+    }.bind(this);
+
+    if (/^\d{3,4}$/.test(d)) {
+        this.type = types.year;
+        this.format = '%Y';
+        this.num = parseInt(d);
+    } else if (/^\d{1,2}$/.test(d)) {
+
+        this.twoDigit = zeroPadded;
+        this.num = parseInt(d);
+
+        if (zeroPadded && this.num > 31) {
+            this.type = types.year;
+            this.format = '%y';
+        } else if (this.num > 12 && this.num <= 31) {
+            this.guessYear = true;
+            this.guessDay = true;
+        } else if (this.num <= 12) {
+            this.guessYear = true;
+            this.guessMonth = true;
+            this.guessDay = true;
+        }
+
+    } else if (len >= 3 && len <= 9 && firstLetters.test(d.charAt(0))) {
+
+        if (shortMonths.test(d)) {
+            this.format = '%b';
+            this.type = types.month;
+        } else if (longMonths.test(d)) {
+            this.format = '%B';
+            this.type = types.month;
+        } else if (shortDays.test(d)) {
+            this.format = '%a';
+            this.type = types.weekday;
+        } else if (longDays.test(d)) {
+            this.format = '%A';
+            this.type = types.weekday;
+        } else {
+            // could be GMT+0100 or T13:00:00
+            console.log('el', d);
+        }
+
+    } else if (/^(am|pm)$/.test(d)) {
+        this.format = '%p';
+        this.type = types.ampm;
+
+    } else if (d.indexOf(':') !== -1) {
+
+        var timeElements = d.split(':');
+        var timeStrings = [];
+        var ampm = false;
+
+        // it's only possible to have 4 components in a time format
+        // ie %H:%M:%S:%L
+        if (timeElements.length <= 4) {
+            timeStrings = timeParts(timeElements);
+        }
+
+        if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
+            this.format = timeStrings.join(':');
+            this.type = types.time;
+            if (ampm && Number(timeElements[0]) <= 12) {
+                this.format.replace('%H', '%I');
+            }
+        }
+
+    } else if (/^\([a-z]+\)$/.test(d)) {
+        console.log('this is part of the time zone info');
+    }
+};
+
+module.exports = DateParts;
+
+},{"./../polyfill/bind":72}],69:[function(require,module,exports){
 /*jshint -W083 */
 //todo: PM: remove hint once tests are written
 
-require('./../polyfill/bind');
-var Backbone = require('./../core/backbone.js');
-var Column = require('./Column.js');
 var d3 = require("./../../../bower_components/d3/d3.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
-var Datatypes = require('./Datatypes.js');
-var Axis = require('./Axis.js');
-
-var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
-var aYearALongWayInTheFuture = 3000;
+var Backbone = require('./../core/backbone.js');
+var Column = require('./../charting/Column.js');
+var Datatypes = require('./../charting/Datatypes.js');
+var Axis = require('./../charting/Axis.js');
 var transform = require('./../transform/index.js');
+var sniffDataType = require('./sniffDataType.js');
+var predictedDateFormat = require('./predictDateFormat.js');
 
 var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num) {
@@ -27874,466 +29495,9 @@ var emptyheaderRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(function (a, num
     }));
 }, []);
 
-var isPartDate = function (value) {
-    var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
-    if (isLikelyNumber) {
-        return true;
-    }
-    var isPartDate = partDateExp.test(value);
-    if (isPartDate) {
-        return true;
-    }
-    return false;
-};
-
-var isDateString = function (value) {
-    if (!value) return false;
-    var result = true;
-    var s = value.split(/[\:\/\-\ ]+/);
-    var i = s.length;
-    if (!s.length) return false;
-    while (result && i--) {
-        result = isPartDate(s[i]);
-    }
-    return result;
-};
-
-var toNumber = function (value) {
-
-    var s = value.trim()
-        .replace(/\,(?=\d{2,3})/g, '')
-        .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
-        .replace(/\ *%$/, '');
-    var m = s.match(/^\-?[\d\.Ee]+$/);
-    return !m || m.length !== 1 ? NaN : Number(m[0]);
-};
-
-var sniffDatatype = function (value, colNum) {
-    // this is set as the context when the forEach invokes .
-    var o = this[colNum];
-    var isNumber = false;
-    var isDate = false;
-
-    if (value === '' || value === undefined || value === null) {
-        o.nulls++;
-        return;
-    }
-
-    value = value.trim();
-
-    if (value === '*') {
-        o.nulls++;
-        return;
-    }
-
-    var parsedNum = toNumber(value);
-
-    if (!isNaN(parsedNum)) {
-        isNumber = true;
-        o.numbers++;
-        o.numberValues.push(value);
-    }
-
-    if (isDateString(value)) {
-        isDate = true;
-        o.dates++;
-        o.dateValues.push(value);
-    }
-
-    var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
-
-    if ((!isDate && !isNumber) || (isNumber && hasNonNumberChars)) {
-        o.strings++;
-        o.stringValues.push(value);
-    }
-};
-
-
-function normalise(value) {
-    if (!value) return null;
-
-    return value.toString()
-        .trim()
-        // make all regexp quicker and simpler by removing case
-        .toLowerCase()
-        // normalise separtators
-        .replace(/[\/\ ]/g, '-');
-}
-
 function gtDateThreshold(count, totalNonDateStrings) {
     return count * 100 / totalNonDateStrings > 95;
 }
-
-var predictedDateFormat = (function () {
-
-    var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
-    var longDays = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
-    var shortMonths = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i;
-    var longMonths = /^(january|february|march|april|may|june|july|august|september|october|november|december)$/i;
-    var digit = /\d/;
-    var separator = /\/\-\ /;
-    // first letters of all months and days. ordered by amount of occurrences and then by months, days
-    var firstletters = /[jmsfatondw]/;
-    var typeNames = ['month', 'year', 'day', 'ampm', 'weekday', 'time'];
-    var types = {};
-    var abbreviatedFormats = {
-        '%m/%d/%Y': '%x',
-        '%H:%M:%S': '%X'
-    };
-
-    function attachTypes(obj) {
-        typeNames.forEach(function (name) {
-            obj[name] = name;
-        });
-    }
-
-    attachTypes(types);
-
-    function Part(d) {
-
-        var len = d.length;
-        var zeroPadded = len === 2;
-        this.num = NaN;
-        this.type = null;
-        this.format = null;
-        this.guessYear = false;
-        this.guessMonth = false;
-        this.guessDay = false;
-        this.twoDigit = false;
-
-        this.guess = function () {
-            return this.guessYear || this.guessMonth || this.guessDay;
-        }.bind(this);
-
-        if (/^\d{3,4}$/.test(d)) {
-            this.type = types.year;
-            this.format = '%Y';
-        } else if (/^\d{1,2}$/.test(d)) {
-
-            this.twoDigit = zeroPadded;
-            this.num = parseInt(d);
-
-            if (zeroPadded && this.num > 31) {
-                this.type = types.year;
-                this.format = '%y';
-            } else if (this.num > 12 && this.num <= 31) {
-                this.guessYear = true;
-                this.guessDay = true;
-            } else if (this.num <= 12) {
-                this.guessYear = true;
-                this.guessMonth = true;
-                this.guessDay = true;
-            }
-
-        } else if (len >= 3 && len <= 9 && firstletters.test(d.charAt(0))) {
-
-            if (shortMonths.test(d)) {
-                this.format = '%b';
-                this.type = types.month;
-            } else if (longMonths.test(d)) {
-                this.format = '%B';
-                this.type = types.month;
-            } else if (shortDays.test(d)) {
-                this.format = '%a';
-                this.type = types.weekday;
-            } else if (longDays.test(d)) {
-                this.format = '%A';
-                this.type = types.weekday;
-            } else {
-                // could be GMT+0100 or T13:00:00
-                console.log('el', d);
-            }
-
-        } else if (/^(am|pm)$/.test(d)) {
-            this.format = '%p';
-            this.type = types.ampm;
-
-        } else if (d.indexOf(':') !== -1) {
-
-            var timeElements = d.split(':');
-            var num;
-            var timePart;
-            var timeStrings = [];
-            var ampm = false;
-
-            // it's only possible to have 4 components in a time format
-            // ie %H:%M:%S:%L
-            if (timeElements.length <= 4) {
-
-                timeElements.reduce(function (result, timePart, i) {
-
-                    var len = timePart.length;
-                    var zulu = timePart.substr(len - 1) === 'Z';
-                    var lastTwo = timePart.substr(len - 2).toLowerCase();
-                    var am = lastTwo === 'am';
-                    var pm = lastTwo === 'pm';
-                    var ampm = am || pm;
-                    timePart = timePart.substring(0, zulu ? len - 1 : ampm ? len - 2 : undefined);
-                    var num = Number(timePart);
-                    var format;
-
-                    if (timePart === '' || isNaN(num)) {
-                        format = undefined;
-                    } else if (i === 0 && num >= 0 && num <= 23) {
-                        format = '%H';
-                    } else if (i === 1 && num >= 0 && num <= 59) {
-                        format = '%M';
-
-                        // How the hell can a minute have 61 seconds?!
-                        // https://docs.python.org/2/library/time.html
-                    } else if (i === 2 && num >= 0 && num <= 61) {
-                        if (timePart.test(/\d{2}\.\d{3}$/)) {
-                            format = '%S.%L';
-                        } else {
-                            format = '%S';
-                        }
-                    } else if (i === 3 && timePart.length === 3 && num >= 0 && num <= 999) {
-                        format = '%L';
-                    }
-
-                    if (zulu) {
-                        format += 'Z';
-                    } else if (ampm) {
-                        format += '%p';
-                    }
-
-                    timeStrings.push(format);
-
-                    return result;
-
-                }, timeStrings);
-
-            }
-
-            if (timeStrings.length && timeStrings.indexOf(undefined) === -1) {
-                this.format = timeStrings.join(':');
-                this.type = types.time;
-                if (ampm && Number(timeElements[0]) <= 12) {
-                    this.format.replace('%H', '%I');
-                }
-            }
-
-        } else if (/^\([a-z]+\)$/.test(d)) {
-            console.log('this is part of the time zone info');
-        }
-    }
-
-    return function (value) {
-
-        // only use one kind of token separator
-        value = normalise(value);
-
-        if (!value) return null;
-
-        // resolve quickly for simple year values
-        if (/^\d{1,4}$/.test(value)) {
-            return '%Y';
-
-            // resolve quickly for strings that
-            // look like numbers but definitely not years
-            // eg 12345 or 1.1 or 1,000
-        } else if (/^[\d\.\,]+$/.test(value)) {
-            return null;
-        }
-
-        var tokens = value.split(/\-/g);
-        var numTokens = tokens.length;
-
-        // resolve quickly with values like 00/00
-        if (numTokens === 2 && /^\d{2}-\d{2}$/.test(value)) {
-            // assume something like 12-12 means December 2012.
-            if (parseInt(tokens[0]) <= 12) {
-                return '%m/%y';
-            } else {
-                // this would mean we have a value like 14-14
-                // which we can never safely make a date from.
-                return null;
-            }
-        } else if (numTokens === 2) {
-            if (shortMonths.test(tokens[0])) {
-                if (/^\d{4}$/.test(tokens[1])) {
-                    return '%b/%Y';
-                } else if (/^\d{2}$/.test(tokens[1])) {
-                    return '%b/%y';
-                }
-            } else if (/^\d{4}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
-                return '%Y/%b';
-            } else if (/^\d{2}$/.test(tokens[0]) && shortMonths.test(tokens[1])) {
-                return '%y/%b';
-            }
-        }
-
-        // trick the parser into thinking the last
-        // token is a year if it matches the pattern 00-00-00
-        if (numTokens === 3 && /^\d{2}-\d{2}-\d{2}$/.test(value)) {
-            tokens[2] = '99';
-        }
-
-        var parts = [];
-        var token;
-        var part;
-        var i = 0;
-
-        for (i = 0; i < numTokens; i++) {
-            token = tokens[i];
-            part = new Part(token);
-            parts.push(part);
-        }
-
-        var hasYear = false;
-        var hasMonth = false;
-        var hasDay = false;
-        var numParts = parts.length;
-
-        for (i = 0; i < numParts; i++) {
-            part = parts[i];
-            if (part.type === types.year) {
-                if (hasYear) {
-                    return null;
-                }
-                hasYear = true;
-            }
-            if (part.type === types.month) {
-                if (hasMonth) {
-                    return null;
-                }
-                hasMonth = true;
-            }
-            if (part.type === types.day) {
-                if (hasDay) {
-                    return null;
-                }
-                hasDay = true;
-            }
-        }
-
-        var partsWithGuesses = [];
-
-        for (i = 0; i < numParts; i++) {
-            part = parts[i];
-            if (part.guess()) {
-                partsWithGuesses.push(part);
-            }
-        }
-
-        var numGuesses = partsWithGuesses.length;
-
-        for (i = 0; i < numGuesses; i++) {
-            part = partsWithGuesses[i];
-            if (hasYear && part.guessYear) {
-                part.guessYear = false;
-            }
-            if (hasMonth && part.guessMonth) {
-                part.guessMonth = false;
-            }
-            if (hasDay && part.guessDay) {
-                part.guessDay = false;
-            }
-        }
-
-        for (i = 0; i < numGuesses; i++) {
-            part = partsWithGuesses[i];
-            if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-                part.guessDay = false;
-                part.type === types.day;
-                hasDay = true;
-                part.format = part.twoDigit ? '%d' : '%e';
-            }
-            if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-                part.guessMonth = false;
-                part.type === types.month;
-                hasMonth = true;
-                part.format = '%m';
-            }
-            if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-                part.guessYear = false;
-                part.type === types.year;
-                hasYear = true;
-                part.format = '%y';
-            }
-        }
-
-        for (i = 0; i < numGuesses; i++) {
-            part = partsWithGuesses[i];
-            if (hasYear && part.guessYear) {
-                part.guessYear = false;
-            }
-            if (hasMonth && part.guessMonth) {
-                part.guessMonth = false;
-            }
-            if (hasDay && part.guessDay) {
-                part.guessDay = false;
-            }
-        }
-
-//// 2
-
-
-        for (i = 0; i < numGuesses; i++) {
-            part = partsWithGuesses[i];
-            if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
-                part.guessDay = false;
-                part.type === types.day;
-                hasDay = true;
-                part.format = part.twoDigit ? '%d' : '%e';
-            }
-            if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
-                part.guessMonth = false;
-                part.type === types.month;
-                hasMonth = true;
-                part.format = '%m';
-            }
-            if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
-                part.guessYear = false;
-                part.type === types.year;
-                hasYear = true;
-                part.format = '%y';
-            }
-        }
-
-
-        for (i = 0; i < numGuesses; i++) {
-            part = partsWithGuesses[i];
-            if (hasYear && part.guessYear) {
-                part.guessYear = false;
-            }
-            if (hasMonth && part.guessMonth) {
-                part.guessMonth = false;
-            }
-            if (hasDay && part.guessDay) {
-                part.guessDay = false;
-            }
-        }
-
-
-//////////////////////////////
-
-        var format = [];
-
-        for (i = 0; i < numParts; i++) {
-            part = parts[i];
-            if (part.guess()) {
-                return null;
-            }
-            if (part.format) {
-                format.push(part.format);
-            }
-        }
-
-        format = format.length ? format.join('/') : null;
-
-        if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
-            format = format.replace('%H', '%I');
-        }
-
-        if (format in abbreviatedFormats) {
-            return abbreviatedFormats[format];
-        }
-
-        return format;
-    };
-
-})();
 
 var Threshold = function (numRows) {
     var percent = 95;
@@ -28514,7 +29678,7 @@ var DataImport = Backbone.Model.extend({
                 values = values.concat(new Array(numCols - numValues));
             }
 
-            values.forEach(sniffDatatype, dataTypeCounters);
+            values.forEach(sniffDataType, dataTypeCounters);
             result = _.object(colNames, values);
 
             return result;
@@ -28820,447 +29984,728 @@ var DataImport = Backbone.Model.extend({
 
 });
 
-var tests = {
-    '1.101': null,
-    '1,000': null,
-    '1,000,000': null,
-    '1': '%Y',
-    '11': '%Y',
-    '111': '%Y',
-    '1999': '%Y',
-    '11111': null,
-    '01-1999': '%m/%Y',
-    '12-1999': '%m/%Y',
-    '13-1999': null,
-    '32-1999': null,
-    'Jan 1999': '%b/%Y',
-    '31/01/2014': '%d/%m/%Y',
-    '31/01/14': '%d/%m/%y',
-    '01/31/2014': '%x',
-    '01/31/14': '%m/%d/%y',
-    '01 January 2014': '%d/%B/%Y',
-    '13/01/13': '%d/%m/%y',
-    '01/13/13': '%m/%d/%y',
-    '13/01/01': '%d/%m/%y',
-    '01/13/01': '%m/%d/%y',
-    '12/01/12': null,
-    '01/12/12': null,
-    '1/1/14': null,
-    '01-01-01': null,
-    '14/14': null,
-    '11/14': '%m/%y',
-    '01/13/2013': '%x',
-    '01 Jan 2014': '%d/%b/%Y',
-    '32 Jan 2014': null,
-    'Jan 01 2014': '%b/%d/%Y',
-    'Jan 32 2014': null,
-    'January 01 2014': '%B/%d/%Y',
-    '2014 January 01': '%Y/%B/%d',
-};
-
-Object.keys(tests).forEach(function (key) {
-    var date = key;
-    var format = tests[key];
-    var result = predictedDateFormat(date);
-    console.assert(result === format, 'Date:' + date + ' Format:' + format + ' Result:' + result);
-});
-
 module.exports = DataImport;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./../polyfill/bind":81,"./../transform/index.js":96,"./Axis.js":43,"./Column.js":45,"./Datatypes.js":48}],47:[function(require,module,exports){
-var Backbone = require('./../core/backbone');
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":35,"./../charting/Axis.js":47,"./../charting/Column.js":49,"./../charting/Datatypes.js":51,"./../core/backbone.js":62,"./../transform/index.js":87,"./predictDateFormat.js":70,"./sniffDataType.js":71}],70:[function(require,module,exports){
+var DateParts = require('./dateParts.js');
 
-module.exports = Backbone.Model.extend({
-    defaults: {
-        rows: []
+var types = {
+    'month':'month',
+    'year':'year',
+    'day':'day',
+    'ampm':'ampm',
+    'weekday':'weekday',
+    'time':'time'
+};
+var abbreviatedFormats = {
+    '%m/%d/%Y': '%x',
+    '%H:%M:%S': '%X'
+};
+
+var predictedDateFormat = function (value) {
+
+    var dateParts = new DateParts(value);
+    var matched = dateParts.matched();
+    if (matched!==false) return matched;
+
+    var parts = dateParts.parts;
+    var i= 0;
+    var part;
+
+    var hasYear = false;
+    var hasMonth = false;
+    var hasDay = false;
+    var numParts = parts.length;
+
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.type === types.year) {
+            if (hasYear) {
+                return null;
+            }
+            hasYear = true;
+        }
+        if (part.type === types.month) {
+            if (hasMonth) {
+                return null;
+            }
+            hasMonth = true;
+        }
+        if (part.type === types.day) {
+            if (hasDay) {
+                return null;
+            }
+            hasDay = true;
+        }
     }
-});
 
-},{"./../core/backbone":75}],48:[function(require,module,exports){
-var Datatypes = module.exports = {
-    CATEGORICAL: 'categorical',
-    NUMERIC: 'numeric',
-    TIME: 'time',
-    NONE: '',
+    var partsWithGuesses = [];
 
-    isCategorical: function (value) {
-        return value === Datatypes.CATEGORICAL;
-    },
-    isNumeric: function (value) {
-        return value === Datatypes.NUMERIC;
-    },
-    isTime: function (value) {
-        return value === Datatypes.TIME;
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.guess()) {
+            partsWithGuesses.push(part);
+        }
+    }
+
+    var numGuesses = partsWithGuesses.length;
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+            part.guessDay = false;
+            part.type === types.day;
+            hasDay = true;
+            part.format = part.twoDigit ? '%d' : '%e';
+        }
+        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+            part.guessMonth = false;
+            part.type === types.month;
+            hasMonth = true;
+            part.format = '%m';
+        }
+        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+            part.guessYear = false;
+            part.type === types.year;
+            hasYear = true;
+            part.format = '%y';
+        }
+    }
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+//// 2
+
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (!hasDay && part.guessDay && !part.guessMonth && !part.guessYear) {
+            part.guessDay = false;
+            part.type === types.day;
+            hasDay = true;
+            part.format = part.twoDigit ? '%d' : '%e';
+        }
+        if (!hasMonth && part.guessMonth && !part.guessDay && !part.guessYear) {
+            part.guessMonth = false;
+            part.type === types.month;
+            hasMonth = true;
+            part.format = '%m';
+        }
+        if (!hasYear && part.guessYear && !part.guessDay && !part.guessMonth) {
+            part.guessYear = false;
+            part.type === types.year;
+            hasYear = true;
+            part.format = '%y';
+        }
+    }
+
+
+    for (i = 0; i < numGuesses; i++) {
+        part = partsWithGuesses[i];
+        if (hasYear && part.guessYear) {
+            part.guessYear = false;
+        }
+        if (hasMonth && part.guessMonth) {
+            part.guessMonth = false;
+        }
+        if (hasDay && part.guessDay) {
+            part.guessDay = false;
+        }
+    }
+
+
+//////////////////////////////
+
+    var format = [];
+
+    for (i = 0; i < numParts; i++) {
+        part = parts[i];
+        if (part.guess()) {
+            return null;
+        }
+        if (part.format) {
+            format.push(part.format);
+        }
+    }
+
+    format = format.length ? format.join('/') : null;
+
+    if (format && format.indexOf('%H') !== -1 && format.indexOf('%p') !== -1) {
+        format = format.replace('%H', '%I');
+    }
+
+    if (format in abbreviatedFormats) {
+        return abbreviatedFormats[format];
+    }
+
+    return format;
+
+};
+
+module.exports = predictedDateFormat;
+
+},{"./dateParts.js":68}],71:[function(require,module,exports){
+var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+var aYearALongWayInTheFuture = 3000;
+
+var isPartDate = function (value) {
+    var isLikelyNumber = (/^\d{1,4}$/.test(value) && Number(value) < aYearALongWayInTheFuture);
+    if (isLikelyNumber) {
+        return true;
+    }
+    var isPartDate = partDateExp.test(value);
+    if (isPartDate) {
+        return true;
+    }
+    return false;
+};
+
+var isDateString = function (value) {
+    if (!value) return false;
+    var result = true;
+    var s = value.split(/[\:\/\-\ ]+/);
+    var i = s.length;
+    if (!s.length) return false;
+    while (result && i--) {
+        result = isPartDate(s[i]);
+    }
+    return result;
+};
+
+var toNumber = function (value) {
+    var s = value.trim()
+        .replace(/\,(?=\d{2,3})/g, '')
+        .replace(/^(\$|£|¥|€)(?=\.?[\de]+\.?\d+)/i, '')
+        .replace(/\ *%$/, '');
+    var m = s.match(/^\-?[\d\.Ee]+$/);
+    return !m || m.length !== 1 ? NaN : Number(m[0]);
+};
+
+var sniffDataType = function (value, colNum) {
+    // this is set as the context when the forEach invokes .
+    var o = this[colNum];
+    var isNumber = false;
+    var isDate = false;
+
+    if (value === '' || value === undefined || value === null) {
+        o.nulls++;
+        return;
+    }
+
+    value = value.trim();
+
+    if (value === '*') {
+        o.nulls++;
+        return;
+    }
+
+    var parsedNum = toNumber(value);
+
+    if (!isNaN(parsedNum)) {
+        isNumber = true;
+        o.numbers++;
+        o.numberValues.push(value);
+    }
+
+    if (isDateString(value)) {
+        isDate = true;
+        o.dates++;
+        o.dateValues.push(value);
+    }
+
+    var hasNonNumberChars = value.search(/[^\d\,\.\$\£\¥\€\%\-\ ]/) !== -1;
+
+    if ((!isDate && !isNumber) || (isNumber && hasNonNumberChars)) {
+        o.strings++;
+        o.stringValues.push(value);
     }
 };
 
-},{}],49:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var Axis = require('./Axis.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Datatypes = require('./Datatypes.js');
+module.exports = sniffDataType;
 
-function captitalizeFirstLetter(str) {
-    if (!str || typeof str !== 'string') return str;
-    return str.replace(/^./, function (match) {
-        return match.toUpperCase();
-    });
-}
-
-var defaultDatatype = Datatypes.NUMERIC;
-
-var DependantAxis = Axis.extend({
-    initialize: function () {
-        this.columns = new Backbone.Collection();
-
-        var fn = (function (model) {
-            model.set('axis', this.get('name'));
-            model.collection = this.columns;
-        }).bind(this);
-
-        this.listenTo(this.columns, 'remove', function (model) {
-            model.set('axis', Axis.NONE);
-            model.collection = null;
-        });
-        this.listenTo(this.columns, 'add', fn);
-        this.listenTo(this.columns, 'reset', function (collection) {
-            collection.forEach(fn);
-        });
-        this.listenTo(this.columns, 'add remove reset', function () {
-            var numCols = this.columns.length;
-            var warning = '';
-            if (numCols === 0) {
-                this.set({
-                    datatype: Datatypes.NONE,
-                    suggestedLabel: ''
-                });
-            } else if (numCols === 1) {
-                var column = this.columns.at(0);
-                var typeInfo = column.get('typeInfo');
-                this.set({
-                    datatype: typeInfo.datatype,
-                    suggestedLabel: captitalizeFirstLetter(column.get('property'))
-                });
-            } else if (numCols > 1) {
-                var current;
-                var last;
-                var types = {};
-                for (var i = numCols; i--;) {
-                    current = this.columns.at(i).get('typeInfo').datatype;
-                    if (last && current && current !== last) {
-                        warning = 'Mismatching datatypes';
-                        break;
-                    }
-                    if (!types[current]) {
-                        types[current] = 1;
-                    } else {
-                        types[current] += 1;
-                    }
-                    last = current;
-                }
-                types = _.pairs(types).sort(function (a, b) {
-                    return a[1] < b[1];
-                });
-                var mostPopularType = types.length ? types[0][0] : Datatypes.CATEGORICAL;
-                this.set({
-                    suggestedLabel: '',
-                    datatype: mostPopularType
-                });
-            }
-            this.set('warningMessage', warning);
-        });
-        this.listenTo(this.columns, 'all', function () {
-            var length = this.columns ? this.columns.length : 0;
-            this.set({hasSeries: !!length, multiseries: length > 1, numSeries: length});
-        });
-    },
-    defaults: _.extend({}, Axis.prototype.defaults, {
-        name: Axis.Y,
-        datatype: defaultDatatype,
-        hasSeries: false,
-        multiseries: false,
-        numSeries: 0,
-    })
-});
-
-module.exports = DependantAxis;
-
-},{"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./Axis.js":43,"./Datatypes.js":48}],50:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Chart = require('./Chart.js');
-
-var Graphic = Backbone.Model.extend({
-
-    initialize: function () {
-        this.chart = new Chart();
-    },
-
-    defaults: {
-        title: 'Untitled chart',
-        subtitle: '',
-        source: '',
-        footnote: '',
-        noSource: false
-    },
-
-    subtitleSuggestion: function (save) {
-        var label = this.chart.yAxis.get('label') || this.chart.yAxis.get('suggestedLabel');
-        var units = this.chart.yAxis.get('prefix') + this.chart.yAxis.get('suffix');
-        var result;
-
-        if (label) {
-            result = !units ? label : label + ' (' + units + ')';
-            if (save) {
-                this.set('subtitle', result);
-            }
+},{}],72:[function(require,module,exports){
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
         }
 
-        return result;
-    }
-});
-
-module.exports = Graphic;
-
-},{"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./Chart.js":44}],51:[function(require,module,exports){
-var Backbone = require('./../core/backbone');
-
-var GraphicType = Backbone.Model.extend({
-
-    initialize: function (attributes, options) {
-        this.graphic = options.graphic;
-        this.variations = options.variations;
-        this.controls = options.controls;
-    },
-
-    defaults: {
-        typeName: ''
-    }
-});
-
-module.exports = GraphicType;
-
-},{"./../core/backbone":75}],52:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-
-function getKeyLabel(d) {
-    var property = d.get('property');
-    var label = d.get('label') || property;
-    return {key: property, label: label};
-}
-
-var GraphicVariation = Backbone.Model.extend({
-
-    defaults: {
-        svg: null
-    },
-
-    initialize: function (attributes, options) {
-        this.variation = options.variation;
-        this.graphic = options.graphic;
-        this.graphicType = options.graphicType;
-        this.errors = new Backbone.Collection([]);
-    },
-
-    createConfig: function () {
-        // FIXME: is it still necessary to make a copy of the data?
-        var data = this.graphic.chart.dataset.get('rows').map(function (d) {
-            return Object.create(d);
-        });
-
-        if (!data.length) return;
-
-        var xAxisProperty = this.graphic.chart.xAxis.get('property');
-        var yAxisProperties = this.graphic.chart.yAxis.columns.map(getKeyLabel);
-
-        if (!xAxisProperty || !yAxisProperties.length) {
-            return;
-        }
-
-        var g = this.graphic.toJSON();
-
-        var config = {
-
-            width: this.variation.get('width'),
-            height: this.variation.get('height'),
-
-            title: g.title,
-            subtitle: g.subtitle,
-            source: g.source,
-            hideSource: g.noSource,
-            footnote: g.footnote,
-
-            data: data,
-            dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
-            x: {
-                series: {
-                    key: xAxisProperty,
-                    label: xAxisProperty
-                }
+        var aArgs = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP = function () {
             },
-
-            y: {
-                series: yAxisProperties
-            }
-
-        };
-
-        return this.graphicType.controls.overrideConfig(config);
-    },
-
-    toJSON: function () {
-
-        var d = Backbone.Model.prototype.toJSON.call(this);
-
-        d.graphic = this.graphic.toJSON();
-        d.graphicType = this.graphicType.toJSON();
-        d.variation = this.variation.toJSON();
-
-        var svg = this.attributes.svg;
-
-        if (!svg) {
-            d.svg = null;
-        } else {
-            var svgRect = svg.getBoundingClientRect();
-            d.svg = {
-                width: svgRect.width,
-                height: svgRect.height
+            fBound = function () {
+                return fToBind.apply(this instanceof fNOP ? this : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
             };
-        }
 
-        return d;
-    }
-});
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
 
-module.exports = GraphicVariation;
-
-},{"./../core/backbone.js":75}],53:[function(require,module,exports){
-var Axis = require('./Axis.js');
-var Datatype = require('./Datatypes.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Column = require('./Column.js');
-
-var defaultDatatype = Datatype.TIME;
-
-function convertPipelineIndexHeader(property, datatype) {
-    if (property === '&') {
-        if (Datatype.isCategorical(datatype)) {
-            return 'Category';
-        } else if (Datatype.isTime(datatype)) {
-            return 'Time';
-        }
-    }
-    return property;
+        return fBound;
+    };
 }
 
-var IndependantAxis = Axis.extend({
+},{}],73:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
+},"useData":true});
 
-    initialize: function () {
-        this.on('change:property', function (model, value) {
-            this.set({
-                suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
-                label: null
-            });
-        });
-    },
+},{"hbsfy/runtime":46}],74:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
 
-    defaults: _.extend({}, Axis.prototype.defaults, {
-        name: Axis.X,
-        datatype: defaultDatatype
-    }),
+  return "<span\n            class=\"pull-right alert alert-warning\">"
+    + this.escapeExpression(((helper = (helper = helpers.warningMessage || (depth0 != null ? depth0.warningMessage : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"warningMessage","hash":{},"data":data}) : helper)))
+    + "</span>";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, helper;
 
-    useColumn: function (column) {
+  return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
+    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + ")</span>"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"datatype\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
+},"useData":true});
 
-        if (!column) {
-            this._column = null;
-            this.set('property', null);
-            return;
-        }
+},{"hbsfy/runtime":46}],75:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n        </div>\n";
+},"3":function(depth0,helpers,partials,data) {
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n        </div>\n";
+},"5":function(depth0,helpers,partials,data) {
+    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n        </div>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
 
-        var typeInfo = column.get('typeInfo');
-        var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
-        var dateFormat = Datatype.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
-        this._column = column;
+  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"datatype\">\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.numeric : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.time : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.categorical : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</div>\n";
+},"useData":true});
 
-        this.set({
-            property: column.get('property'),
-            datatype: datatype,
-            dateFormat: dateFormat
-        });
-    },
+},{"hbsfy/runtime":46}],76:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
+},"useData":true});
 
-    createColumn: function () {
-        var attributes = _.extend({}, this._column.attributes);
-        attributes.property = this.attributes.property;
-        attributes.datatype = this.attributes.datatype;
-        attributes.label = this.attributes.label || this.attributes.property;
-        attributes.axis = Axis.X;
-        return new Column(attributes);
-    }
-});
+},{"hbsfy/runtime":46}],77:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div><!-- Graphic Type Control --></div>\n";
+},"useData":true});
 
-module.exports = IndependantAxis;
+},{"hbsfy/runtime":46}],78:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div data-region=\"variations\"></div>\n";
+},"useData":true});
 
-},{"./../../../bower_components/underscore/underscore.js":31,"./Axis.js":43,"./Column.js":45,"./Datatypes.js":48}],54:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-var Chart = require('./Chart.js');
-var TickStyle = require('./TickStyle.js');
+},{"hbsfy/runtime":46}],79:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"graphic-container\"></div>\n";
+},"useData":true});
 
-var LineControls = Backbone.Model.extend({
+},{"hbsfy/runtime":46}],80:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
+},"useData":true});
 
-    defaults: {
-        thinLines: false,
-        flipYAxis: false,
-        startFromZero: false,
-        nice: false,
-        tickStyleX: TickStyle.AUTO,
-        tickStyleY: TickStyle.AUTO
-    },
+},{"hbsfy/runtime":46}],81:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, helper;
 
-    overrideConfig: function (config) {
-        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
-        config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
-        config.y.flip = this.attributes.flipYAxis;
-        config.niceValue = this.attributes.nice;
-        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
-        return config;
-    }
+  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n    <h4>Warning</h4>\n\n    <p>"
+    + ((stack1 = ((helper = (helper = helpers.message || (depth0 != null ? depth0.message : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"message","hash":{},"data":data}) : helper))) != null ? stack1 : "")
+    + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
+},"useData":true});
 
-});
+},{"hbsfy/runtime":46}],82:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
+},"useData":true});
 
+},{"hbsfy/runtime":46}],83:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"datatype\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
+},"useData":true});
 
-module.exports = LineControls;
+},{"hbsfy/runtime":46}],84:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
 
-},{"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./Chart.js":44,"./TickStyle.js":55}],55:[function(require,module,exports){
+  return this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + ".";
+},"3":function(depth0,helpers,partials,data) {
+    return "        <span name=\"label\" class=\"series-name\"></span>\n";
+},"5":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "        <span title=\"click to edit the series "
+    + this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\"\n              contenteditable></span>\n";
+},"7":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "        <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
+    + this.escapeExpression(((helper = (helper = helpers.property || (depth0 != null ? depth0.property : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"property","hash":{},"data":data}) : helper)))
+    + "\">Add series</button>\n";
+},"9":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "        <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
+    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" data-help=\"LINE_SERIES\"></span>\n  <!--\n  <span class=\"swatch swatch-bar\" data-placement=\"top\" data-index=\""
+    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span\n          class=\"sr-only\">Close</span></button>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<span class=\"series-item-drag-content\">\n<span class=\"series-num\" draggable=\"true\">"
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"unless","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</span>\n<span>\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
+    + "</span>\n<span class=\"series-item-controls\">\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
+    + "</span>\n</span>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":46}],85:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1, alias1=this.lambda, alias2=this.escapeExpression;
+
+  return "<div>\n    <table class=\"table table-bordered table-condensed\">\n        <tbody>\n        <tr>\n            <th class=\"property-name\">Chart type</th>\n            <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
+    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Variation</th>\n            <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
+    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Width</th>\n            <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
+    + "px</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Height</th>\n            <td class=\"property-value\">"
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
+    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n    </div>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":46}],86:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Nice\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":46}],87:[function(require,module,exports){
 module.exports = {
-    // works out best set of ticks to display
-    AUTO: 'auto',
-
-    // end of the domain round up/down to nearest unit
-    NICE: 'nice',
-
-    // only 2 ticks. a tick at each end of the domain, no other ticks in between. no rounding
-    SIMPLE: 'simple',
-
-    // an amount of ticks to be display
-    AMOUNT: 'amount',
-
-    //  uses array of values for ticks
-    ARRAY: 'array',
+    number: require('./number.js'),
+    time: require('./time.js'),
+    series: require('./series.js'),
+    table: require('./table.js')
 };
 
-},{}],56:[function(require,module,exports){
-var Backbone = require('./../core/backbone.js');
+},{"./number.js":88,"./series.js":89,"./table.js":90,"./time.js":91}],88:[function(require,module,exports){
+var currencySymbol = /^(\$|€|¥|£)/;
+var allCommas = /\,/g;
+var percent = /(\%)$/;
 
-module.exports = new Backbone.Collection([
-    {width: 300, height: null, variationName: 'regular web inline'},
-    {width: 186, height: null, variationName: 'small web inline'},
-    {width: 600, height: null, variationName: 'large web inline'},
-]);
+module.exports = createNumberTransformer;
 
-},{"./../core/backbone.js":75}],57:[function(require,module,exports){
+function createNumberTransformer(options) {
+
+    options = options || {};
+
+    function transformNumber(d) {
+
+        var _NaN = options.interpolateNulls ? null : NaN;
+
+        if (d === null || d === undefined) return _NaN;
+
+        var type = typeof d;
+
+        if (type === 'number') return d;
+
+        if (type !== 'string') return _NaN;
+
+        d = d.trim()
+            .replace(allCommas, '')
+            .replace(currencySymbol, '')
+            .replace(percent, '');
+
+        if (d === '') return _NaN;
+
+        if (d === '*') return null;
+
+        return Number(d);
+
+    }
+
+    return transformNumber;
+}
+
+},{}],89:[function(require,module,exports){
+module.exports = series;
+
+function series(array, property, transformer, customLogic) {
+    var oldValue;
+    var newValue;
+    var hasCustomLogic = typeof customLogic === 'function';
+    var customValue;
+    for (var i = 0, x = array.length; i < x; i++) {
+        oldValue = array[i][property];
+        newValue = transformer(oldValue);
+        if (newValue === undefined) newValue = null;
+        customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
+        if (customValue === undefined) customValue = newValue;
+        array[i][property] = customValue;
+    }
+}
+
+},{}],90:[function(require,module,exports){
+var Datatypes = require('../charting/Datatypes.js');
+var series = require('./series.js');
+
+module.exports = transformTable;
+
+function transformTable(data, columns, transform, type, customLogic) {
+
+    if (typeof type === 'string') {
+        if (type === Datatypes.TIME) {
+            type = Datatypes.isTime;
+        } else if (type === Datatypes.NUMERIC) {
+            type = Datatypes.isNumeric;
+        } else if (type === Datatypes.isCategorical) {
+            type = Datatypes.isCategorical;
+        }
+    }
+
+    if (type === null) {
+        type = function () {
+            return true;
+        };
+    }
+
+    if (typeof type !== 'function') {
+        return;
+    }
+
+    var typeInfo;
+    var colName;
+    var transformFn;
+
+    for (var i = 0, x = columns.length; i < x; i++) {
+        typeInfo = columns[i].get('typeInfo');
+        colName = typeInfo.colName;
+        if (type(typeInfo.datatype)) {
+            transformFn = transform(typeInfo);
+            if (transformFn) {
+                series(data, colName, transformFn, customLogic);
+            }
+        }
+    }
+}
+
+},{"../charting/Datatypes.js":51,"./series.js":89}],91:[function(require,module,exports){
+var d3 = require("./../../../bower_components/d3/d3.js");
+
+module.exports = createTimeTransformer;
+
+function createTimeTransformer(format) {
+
+    var parser = createDateParser(format);
+    var today = new Date();
+    var year = today.getFullYear();
+    var day = today.getDate();
+    var month = today.getMonth();
+    var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
+
+    function transformTime(d) {
+        var type = typeof d;
+
+        if (!d) return null;
+
+        if (isValidDate(d)) return d;
+
+        if (type !== 'string') return null;
+
+        var parseValue = parser(d.trim());
+
+        if (isValidDate(parseValue)) {
+            if (timeOnlyFormat) {
+                parseValue.setDate(day);
+                parseValue.setMonth(month);
+                parseValue.setFullYear(year);
+            }
+            return parseValue;
+        }
+
+        return null;
+    }
+
+    return transformTime;
+
+}
+
+function isValidDate(d) {
+    return d && d instanceof Date && !isNaN(+d);
+}
+
+function createDate(value) {
+    return new Date(value);
+}
+
+function useJavascriptDateFn(format) {
+    return format === 'ISO' || format === 'JAVASCRIPT';
+}
+
+var datePartSeparators = /[\-\ ]/g;
+
+function createDateParser(format) {
+    var useJs = useJavascriptDateFn(format);
+    if (useJs) {
+        return createDate;
+    } else {
+        var parser = d3.time.format(format).parse;
+        return function (value) {
+            var normalizedString = value.replace(datePartSeparators, '/');
+            return parser(normalizedString);
+        };
+    }
+}
+
+},{"./../../../bower_components/d3/d3.js":4}],92:[function(require,module,exports){
+/* global gapi, ng, auth2 */
+var $ = require("./../../../bower_components/jquery/dist/jquery.js");
+
+var Authentication = function (cb) {
+    this.cb = cb;
+};
+
+Authentication.prototype.renderButton = function () {
+    var self = this;
+    if (!document.getElementById('my-signin2')) return;
+    gapi.signin2.render('my-signin2', {
+        'width': 200,
+        'height': 50,
+        'longtitle': false,
+        'theme': 'dark',
+        'onsuccess': function (gu) {
+            self.onSignIn(gu);
+        }
+    });
+};
+
+Authentication.prototype.onSignIn = function (googleUser) {
+    var profile = googleUser.getBasicProfile();
+    var regexp = /^.*\@ft\.com$/gi;
+    var email = profile.getEmail();
+    if (email.match(regexp)) {
+        var container = document.getElementById("login-container");
+        var trackingImage = document.createElement('img');
+        trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
+        container.appendChild(trackingImage);
+        container.remove();
+        this.cb && typeof this.cb === 'function' && this.cb();
+    } else {
+        //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
+        //when re-signing in (otherwise login will automatically login with their previous selection).
+        gapi.auth2.getAuthInstance().disconnect();
+        gapi.auth2.getAuthInstance().signOut();
+        $("#login-alert").css('display', 'block');
+    }
+};
+
+module.exports = Authentication;
+
+},{"./../../../bower_components/jquery/dist/jquery.js":5}],93:[function(require,module,exports){
+/* global ga*/
+var Tracking = function () {
+    if (document.domain === 'localhost') {
+        this.track = false;
+        return;
+    }
+    this.track = true;
+    (function (i, s, o, g, r, a, m) {
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments);
+            }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-60698836-1', 'auto');
+    ga('send', 'pageview');
+};
+
+Tracking.prototype.trackPage = function (pageName) {
+    if (!this.track) return;
+    //Set custom screen
+    ga('send', 'screenview', {
+        'screenName': pageName
+    });
+};
+
+Tracking.prototype.trackEvent = function (eventName) {
+    if (!this.track) return;
+    ga('send', 'event', 'button', 'click', eventName);
+};
+
+module.exports = new Tracking();
+
+},{}],94:[function(require,module,exports){
+module.exports = "0.0.6";
+},{}],95:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -29291,7 +30736,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":75,"./../templates/axis-label.hbs":82}],58:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./../templates/axis-label.hbs":73}],96:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -29324,7 +30769,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./../templates/datatype.hbs":84}],59:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./../templates/datatype.hbs":75}],97:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -29390,12 +30835,12 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":75}],60:[function(require,module,exports){
+},{"./../core/backbone.js":62}],98:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
-var Datatypes = require('./Datatypes.js');
-var ViewDatatype = require('./ViewDatatype.js');
-var ViewHighlight = require('./ViewHighlight.js');
-var ViewSeriesControls = require('./ViewSeriesControls.js');
+var Datatypes = require('../charting/Datatypes.js');
+var ViewDatatype = require('./Datatype.js');
+var ViewHighlight = require('./Highlight.js');
+var ViewSeriesControls = require('./SeriesControls.js');
 
 var ViewDependantAxisControls = RegionView.extend({
 
@@ -29473,11 +30918,11 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"./../core/RegionView.js":74,"./../templates/axis.hbs":83,"./Datatypes.js":48,"./ViewDatatype.js":58,"./ViewHighlight.js":65,"./ViewSeriesControls.js":71}],61:[function(require,module,exports){
+},{"../charting/Datatypes.js":51,"./../core/RegionView.js":61,"./../templates/axis.hbs":74,"./Datatype.js":96,"./Highlight.js":103,"./SeriesControls.js":109}],99:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
-var ViewIndependantAxisControls = require('./ViewIndependantAxisControls.js');
-var ViewDependantAxisControls = require('./ViewDependantAxisControls.js');
+var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
+var ViewDependantAxisControls = require('./DependantAxisControls.js');
 var tracking = require('./../utils/tracking.js');
 
 var ViewGraphicControls = RegionView.extend({
@@ -29573,7 +31018,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":74,"./../core/backbone.js":75,"./../templates/graphic-controls.hbs":85,"./../utils/tracking.js":102,"./ViewDependantAxisControls.js":60,"./ViewIndependantAxisControls.js":67}],62:[function(require,module,exports){
+},{"./../core/RegionView.js":61,"./../core/backbone.js":62,"./../templates/graphic-controls.hbs":76,"./../utils/tracking.js":93,"./DependantAxisControls.js":98,"./IndependentAxisControls.js":105}],100:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -29592,11 +31037,11 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":75,"./../templates/graphic-type-controls.hbs":86}],63:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./../templates/graphic-type-controls.hbs":77}],101:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
-var GraphicVariation = require('./GraphicVariation.js');
-var ViewGraphicVariation = require('./ViewGraphicVariation.js');
+var GraphicVariation = require('../charting/GraphicVariation.js');
+var ViewGraphicVariation = require('./GraphicVariation.js');
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypes = CollectionView.extend({
@@ -29651,7 +31096,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"./../core/CollectionView.js":73,"./../core/RegionView.js":74,"./../core/backbone.js":75,"./../templates/graphic-type.hbs":87,"./GraphicVariation.js":52,"./ViewGraphicVariation.js":64}],64:[function(require,module,exports){
+},{"../charting/GraphicVariation.js":55,"./../core/CollectionView.js":60,"./../core/RegionView.js":61,"./../core/backbone.js":62,"./../templates/graphic-type.hbs":78,"./GraphicVariation.js":102}],102:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var linechart = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart.line;
@@ -29662,7 +31107,7 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 var ViewGraphicVariation = Backbone.View.extend({
 
     initialize: function (options) {
-        this.chart = linechart();
+        this.chart = linechart;//();
         var debounced = _.bind(_.debounce(this.render, 50), this);
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
@@ -29734,9 +31179,9 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":31,"./../core/backbone.js":75,"./../templates/graphic.hbs":88}],65:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":62,"./../templates/graphic.hbs":79}],103:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
-var Datatypes = require('./Datatypes.js');
+var Datatypes = require('../charting/Datatypes.js');
 
 var ViewHighlight = Backbone.View.extend({
 
@@ -29770,9 +31215,9 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"./../core/backbone.js":75,"./../templates/highlight.hbs":89,"./Datatypes.js":48}],66:[function(require,module,exports){
+},{"../charting/Datatypes.js":51,"./../core/backbone.js":62,"./../templates/highlight.hbs":80}],104:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
-var DataImport = require('./DataImport.js');
+var DataImport = require('./../import/index.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 
 var tracking = require('./../utils/tracking.js');
@@ -29970,13 +31415,13 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":75,"./../templates/import-warning.hbs":90,"./../templates/import.hbs":91,"./../utils/tracking.js":102,"./DataImport.js":46}],67:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":62,"./../import/index.js":69,"./../templates/import-warning.hbs":81,"./../templates/import.hbs":82,"./../utils/tracking.js":93}],105:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
-var ViewAxisLabel = require('./ViewAxisLabel.js');
-var ViewDatatype = require('./ViewDatatype.js');
-var ViewHighlight = require('./ViewHighlight.js');
-var ViewDateFormat = require('./ViewDateFormat.js');
-var Datatypes = require('./Datatypes.js');
+var ViewAxisLabel = require('./AxisLabel.js');
+var ViewDatatype = require('./Datatype.js');
+var ViewHighlight = require('./Highlight.js');
+var ViewDateFormat = require('./DateFormat.js');
+var Datatypes = require('../charting/Datatypes.js');
 
 var ViewIndependantAxisControls = RegionView.extend({
 
@@ -30050,7 +31495,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"./../core/RegionView.js":74,"./../templates/independant-axis-control.hbs":92,"./Datatypes.js":48,"./ViewAxisLabel.js":57,"./ViewDatatype.js":58,"./ViewDateFormat.js":59,"./ViewHighlight.js":65}],68:[function(require,module,exports){
+},{"../charting/Datatypes.js":51,"./../core/RegionView.js":61,"./../templates/independant-axis-control.hbs":83,"./AxisLabel.js":95,"./Datatype.js":96,"./DateFormat.js":97,"./Highlight.js":103}],106:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -30095,7 +31540,7 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":75,"./../help/index.js":80}],69:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./../help/index.js":67}],107:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewLineControls = Backbone.View.extend({
@@ -30121,14 +31566,14 @@ var ViewLineControls = Backbone.View.extend({
 
 module.exports = ViewLineControls;
 
-},{"./../core/backbone.js":75,"./../templates/type-controls-line.hbs":95}],70:[function(require,module,exports){
+},{"./../core/backbone.js":62,"./../templates/type-controls-line.hbs":86}],108:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
-var RegionView = require('./../core/RegionView.js');
-var ViewGraphicTypeControls = require('./ViewGraphicTypeControls.js');
-var ViewLineControls = require('./ViewLineControls.js');
-var download = require('./../export/download.js');
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
+var RegionView = require('./../core/RegionView.js');
+var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
+var ViewLineControls = require('./LineControls.js');
+var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
 
 var ViewSelectedVariation = RegionView.extend({
@@ -30232,9 +31677,9 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":31,"./../core/RegionView.js":74,"./../export/download.js":77,"./../templates/selected-variation.hbs":94,"./../utils/tracking.js":102,"./ViewGraphicTypeControls.js":62,"./ViewLineControls.js":69,"util":34}],71:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":61,"./../export/download.js":64,"./../templates/selected-variation.hbs":85,"./../utils/tracking.js":93,"./GraphicTypeControls.js":100,"./LineControls.js":107,"util":38}],109:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
-var ViewSeriesList = require('./ViewSeriesList.js');
+var ViewSeriesList = require('./SeriesList.js');
 
 var ViewSeriesControls = RegionView.extend({
 
@@ -30274,11 +31719,11 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":74,"./ViewSeriesList.js":72}],72:[function(require,module,exports){
+},{"./../core/RegionView.js":61,"./SeriesList.js":110}],110:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-var Axis = require('./Axis.js');
+var Axis = require('../charting/Axis.js');
 
 var dragging;
 var placeholder = $('<div class="sortablelist-placeholder"/>');
@@ -30557,1020 +32002,16 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":73,"./../core/backbone.js":75,"./../templates/ordered-column.hbs":93,"./Axis.js":43}],73:[function(require,module,exports){
-var Backbone = require('./backbone.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-
-var CollectionView = Backbone.View.extend({
-
-    _views: [],
-
-    initialize: function (options) {
-        Backbone.View.prototype.initialize.apply(this, arguments);
-        var itemView = options.itemView || this.itemView || {};
-        this.itemContainer = options.itemContainer || this.itemContainer || null;
-        this.template = options.template || this.template || null;
-        if (_.isFunction(itemView)) {
-            this._ItemClass = itemView;
-        } else {
-            if (itemView.template && !itemView.render) {
-                if (!!itemView.bindings) {
-                    itemView.render = function () {
-                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
-                        this.stickit();
-                        return this;
-                    };
-                } else {
-                    itemView.render = function () {
-                        this.el.innerHTML = !!this.model ? this.template(this.model.toJSON()) : '';
-                        return this;
-                    };
-                }
-            }
-            this._ItemClass = Backbone.View.extend(itemView);
-        }
-
-        this.listenTo(this.collection, 'add remove reset sort', function (e) {
-            this.itemsDirty = true;
-            this.render();
-        });
-    },
-
-    itemsDirty: false,
-
-    removeViews: function () {
-        this._views.forEach(function (view) {
-            view.remove();
-        });
-        this._views = [];
-        this.itemsDirty = false;
-    },
-
-    createView: function (model, index) {
-        var o = model instanceof Backbone.Collection ? {collection: model} : {model: model};
-        return new this._ItemClass(o);
-    },
-
-    createViews: function () {
-        if (!this.collection) return [];
-        return this.collection.map(function (model, index) {
-            return this.createView.call(this, model, index, this._ItemClass);
-        }, this);
-    },
-
-    renderItems: function () {
-        var isDirty = this.itemsDirty;
-        if (isDirty) {
-            this.removeViews();
-        }
-        var el = this.itemContainer ? this.$(this.itemContainer)[0] : this.el;
-        if (!el) return;
-        var render = isDirty || !this._views.length;
-        if (render) {
-            this._views = this.createViews();
-        }
-        this._views.forEach(function (view) {
-            if (render) view.render();
-            el.appendChild(view.el);
-        });
-    },
-
-    render: function () {
-        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
-        this.renderItems();
-        return this;
-    }
-});
-
-module.exports = CollectionView;
-
-},{"./../../../bower_components/underscore/underscore.js":31,"./backbone.js":75}],74:[function(require,module,exports){
-var Backbone = require('./backbone.js');
-var _ = require("./../../../bower_components/underscore/underscore.js");
-
-var last;
-var RegionView = Backbone.View.extend({
-
-    initRegions: function () {
-        this.regions = _.extend({}, this.regions);
-        _.each(this.regions, function (region, selector) {
-            region = _.isFunction(region) ? {factory: region} : (!!region ? region : {
-                factory: function () {
-                }
-            });
-            region._dirty = false;
-            region._view = null;
-            this.regions[selector] = region;
-        }, this);
-    },
-
-    initialize: function () {
-        Backbone.View.prototype.initialize.apply(this, arguments);
-        this.initRegions();
-    },
-
-    renderRegions: function () {
-        _.each(this.regions, function (region, selector) {
-            var el = this.findRegionContainer(selector);
-            if (!!region._view && (this.regionsDirty || !el)) {
-                region._view.remove();
-                region._view = null;
-            }
-            if (!el) return;
-            if (!region._view) {
-                region._view = this.createRegion(selector);
-                region._view.render();
-            }
-            el.appendChild(region._view.el);
-        }, this);
-        this.regionsDirty = false;
-    },
-
-    createRegion: function (selector) {
-        return this.regions[selector].factory.call(this);
-    },
-
-    findRegionContainer: function (selector) {
-        return selector === ':el' ? this.el : this.$el.find(selector)[0];
-    },
-
-    removeRegions: function () {
-        _.each(this.regions, function (region) {
-            region._view.remove();
-            // TODO: remove from the DOM too?
-        });
-    },
-
-    remove: function () {
-        this.removeRegions();
-        Backbone.View.prototype.remove.apply(this, arguments);
-    },
-
-    render: function () {
-        Backbone.View.prototype.render.apply(this, arguments);
-        this.el.innerHTML = !!this.template ? (!!this.model ? this.template(this.model.toJSON()) : this.template()) : '';
-        this.renderRegions();
-        return this;
-    }
-});
-
-module.exports = RegionView;
-
-},{"./../../../bower_components/underscore/underscore.js":31,"./backbone.js":75}],75:[function(require,module,exports){
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-var Backbone = require("./../../../bower_components/backbone/backbone.js");
-var _ = require("./../../../bower_components/underscore/underscore.js");
-
-
-// this nasty little line fixes Boostrap's jQuery plugins and Backbone
-// as they both are not fit for using with Browserify
-window.jQuery = Backbone.$ = $;
-var Stickit = require("./../../../bower_components/backbone.stickit/backbone.stickit.js");
-require("./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js");
-
-$(document.body).tooltip({selector: '.has-tooltip[title]'});
-
-var handlers = [
-    require('./stickit-handlers/btn-group-radio.js')
-];
-
-handlers.forEach(function (handler) {
-    Backbone.Stickit.addHandler(handler);
-});
-
-module.exports = Backbone;
-
-},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":31,"./stickit-handlers/btn-group-radio.js":76}],76:[function(require,module,exports){
-var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
-
-module.exports = {
-
-    selector: '.btn-group-radio',
-
-    events: ['click'],
-
-    update: function ($el, val) {
-        $el.find('.btn.active').removeClass('active');
-        $el.find('.btn[value="' + val + '"]').addClass('active');
-    },
-
-    getVal: function ($el, event, options) {
-        var $target = $(event.target);
-        var val = $target.val();
-        var currentVal = options.view.model.get(options.observe);
-        if (val !== currentVal) {
-            options.update($el, val, options.view.model, options);
-        }
-        return val;
-    },
-
-    onSet: function (val, options) {
-        var v;
-
-        if (!options.type) {
-            return val;
-        }
-
-        switch (options.type.toLowerCase()) {
-            case 'number':
-                v = Number(val.replace(/(^[^\d]+|\,|[^\d]+$)/g, ''));
-                v = isNaN(v) ? val : v;
-                break;
-            case 'string':
-                v = String(val);
-                break;
-            case 'boolean':
-                v = /^true$/i.test(val);
-                break;
-            default:
-                v = val;
-        }
-        return v;
-    }
-};
-
-},{"./../../../../bower_components/jquery/dist/jquery.js":5}],77:[function(require,module,exports){
-var svgDataURI = require('./svgDataURI.js');
-var util = require('./utils.js');
-
-module.exports = function download(name, svg, types, bgColor, callback) {
-    callback = callback || function () {
-        };
-    window.requestAnimationFrame(function () {
-        types = types instanceof Array ? types : [types];
-        types.forEach(function (type) {
-            var filename = util.createFilename(name, type);
-            var download = util.fileDownloader(filename);
-            if (type === 'svg') {
-                download.dataURI(svgDataURI.elementToDataURI(svg, {
-                    encoding: 'utf8',
-                    bgColor: bgColor
-                })).start(callback);
-            } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
-                svgDataURI.elementToImageDataURI(svg, {type: type, bgColor: bgColor}, function (err, datauri) {
-                    if (err) {
-                        console.error(err.message);
-                        return;
-                    }
-                    download.dataURI(datauri).start(callback);
-                });
-            } else {
-                console.error('Unsupported format:', type);
-                callback();
-            }
-        });
-    });
-};
-
-},{"./svgDataURI.js":78,"./utils.js":79}],78:[function(require,module,exports){
-var utils = require('./utils.js');
-
-
-var bentonFontDataURI = "data:application/font-woff;charset=utf-8;base64,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\n".trim();
-var svgSchema = 'http://www.w3.org/2000/svg';
-
-function svgStyleElement(stylesheet) {
-    return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
-}
-
-function fontFace(name, fontDataURI) {
-    return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
-}
-
-
-exports.fontFix = function () {
-    var svg = document.createElementNS(svgSchema, 'svg');
-
-    svg.setAttribute('version', '1.1');
-    svg.setAttribute('width', 11);
-    svg.setAttribute('height', 11);
-    svg.style.position = 'fixed';
-    svg.style.top = '-20px';
-
-    var fontface = fontFace('BentonSans', bentonFontDataURI);
-    var style = svgStyleElement(fontface);
-
-    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
-    var text = document.createElementNS(svgSchema, 'text');
-    text.setAttributeNS(null, 'font-family', 'BentonSans');
-    text.setAttributeNS(null, 'font-weight', 'normal');
-    text.setAttributeNS(null, 'font-style', 'normal');
-    text.setAttributeNS(null, 'font-size', 11);
-    text.setAttributeNS(null, 'x', 0);
-    text.setAttributeNS(null, 'y', 11);
-    text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
-
-    svg.appendChild(text);
-
-    return svg;
-};
-
-var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
-
-    opts = opts || {};
-    opts.encoding = opts.encoding || 'base64';
-
-    // we're about to modify the SVG with export hacks
-    // and background color etc so we need to make a copy
-    svg = svg.cloneNode(true);
-
-    svg.setAttribute('version', '1.1');
-
-    var fontface = fontFace('BentonSans', bentonFontDataURI);
-    var style = svgStyleElement(fontface);
-
-    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
-
-    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
-
-    if (!transparent) {
-        var rect = document.createElementNS(svgSchema, 'rect');
-        rect.id = 'backgroundFill';
-        rect.setAttribute('x', 0);
-        rect.setAttribute('y', 0);
-        rect.setAttribute('width', svg.getAttribute('width'));
-        rect.setAttribute('height', svg.getAttribute('height'));
-        rect.setAttribute('fill', opts.bgColor);
-        svg.insertBefore(rect, svg.firstChild);
-    }
-
-    var xmlSrc = utils.svgToString(svg);
-
-    // 2. Ensure the SVG can make a picture.
-    //    TODO: do we also need to check
-    //          - the svg has child nodes
-    //          - has visibility and size (w & h)
-
-    // 3. Modify XML exporting so it is more portable
-    //    TODO: modify SVG XML acording to all the Hacks we'll need to suuport
-    //          eg when SVGs get imported into Adobe Illustrator and Inkscape
-
-    return utils.toDataURI(xmlSrc, 'image/svg+xml', opts.encoding);
-};
-
-exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callback) {
-    opts = opts || {};
-    opts.type = 'image/' + (opts.type || 'png').toLowerCase();
-    opts.quality = Math.max(0, Math.min(1, opts.quality || 1));
-
-    if (opts.type === 'image/jpg') {
-        // although jpg is a recognised file extension
-        // it's not the correct mime type
-        opts.type = opts.type.replace('jpg', 'jpeg');
-    }
-
-    var noTransparencySupport = opts.type === 'image/jpeg';
-    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
-
-    if (noTransparencySupport && !transparent) {
-        opts.bgColor = '#ffffff';
-    }
-
-    // NOTE: this technique of using Canvas to save an image of an SVG
-    //       is known to not work in some cases: mostly when some
-    //       of the funkier SVG features are in use.
-    //       If this becomes a problem look into using CanVG
-    //            - https://code.google.com/p/canvg/
-    //       Here's an example of it being used
-    //            - https://github.com/sampumon/SVG.toDataURL/blob/master/svg_todataurl.js
-
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    var image = new Image();
-
-    function drawIntoContext(element, width, height) {
-        // TODO: understand more about canvas dimensions. read this.
-        //        - http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5
-
-        var w = canvas.width = width;
-        var h = canvas.height = height;
-        var s = canvas.style;
-        s.width = w + 'px';
-        s.height = h + 'px';
-
-        context.drawImage(element, 0, 0);
-        var datauri = canvas.toDataURL(opts.type, opts.quality);
-
-        // TODO: Research use of canvas.toDataURLHD.
-        //       Is canvas.toBlob/canvas.toBlobHD more
-        //       performant than canvas.toDataURL ?
-        //       - https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement
-
-        callback(null, datauri);
-        document.body.removeChild(image);
-    }
-
-    image.onload = function () {
-        drawIntoContext(image, image.width, image.height);
-    };
-
-    image.onerror = function () {
-        callback(new Error('Error creating image'));
-    };
-
-    image.style.display = 'none';
-    document.body.appendChild(image);
-
-    var src = elementToDataURI(svg, {bgColor: opts.bgColor});
-    image.src = src;
-
-    // var o = document.createElement('object');
-    // o.setAttribute('type', 'image/svg+xml');
-    // o.setAttribute('data', src);
-    // o.style.position = 'fixed';
-    // o.style.zIndex = 5;
-    // document.body.appendChild(o);
-    // drawIntoContext(o, 200, 200);
-
-};
-
-},{"./utils.js":79}],79:[function(require,module,exports){
-/* globals unescape, MouseEvent, XMLSerializer */
-exports.createFilename = function createFilename(name, ext) {
-    ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
-    return (name || 'untitled')
-            .replace(/\s+/g, '-')
-            .replace(/&/g, 'and')
-            .replace(/[@£$%€^!]/g, '')
-            .replace(new RegExp('\\' + ext + '$', 'i'), '') +
-        ext;
-};
-
-exports.fileDownloader = function fileDownloader(filename, href, target) {
-    var a = document.createElement('a');
-    a.style.display = 'none';
-    a.target = target || '_top';
-    a.download = true;
-    var me = {
-        filename: function (name) {
-            a.setAttribute('download', name);
-            return me;
-        },
-        dataURI: function (datauri) {
-            a.setAttribute('href', datauri || '');
-            return me;
-        },
-        start: function (callback) {
-            document.body.appendChild(a);
-            var evt = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-            });
-            a.dispatchEvent(evt);
-            document.body.removeChild(a);
-            if (callback) {
-                setTimeout(callback, 0);
-            }
-            return me;
-        }
-    };
-    me.dataURI(href).filename(filename);
-    return me;
-};
-
-
-var svgSchema = 'http://www.w3.org/2000/svg';
-var xlinkSchema = 'http://www.w3.org/1999/xlink';
-var xmlnsSchema = 'http://www.w3.org/2000/xmlns/';
-var svgProcessingInstruction = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
-var svgDTDElement = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-exports.svgToString = function svgToString(svg) {
-
-    if (svg.nodeName.toLowerCase() !== 'svg') {
-        throw new Error('A root SVG element is required');
-    }
-
-    if (!svg.hasAttribute('xmlns')) {
-        svg.setAttribute('xmlns', svgSchema);
-    }
-
-    if (!svg.hasAttribute('xmlns:xlink')) {
-        svg.setAttributeNS(xmlnsSchema, 'xmlns:xlink', xlinkSchema);
-    }
-
-    //var source = svg.outerHTML; // although it's fast, not sure using outerHTML is completely safe
-    var source = (new XMLSerializer()).serializeToString(svg); // this may break when SVG elements are not strictly XML because they follow HTML validation rules instead
-
-    return svgProcessingInstruction + svgDTDElement + source;
-};
-
-var utf8ToBase64 = exports.utf8ToBase64 = function utf8ToBase64(str) {
-    // unescape and encodeURIComponent are used when unicode characters appear
-    // in the SVG. Othewise the SVG -> PNG/JPG wont work.
-
-    // This method of converting to Base64 should suffice for now.
-    // If it proves not to be robust enough or slow then read these articles
-    //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8
-    //   - https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-
-    return window.btoa(unescape(encodeURIComponent(str)));
-};
-
-exports.toDataURI = function toDataURI(data, type, encoding) {
-
-    if (!type) throw new Error('Content MIME type required');
-
-    encoding = encoding.toLowerCase();
-
-    var isPixelImage = /^image\/(jpg|png|gif|jpeg)$/.test(type); // dont include SVG and other text based image formats
-    var encodedData;
-
-    if (isPixelImage) {
-        encodedData = window.btoa(data);
-    } else if (encoding === 'base64') {
-        encodedData = utf8ToBase64(data);
-    } else {
-        encodedData = data;
-    }
-
-    return 'data:' + type + ';' + encoding + ',' + encodedData;
-};
-
-
-},{}],80:[function(require,module,exports){
-var _ = require("./../../../bower_components/underscore/underscore.js");
-
-_.templateSettings = {
-    interpolate: /\{\{(.+?)\}\}/g
-};
-
-module.exports = {
-    WHAT_IS_CSV: '<p>Comma Separated Values (CSV) files are used to store tabular data in plain text form.<p><p>Most spreadsheet applications can "save as" CSV.<p>Here\'s an example:<pre>Countries,      GDP Per Captia<span class="pilcrow">\n</span>United States,  "53,142"<span class="pilcrow">\n</span>United Kingdom, "39,351"<span class="pilcrow">\n</span>Germany,        "45,085"</pre>',
-    WHAT_IS_TSV: '<p>Tab Separated Values (TSV) files are similar to CSV files. They are used to store tabular data in plain text form.<p><p>When you copy and paste cells from Excel the format used is TSV.<p><p>Here\'s an example:<pre>Countries<span class="tsv-tab">\t</span>GDP Per Captia<span class="pilcrow">\n</span>United States<span class="tsv-tab">\t</span>"53,142"<span class="pilcrow">\n</span>United Kingdom<span class="tsv-tab">\t</span>"39,351"<span class="pilcrow">\n</span>Germany<span class="tsv-tab">\t</span>        "45,085"</pre>',
-    LINE_SERIES: _.template('<p>Line data series&nbsp;{{ index }}</p>'),
-    BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
-};
-
-},{"./../../../bower_components/underscore/underscore.js":31}],81:[function(require,module,exports){
-if (!Function.prototype.bind) {
-    Function.prototype.bind = function (oThis) {
-        if (typeof this !== 'function') {
-            // closest thing possible to the ECMAScript 5
-            // internal IsCallable function
-            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-        }
-
-        var aArgs = Array.prototype.slice.call(arguments, 1),
-            fToBind = this,
-            fNOP = function () {
-            },
-            fBound = function () {
-                return fToBind.apply(this instanceof fNOP ? this : oThis,
-                    aArgs.concat(Array.prototype.slice.call(arguments)));
-            };
-
-        fNOP.prototype = this.prototype;
-        fBound.prototype = new fNOP();
-
-        return fBound;
-    };
-}
-
-},{}],82:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],83:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "<span\n            class=\"pull-right alert alert-warning\">"
-    + this.escapeExpression(((helper = (helper = helpers.warningMessage || (depth0 != null ? depth0.warningMessage : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"warningMessage","hash":{},"data":data}) : helper)))
-    + "</span>";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, helper;
-
-  return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\"><span class=\"axis-name\">Dependent axis ("
-    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
-    + ")</span>"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"datatype\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],84:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"numeric\">Value</button>\n        </div>\n";
-},"3":function(depth0,helpers,partials,data) {
-    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"time\">Time</button>\n        </div>\n";
-},"5":function(depth0,helpers,partials,data) {
-    return "        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-default\" value=\"categorical\">Category</button>\n        </div>\n";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1;
-
-  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"datatype\">\n"
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.numeric : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.time : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.categorical : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],85:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],86:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div><!-- Graphic Type Control --></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],87:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-region=\"variations\"></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],88:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"graphic-container\"></div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],89:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],90:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, helper;
-
-  return "<div class=\"alert alert-warning clearfix\" role=\"alert\">\n    <h4>Warning</h4>\n\n    <p>"
-    + ((stack1 = ((helper = (helper = helpers.message || (depth0 != null ? depth0.message : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"message","hash":{},"data":data}) : helper))) != null ? stack1 : "")
-    + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],91:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],92:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"datatype\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],93:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + ".";
-},"3":function(depth0,helpers,partials,data) {
-    return "        <span name=\"label\" class=\"series-name\"></span>\n";
-},"5":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "        <span title=\"click to edit the series "
-    + this.escapeExpression(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + " label\" name=\"label\" class=\"series-name\" placeholder=\"none\"\n              contenteditable></span>\n";
-},"7":function(depth0,helpers,partials,data) {
-    var helper;
-
-  return "        <button class=\"btn btn-default btn-xs\" name=\"add-column\" data-property=\""
-    + this.escapeExpression(((helper = (helper = helpers.property || (depth0 != null ? depth0.property : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"property","hash":{},"data":data}) : helper)))
-    + "\">Add series</button>\n";
-},"9":function(depth0,helpers,partials,data) {
-    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
-
-  return "        <span class=\"swatch swatch-line\" data-placement=\"top\" data-index=\""
-    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" data-help=\"LINE_SERIES\"></span>\n  <!--\n  <span class=\"swatch swatch-bar\" data-placement=\"top\" data-index=\""
-    + alias3(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" data-help=\"BAR_SERIES\">B</span>\n  -->\n  <button name=\"remove-series\" tabindex=\"-1\" type=\"button\" class=\"close\"><span aria-hidden=\"true\">&times;</span><span\n          class=\"sr-only\">Close</span></button>\n";
-},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1;
-
-  return "<span class=\"series-item-drag-content\">\n<span class=\"series-num\" draggable=\"true\">"
-    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"unless","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</span>\n<span>\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
-    + "</span>\n<span class=\"series-item-controls\">\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.unused : depth0),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
-    + "</span>\n</span>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],94:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    var stack1, alias1=this.lambda, alias2=this.escapeExpression;
-
-  return "<div>\n    <table class=\"table table-bordered table-condensed\">\n        <tbody>\n        <tr>\n            <th class=\"property-name\">Chart type</th>\n            <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
-    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Variation</th>\n            <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
-    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Width</th>\n            <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
-    + "px</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Height</th>\n            <td class=\"property-value\">"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
-    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n    </div>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],95:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Nice\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
-},"useData":true});
-
-},{"hbsfy/runtime":42}],96:[function(require,module,exports){
-module.exports = {
-    number: require('./number.js'),
-    time: require('./time.js'),
-    series: require('./series.js'),
-    table: require('./table.js')
-};
-
-},{"./number.js":97,"./series.js":98,"./table.js":99,"./time.js":100}],97:[function(require,module,exports){
-var currencySymbol = /^(\$|€|¥|£)/;
-var allCommas = /\,/g;
-var percent = /(\%)$/;
-
-module.exports = createNumberTransformer;
-
-function createNumberTransformer(options) {
-
-    options = options || {};
-
-    function transformNumber(d) {
-
-        var _NaN = options.interpolateNulls ? null : NaN;
-
-        if (d === null || d === undefined) return _NaN;
-
-        var type = typeof d;
-
-        if (type === 'number') return d;
-
-        if (type !== 'string') return _NaN;
-
-        d = d.trim()
-            .replace(allCommas, '')
-            .replace(currencySymbol, '')
-            .replace(percent, '');
-
-        if (d === '') return _NaN;
-
-        if (d === '*') return null;
-
-        return Number(d);
-
-    }
-
-    return transformNumber;
-}
-
-},{}],98:[function(require,module,exports){
-module.exports = series;
-
-function series(array, property, transformer, customLogic) {
-    var oldValue;
-    var newValue;
-    var hasCustomLogic = typeof customLogic === 'function';
-    var customValue;
-    for (var i = 0, x = array.length; i < x; i++) {
-        oldValue = array[i][property];
-        newValue = transformer(oldValue);
-        if (newValue === undefined) newValue = null;
-        customValue = hasCustomLogic ? customLogic(oldValue, newValue, property, i) : newValue;
-        if (customValue === undefined) customValue = newValue;
-        array[i][property] = customValue;
-    }
-}
-
-},{}],99:[function(require,module,exports){
-var Datatypes = require('../charting/Datatypes.js');
-var series = require('./series.js');
-
-module.exports = transformTable;
-
-function transformTable(data, columns, transform, type, customLogic) {
-
-    if (typeof type === 'string') {
-        if (type === Datatypes.TIME) {
-            type = Datatypes.isTime;
-        } else if (type === Datatypes.NUMERIC) {
-            type = Datatypes.isNumeric;
-        } else if (type === Datatypes.isCategorical) {
-            type = Datatypes.isCategorical;
-        }
-    }
-
-    if (type === null) {
-        type = function () {
-            return true;
-        };
-    }
-
-    if (typeof type !== 'function') {
-        return;
-    }
-
-    var typeInfo;
-    var colName;
-    var transformFn;
-
-    for (var i = 0, x = columns.length; i < x; i++) {
-        typeInfo = columns[i].get('typeInfo');
-        colName = typeInfo.colName;
-        if (type(typeInfo.datatype)) {
-            transformFn = transform(typeInfo);
-            if (transformFn) {
-                series(data, colName, transformFn, customLogic);
-            }
-        }
-    }
-}
-
-},{"../charting/Datatypes.js":48,"./series.js":98}],100:[function(require,module,exports){
-var d3 = require("./../../../bower_components/d3/d3.js");
-
-module.exports = createTimeTransformer;
-
-function createTimeTransformer(format) {
-
-    var parser = createDateParser(format);
-    var today = new Date();
-    var year = today.getFullYear();
-    var day = today.getDate();
-    var month = today.getMonth();
-    var timeOnlyFormat = format.indexOf('%H:%M') === 0 || format.indexOf('%I:%M') === 0;
-
-    function transformTime(d) {
-        var type = typeof d;
-
-        if (!d) return null;
-
-        if (isValidDate(d)) return d;
-
-        if (type !== 'string') return null;
-
-        var parseValue = parser(d.trim());
-
-        if (isValidDate(parseValue)) {
-            if (timeOnlyFormat) {
-                parseValue.setDate(day);
-                parseValue.setMonth(month);
-                parseValue.setFullYear(year);
-            }
-            return parseValue;
-        }
-
-        return null;
-    }
-
-    return transformTime;
-
-}
-
-function isValidDate(d) {
-    return d && d instanceof Date && !isNaN(+d);
-}
-
-function createDate(value) {
-    return new Date(value);
-}
-
-function useJavascriptDateFn(format) {
-    return format === 'ISO' || format === 'JAVASCRIPT';
-}
-
-var datePartSeparators = /[\-\ ]/g;
-
-function createDateParser(format) {
-    var useJs = useJavascriptDateFn(format);
-    if (useJs) {
-        return createDate;
-    } else {
-        var parser = d3.time.format(format).parse;
-        return function (value) {
-            var normalizedString = value.replace(datePartSeparators, '/');
-            return parser(normalizedString);
-        };
-    }
-}
-
-},{"./../../../bower_components/d3/d3.js":4}],101:[function(require,module,exports){
-/* global gapi, ng, auth2 */
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var Authentication = function (cb) {
-    this.cb = cb;
-};
-
-Authentication.prototype.renderButton = function () {
-    var self = this;
-    if (!document.getElementById('my-signin2')) return;
-    gapi.signin2.render('my-signin2', {
-        'width': 200,
-        'height': 50,
-        'longtitle': false,
-        'theme': 'dark',
-        'onsuccess': function (gu) {
-            self.onSignIn(gu);
-        }
-    });
-};
-
-Authentication.prototype.onSignIn = function (googleUser) {
-    var profile = googleUser.getBasicProfile();
-    var regexp = /^.*\@ft\.com$/gi;
-    var email = profile.getEmail();
-    if (email.match(regexp)) {
-        var container = document.getElementById("login-container");
-        var trackingImage = document.createElement('img');
-        trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
-        container.appendChild(trackingImage);
-        container.remove();
-        this.cb && typeof this.cb === 'function' && this.cb();
-    } else {
-        //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
-        //when re-signing in (otherwise login will automatically login with their previous selection).
-        gapi.auth2.getAuthInstance().disconnect();
-        gapi.auth2.getAuthInstance().signOut();
-        $("#login-alert").css('display', 'block');
-    }
-};
-
-module.exports = Authentication;
-
-},{"./../../../bower_components/jquery/dist/jquery.js":5}],102:[function(require,module,exports){
-/* global ga*/
-var Tracking = function () {
-    if (document.domain === 'localhost') {
-        this.track = false;
-        return;
-    }
-    this.track = true;
-    (function (i, s, o, g, r, a, m) {
-        i.GoogleAnalyticsObject = r;
-        i[r] = i[r] || function () {
-                (i[r].q = i[r].q || []).push(arguments);
-            }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-            m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m);
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-
-    ga('create', 'UA-60698836-1', 'auto');
-    ga('send', 'pageview');
-};
-
-Tracking.prototype.trackPage = function (pageName) {
-    if (!this.track) return;
-    //Set custom screen
-    ga('send', 'screenview', {
-        'screenName': pageName
-    });
-};
-
-Tracking.prototype.trackEvent = function (eventName) {
-    if (!this.track) return;
-    ga('send', 'event', 'button', 'click', eventName);
-};
-
-module.exports = new Tracking();
-
-},{}],103:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"dup":30}],"nightingale":[function(require,module,exports){
+},{"../charting/Axis.js":47,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":60,"./../core/backbone.js":62,"./../templates/ordered-column.hbs":84}],"nightingale":[function(require,module,exports){
 var Backbone = require('./core/backbone');
 var Graphic = require('./charting/Graphic.js');
-var ViewGraphicControls = require('./charting/ViewGraphicControls.js');
-var ViewGraphicTypes = require('./charting/ViewGraphicTypes.js');
+var ViewGraphicControls = require('./views/GraphicControls.js');
+var ViewGraphicTypes = require('./views/GraphicTypes.js');
 var GraphicType = require('./charting/GraphicType.js');
-var DataImport = require('./charting/DataImport.js');
-var ViewImportData = require('./charting/ViewImportData.js');
-var ViewInlineHelp = require('./charting/ViewInlineHelp.js');
-var ViewSelectedVariation = require('./charting/ViewSelectedVariation.js');
+var DataImport = require('./import/index.js');
+var ViewImportData = require('./views/ImportData.js');
+var ViewInlineHelp = require('./views/InlineHelp.js');
+var ViewSelectedVariation = require('./views/SelectedVariation.js');
 var Variations = require('./charting/Variations.js');
 var LineControls = require('./charting/LineControls.js');
 var transform = require('./transform/index.js');
@@ -31744,4 +32185,4 @@ function nightingale() {
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../bower_components/underscore/underscore.js":31,"./charting/DataImport.js":46,"./charting/Datatypes.js":48,"./charting/Graphic.js":50,"./charting/GraphicType.js":51,"./charting/LineControls.js":54,"./charting/Variations.js":56,"./charting/ViewGraphicControls.js":61,"./charting/ViewGraphicTypes.js":63,"./charting/ViewImportData.js":66,"./charting/ViewInlineHelp.js":68,"./charting/ViewSelectedVariation.js":70,"./core/backbone":75,"./export/svgDataURI.js":78,"./transform/index.js":96,"./utils/authentication.js":101,"./utils/version":103}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":51,"./charting/Graphic.js":53,"./charting/GraphicType.js":54,"./charting/LineControls.js":57,"./charting/Variations.js":59,"./core/backbone":62,"./export/svgDataURI.js":65,"./import/index.js":69,"./transform/index.js":87,"./utils/authentication.js":92,"./utils/version":94,"./views/GraphicControls.js":99,"./views/GraphicTypes.js":101,"./views/ImportData.js":104,"./views/InlineHelp.js":106,"./views/SelectedVariation.js":108}]},{},["nightingale"]);

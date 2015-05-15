@@ -4891,43 +4891,6 @@ button.close {
 .y.axis.right text {
   text-anchor: start; }
 
-path.line {
-  fill: none;
-  stroke-linejoin: round;
-  stroke-linecap: round; }
-
-.series1 {
-  stroke: #af516c; }
-
-.series2 {
-  stroke: #ecafaf; }
-
-.series3 {
-  stroke: #d7706c; }
-
-.series4 {
-  stroke: #76acb8; }
-
-.series5 {
-  stroke: #81d0e6; }
-
-.series6 {
-  stroke: #4e86b6; }
-
-.series7 {
-  stroke: #b8b1a9; }
-
-.accent {
-  stroke: #b8b1a9; }
-
-.forecast {
-  stroke-dasharray: 4,5; }
-
-line.key-line {
-  fill: none;
-  stroke-linejoin: round;
-  stroke-linecap: round; }
-
 .chart-title, .chart-title text, .chart-title tspan {
   font-family: 'BentonSans', sans-serif;
   font-size: 18px;
@@ -4948,10 +4911,16 @@ line.key-line {
   fill: rgba(0, 0, 0, 0.5);
   font-size: 10px; }
 
-.key-label, .key-label text, .key-label tspan {
+.key__label, .key__label text, .key__label tspan {
   font-family: 'BentonSans', sans-serif;
   font-size: 12px;
   fill: rgba(0, 0, 0, 0.5); }
+
+.accent {
+  stroke: #b8b1a9; }
+
+.forecast {
+  stroke-dasharray: 4, 5; }
 
 #login-container {
   z-index: 10000;
