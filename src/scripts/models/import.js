@@ -45,11 +45,20 @@ function setDateIntervalAverage(file, typeInfo){
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
-    if (quarterly){
-        //typeInfo.units = yearly ? ['yearly'] : false;
-        typeInfo.units = ['quarterly', unitGenerator([start,end],false)];
-        //typeInfo.units = monthly ? ['monthly','yearly'] : typeInfo.units;
+    var secondary = unitGenerator([start,end],false);
+    secondary = secondary[secondary.length-1];
+
+    if (yearly){
+        typeInfo.units = ['yearly'];
+        if (secondary !== 'years') typeInfo.units.push(secondary);
     }
+    if (quarterly){
+        typeInfo.units = ['quarterly', secondary];
+    }
+    if (monthly){
+        typeInfo.units = ['monthly', secondary];
+    }
+    console.log(typeInfo.units)
 }
 
 var DataImport = Backbone.Model.extend({
