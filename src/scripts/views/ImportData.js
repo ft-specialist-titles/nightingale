@@ -101,21 +101,7 @@ var ViewImportData = Backbone.View.extend({
     },
 
     readFile: function (file) {
-        var type = file.type;
-        if (!file.type){ //windows. grr.
-            switch (file.name.split('.').slice(-1)[0]){
-                case 'csv':
-                    type = 'text/csv';
-                    break;
-                case 'tsv':
-                    type = 'text/tsv';
-                    break;
-                case 'txt':
-                    type = 'text/txt';
-                    break;
-            }
-        }
-        if (!DataImport.isValidType(type)) {
+        if (!DataImport.isValidType(file)) {
             this.showError({message: 'Invalid file type.'});
             return;
         }
