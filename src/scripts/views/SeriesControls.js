@@ -17,7 +17,6 @@ var ViewSeriesControls = RegionView.extend({
     },
 
     addColumn: function (event) {
-        console.log('add column');
         var property = event.target.dataset.property;
         var model = this.model.chart.unusedSeries.findWhere({property: property});
         this.model.columns.add(model);

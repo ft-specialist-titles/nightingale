@@ -7,7 +7,6 @@ var ViewGraphicTypeControls = Backbone.View.extend({
     template: require('./../templates/graphic-type-controls.hbs'),
 
     render: function () {
-        console.log(this.model);
         this.el.innerHTML = this.template();
         return this;
     }
