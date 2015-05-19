@@ -23647,7 +23647,7 @@ function formatData(model, series) {
     var data = model.data.map(function (d){
         return{
             key:d[model.x.series.key],
-            value: d[series.key] || d.values[0][series.key]
+            value: (Array.isArray(d.values)) ? d.values[0][series.key] : d[series.key]
         };
     }).filter(function (d) {
         return (d.y !== null);
@@ -23720,7 +23720,7 @@ function plotSeries(plotSVG, model, axes, series) {
     var data = model.data.map(function (d) {
         return {
             x: d[model.x.series.key],
-            y: d[series.key] || d.values[0][series.key]
+            y: (Array.isArray(d.values)) ? d.values[0][series.key] : d[series.key]
         };
     }).filter(function (d) {
         return (d.y !== null);
@@ -25367,7 +25367,7 @@ module.exports = {
 };
 
 },{}],34:[function(require,module,exports){
-module.exports = "0.1.2";
+module.exports = "0.1.3";
 },{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
@@ -32318,6 +32318,8 @@ function init() {
         var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
+
+//todo: pm date format dropdown on change
 
         //transform the data
         if (Datatypes.isNumeric(datatype)) {
