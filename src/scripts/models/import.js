@@ -23,7 +23,6 @@ function formatDate(dateString, format) {
 }
 
 function setDateIntervalAverage(file, typeInfo){
-//todo: move to o-charts?
     var days = [];
     var months = [];
     var years = [];
@@ -37,30 +36,15 @@ function setDateIntervalAverage(file, typeInfo){
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
     });
-    var start = formatDate(typeInfo.dateValues[0], format);
-    var end = formatDate(typeInfo.dateValues[typeInfo.dateValues.length - 1], format);
-    var timeDif = end.getTime() - start.getTime();
-    var dayLength = 86400000;
-    var year = 365 * dayLength;
-
     var dayAverage = d3.mean(days);
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
-    var units = unitGenerator([start,end],false);
-
-    if (yearly){
-        typeInfo.units = ['yearly'];
-    }
-    if (quarterly){
-        typeInfo.units = (timeDif < year * 15) ? ['quarterly', units[units.length-1]] : units;
-    }
-    if (monthly){
-        typeInfo.units = (timeDif < year * 5) ? ['monthly', units[units.length-1]] : units;
-    }
-    console.log(typeInfo.units, timeDif, timeDif/year)
+    typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
+    typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
 }
 
 var DataImport = Backbone.Model.extend({
