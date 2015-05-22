@@ -1,4 +1,6 @@
 /* global gapi, ng, auth2 */
+var tracking = require('./../utils/tracking.js');
+
 var Authentication = function (cb) {
     this.cb = cb;
 };
@@ -23,10 +25,8 @@ Authentication.prototype.onSignIn = function (googleUser) {
     var email = profile.getEmail();
     if (email.match(regexp)) {
         var container = document.getElementById("login-container");
-        var trackingImage = document.createElement('img');
-        trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
-        container.appendChild(trackingImage);
-        container.setAttribute('style','display:none');
+        tracking.user(container, email);
+        container.remove();
         this.cb && typeof this.cb === 'function' && this.cb();
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
