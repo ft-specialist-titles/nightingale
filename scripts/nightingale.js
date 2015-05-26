@@ -30738,6 +30738,8 @@ function createDateParser(format) {
 
 },{"./../../../bower_components/d3/d3.js":4}],98:[function(require,module,exports){
 /* global gapi, ng, auth2 */
+var tracking = require('./../utils/tracking.js');
+
 var Authentication = function (cb) {
     this.cb = cb;
 };
@@ -30762,10 +30764,8 @@ Authentication.prototype.onSignIn = function (googleUser) {
     var email = profile.getEmail();
     if (email.match(regexp)) {
         var container = document.getElementById("login-container");
-        var trackingImage = document.createElement('img');
-        trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
-        container.appendChild(trackingImage);
-        container.setAttribute('style','display:none');
+        tracking.user(container, email);
+        container.remove();
         this.cb && typeof this.cb === 'function' && this.cb();
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
@@ -30778,7 +30778,7 @@ Authentication.prototype.onSignIn = function (googleUser) {
 
 module.exports = Authentication;
 
-},{}],99:[function(require,module,exports){
+},{"./../utils/tracking.js":99}],99:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
     if (document.domain === 'localhost') {
@@ -30815,10 +30815,17 @@ Tracking.prototype.trackEvent = function (eventName) {
     ga('send', 'event', 'button', 'click', eventName);
 };
 
+Tracking.prototype.user = function (container, email) {
+    if (!this.track) return;
+    var trackingImage = document.createElement('img');
+    trackingImage.src = "http://track.ft.com/track/track.gif?nightingale_login=" + encodeURIComponent(email);
+    container.appendChild(trackingImage);
+};
+
 module.exports = new Tracking();
 
 },{}],100:[function(require,module,exports){
-module.exports = "1.0.0";
+module.exports = "1.0.1";
 },{}],101:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
