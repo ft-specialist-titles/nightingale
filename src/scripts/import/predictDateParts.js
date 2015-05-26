@@ -41,6 +41,9 @@ DateParts.prototype.isShortMonths = function(value, tokens){
     //eg like jan
     return (tokens.length === 2 && shortMonths.test(value));
 };
+DateParts.prototype.isQuarter = function(value, tokens){
+    return (/[qQ][1234]/.test(value));
+};
 DateParts.prototype.isNumbersButNotYears = function(value, tokens){
     //eg 12345 or 1.1 or 1,000
     return (/^[\d\.\,]+$/.test(value));
@@ -84,6 +87,14 @@ DateParts.prototype.matched = function(){
         return '%Y/%b';
     } else if (this.isYears(tokens[0], tokens) && this.isMonths(tokens[1], tokens) && numTokens===2) {
         return '%Y/%m';
+    } else if (this.isYears(tokens[0], tokens) && this.isQuarter(tokens[1], tokens) && numTokens===2) {
+        return '%Y/%q';
+    } else if (this.isShortYears(tokens[0], tokens) && this.isQuarter(tokens[1], tokens) && numTokens===2) {
+        return '%y/%q';
+    } else if (this.isYears(tokens[1], tokens) && this.isQuarter(tokens[0], tokens) && numTokens===2) {
+        return '%q/%Y';
+    } else if (this.isShortYears(tokens[1], tokens) && this.isQuarter(tokens[0], tokens) && numTokens===2) {
+        return '%q/%y';
     }
 
     // trick the parser into thinking the last
