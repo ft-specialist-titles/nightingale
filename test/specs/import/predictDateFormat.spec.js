@@ -45,7 +45,10 @@ describe('predictDateFormat ', function () {
         expect(predictDateFormat('13:26:27')).toBe('%X'); //'%H:%M:%S'
         expect(predictDateFormat('Tue Apr 28 2015 13:26:27')).toBe('%a/%b/%d/%Y/%H:%M:%S');
         expect(predictDateFormat('Tuesday April 28 2015 13:26:27')).toBe('%A/%B/%d/%Y/%H:%M:%S');
-
+        expect(predictDateFormat('q1 2008')).toBe("%q/%Y");
+        expect(predictDateFormat('q1-08')).toBe("%q/%y");
+        expect(predictDateFormat('2008-Q1')).toBe("%Y/%q");
+        expect(predictDateFormat('08-Q1')).toBe("%y/%q");
     });
 
 });

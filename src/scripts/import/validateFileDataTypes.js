@@ -1,4 +1,4 @@
-var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1234])/i;
 var aYearALongWayInTheFuture = 3000;
 
 var isPartDate = function (value) {

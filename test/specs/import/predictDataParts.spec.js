@@ -96,6 +96,27 @@ describe('predictDateParts can ', function () {
 
         });
 
+        it('Years and Quarter', function(){
+
+            date = new DateParts('01-q4');
+            dateMatch = date.matched();
+            expect(dateMatch).toBe('%y/%q');
+
+            date = new DateParts('2004-Q4');
+            dateMatch = date.matched();
+            expect(dateMatch).toBe('%Y/%q');
+
+            date = new DateParts('q4-04');
+            dateMatch = date.matched();
+            expect(dateMatch).toBe('%q/%y');
+
+            date = new DateParts('Q2-2005');
+            dateMatch = date.matched();
+            expect(dateMatch).toBe('%q/%Y');
+
+        });
+
+
         it('unknown', function(){
 
             date = new DateParts('01-04-01');

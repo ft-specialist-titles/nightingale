@@ -29,7 +29,6 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        //todo: save this format when data is first imported?
         var start = formatDate(typeInfo.dateValues[i-1], format);
         var end = formatDate(date,format);
         days.push((d3.time.days(start, end)).length);
@@ -40,7 +39,9 @@ function setDateIntervalAverage(file, typeInfo){
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
-    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
+    //todo: move this check first to improve speed of processing
+    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
+        typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
     typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
     typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;

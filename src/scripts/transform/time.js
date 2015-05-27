@@ -1,4 +1,5 @@
 var d3 = require('d3');
+var quarterParser = require('./quarterParser');
 
 module.exports = createTimeTransformer;
 
@@ -50,13 +51,17 @@ function useJavascriptDateFn(format) {
     return format === 'ISO' || format === 'JAVASCRIPT';
 }
 
+function useQuarterDateFn(format) {
+    return format.indexOf('%q') >= 0;
+}
+
 var datePartSeparators = /[\-\ ]/g;
 
 function createDateParser(format) {
     if (useJavascriptDateFn(format)) {
         return createDate;
     } else {
-        var parser = d3.time.format(format).parse;
+        var parser = useQuarterDateFn(format) ? quarterParser(format) : d3.time.format(format).parse;
         return function (value) {
             var normalizedString = value.replace(datePartSeparators, '/');
             return parser(normalizedString);

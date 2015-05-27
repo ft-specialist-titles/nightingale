@@ -8,17 +8,24 @@ var formats = new Backbone.Collection([
     {value: '%m/%Y', label: 'MM/YYYY - eg 01 2015'},
     {value: '%b/%Y', label: 'Month YYYY - eg Jan 2015'},
     {value: '%b/%y', label: 'Month YY - eg Jan 14'},
+    {value: '%Y/%m/%d', label: 'YYYY/MM/DD - eg 2014/11/28'},
     {value: '%d/%m/%y', label: 'DD/MM/YY - eg 31/01/14'},
     {value: '%m/%d/%y', label: 'MM/DD/YY - eg 01/31/14'},
     {value: '%d/%B/%Y', label: 'Date Month YYYY (long) - eg 01 January 2015'},
     {value: '%d/%b/%Y', label: 'Date Month YYYY (short) - eg 01 Jan 2015'},
+    {value: '%d/%b/%y', label: 'Date Month YY (short) - eg 01 Jan 15'},
     {value: '%B/%d/%Y', label: 'Month Date YYYY (long) - eg January 01 2015'},
     {value: '%b/%d/%Y', label: 'Month Date YYYY (short) - eg Jan 01 2015'},
     {value: '%d/%m/%Y/%H:%M', label: 'Date Time (Short) - eg 31/01/2015 23:00'},
+    {value: '%d/%b/%Y/%H:%M', label: 'Date Month (Short) Time - eg 31/Mar/2015 23:00'},
     {value: '%d/%m/%Y/%H:%M:%S', label: 'Date Time with seconds - eg 31/01/2015 23:00:59'},
     {value: '%H:%M', label: 'Time only - 23:00'},
     {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2015 23:00:00 GMT+0000 (GMT)'},
-    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'}
+    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'},
+    {value: '%q/%y', label: 'Quarters with short year last - eg Q1 05'},
+    {value: '%q/%Y', label: 'Quarters with Long year last - eg Q1 2005'},
+    {value: '%y/%q', label: 'Quarters with short year first - eg 05 Q1'},
+    {value: '%Y/%q', label: 'Quarters with Long year first - eg 2005 Q1'}
 ]);
 
 var ViewDateFormat = Backbone.View.extend({
