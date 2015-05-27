@@ -149,7 +149,7 @@ var DataImport = Backbone.Model.extend({
             default:
                 type = file.type;
         }
-        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
+        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain' || type === 'text/txt';
     }
 
 });
