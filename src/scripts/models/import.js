@@ -36,20 +36,15 @@ function setDateIntervalAverage(file, typeInfo){
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
     });
-    var start = formatDate(typeInfo.dateValues[0], format);
-    var end = formatDate(typeInfo.dateValues[typeInfo.dateValues.length - 1], format);
-
     var dayAverage = d3.mean(days);
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
-    if (quarterly){
-        //typeInfo.units = yearly ? ['yearly'] : false;
-        typeInfo.units = ['quarterly', unitGenerator([start,end],false)];
-        //typeInfo.units = monthly ? ['monthly','yearly'] : typeInfo.units;
-    }
+    typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
+    typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
 }
 
 var DataImport = Backbone.Model.extend({

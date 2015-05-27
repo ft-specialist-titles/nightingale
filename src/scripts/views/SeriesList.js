@@ -228,7 +228,6 @@ var ViewSeriesList = CollectionView.extend({
             }
             this.model.set('label', value);
             if (isBlurring) {
-                console.log('isBlurring');
                 this.deselectText();
             }
         },
