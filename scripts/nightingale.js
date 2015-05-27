@@ -30349,8 +30349,23 @@ var DataImport = Backbone.Model.extend({
 
 }, {
 
-    isValidType: function (type) {
-        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain';
+    isValidType: function (file) {
+        var type;
+        //windows file.type = program associated with type i.e. could be Excel for .csv files
+        switch (file.name.split('.').slice(-1)[0]){
+            case 'csv':
+                type = 'text/csv';
+                break;
+            case 'tsv':
+                type = 'text/tsv';
+                break;
+            case 'txt':
+                type = 'text/txt';
+                break;
+            default:
+                type = file.type;
+        }
+        return /text\/(c|t)sv/.test(type) || type === 'text/tab-separated-values' || type === 'text/plain' || type === 'text/txt';
     }
 
 });
@@ -30825,7 +30840,7 @@ Tracking.prototype.user = function (container, email) {
 module.exports = new Tracking();
 
 },{}],100:[function(require,module,exports){
-module.exports = "1.0.1";
+module.exports = "1.1.0";
 },{}],101:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
@@ -31468,21 +31483,7 @@ var ViewImportData = Backbone.View.extend({
     },
 
     readFile: function (file) {
-        var type = file.type;
-        if (!file.type){ //windows. grr.
-            switch (file.name.split('.').slice(-1)[0]){
-                case 'csv':
-                    type = 'text/csv';
-                    break;
-                case 'tsv':
-                    type = 'text/tsv';
-                    break;
-                case 'txt':
-                    type = 'text/txt';
-                    break;
-            }
-        }
-        if (!DataImport.isValidType(type)) {
+        if (!DataImport.isValidType(file)) {
             this.showError({message: 'Invalid file type.'});
             return;
         }
