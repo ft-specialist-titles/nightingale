@@ -29246,6 +29246,9 @@ DateParts.prototype.isShortMonths = function(value, tokens){
     //eg like jan
     return (tokens.length === 2 && shortMonths.test(value));
 };
+DateParts.prototype.isQuarter = function(value, tokens){
+    return (/[qQ][1234]/.test(value));
+};
 DateParts.prototype.isNumbersButNotYears = function(value, tokens){
     //eg 12345 or 1.1 or 1,000
     return (/^[\d\.\,]+$/.test(value));
@@ -29289,6 +29292,14 @@ DateParts.prototype.matched = function(){
         return '%Y/%b';
     } else if (this.isYears(tokens[0], tokens) && this.isMonths(tokens[1], tokens) && numTokens===2) {
         return '%Y/%m';
+    } else if (this.isYears(tokens[0], tokens) && this.isQuarter(tokens[1], tokens) && numTokens===2) {
+        return '%Y/%q';
+    } else if (this.isShortYears(tokens[0], tokens) && this.isQuarter(tokens[1], tokens) && numTokens===2) {
+        return '%y/%q';
+    } else if (this.isYears(tokens[1], tokens) && this.isQuarter(tokens[0], tokens) && numTokens===2) {
+        return '%q/%Y';
+    } else if (this.isShortYears(tokens[1], tokens) && this.isQuarter(tokens[0], tokens) && numTokens===2) {
+        return '%q/%y';
     }
 
     // trick the parser into thinking the last
@@ -29729,7 +29740,7 @@ ValidateFile.prototype.logError = function(bool, message){
 module.exports = ValidateFile;
 
 },{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":35,"./validateFileDataTypes.js":65,"./validateFilePipeline.js":66}],65:[function(require,module,exports){
-var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1234])/i;
 var aYearALongWayInTheFuture = 3000;
 
 var isPartDate = function (value) {
@@ -30245,7 +30256,6 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        //todo: save this format when data is first imported?
         var start = formatDate(typeInfo.dateValues[i-1], format);
         var end = formatDate(date,format);
         days.push((d3.time.days(start, end)).length);
@@ -30256,7 +30266,9 @@ function setDateIntervalAverage(file, typeInfo){
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
-    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3);
+    //todo: move this check first to improve speed of processing
+    var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
+        typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
     typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
     typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;
@@ -30578,7 +30590,7 @@ module.exports = {
     table: require('./table.js')
 };
 
-},{"./number.js":94,"./series.js":95,"./table.js":96,"./time.js":97}],94:[function(require,module,exports){
+},{"./number.js":94,"./series.js":96,"./table.js":97,"./time.js":98}],94:[function(require,module,exports){
 var currencySymbol = /^(\$|€|¥|£)/;
 var allCommas = /\,/g;
 var percent = /(\%)$/;
@@ -30618,6 +30630,39 @@ function createNumberTransformer(options) {
 }
 
 },{}],95:[function(require,module,exports){
+var d3 = require("./../../../bower_components/d3/d3.js");
+
+module.exports = function buildQuarterParser(format) {
+
+    // format is going to be one of
+    // %Y/%q
+    // %y/%q
+    // %q/%Y
+    // %q/%y
+
+    var yearParserType;
+    var qPosition;
+    var d3Format;
+    var parts = format.split('/');// format is normalised so '/' will always be the delimiter
+
+    if (parts.length !== 2) {
+        throw new Error("the format provided is probably not ok: " + format);
+    }
+
+    qPosition = parts.indexOf("%q");
+    yearParserType = parts[1-qPosition];
+    d3Format = '%d/%m/'+yearParserType;
+
+    return function quarterParser(value) {
+        var split = value.split('/');
+        var month = split[qPosition].charAt(1) * 3;
+        var modifiedDateString = '28/' + month + '/' + split[1-qPosition];
+        return d3.time.format(d3Format).parse(modifiedDateString);
+    };
+
+};
+
+},{"./../../../bower_components/d3/d3.js":4}],96:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
@@ -30635,7 +30680,7 @@ function series(array, property, transformer, customLogic) {
     }
 }
 
-},{}],96:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 var Datatypes = require('../charting/Datatypes.js');
 var series = require('./series.js');
 
@@ -30679,8 +30724,9 @@ function transformTable(data, columns, transform, type, customLogic) {
     }
 }
 
-},{"../charting/Datatypes.js":47,"./series.js":95}],97:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./series.js":96}],98:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
+var quarterParser = require('./quarterParser');
 
 module.exports = createTimeTransformer;
 
@@ -30732,13 +30778,17 @@ function useJavascriptDateFn(format) {
     return format === 'ISO' || format === 'JAVASCRIPT';
 }
 
+function useQuarterDateFn(format) {
+    return format.indexOf('%q') >= 0;
+}
+
 var datePartSeparators = /[\-\ ]/g;
 
 function createDateParser(format) {
     if (useJavascriptDateFn(format)) {
         return createDate;
     } else {
-        var parser = d3.time.format(format).parse;
+        var parser = useQuarterDateFn(format) ? quarterParser(format) : d3.time.format(format).parse;
         return function (value) {
             var normalizedString = value.replace(datePartSeparators, '/');
             return parser(normalizedString);
@@ -30746,7 +30796,7 @@ function createDateParser(format) {
     }
 }
 
-},{"./../../../bower_components/d3/d3.js":4}],98:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./quarterParser":95}],99:[function(require,module,exports){
 /* global gapi, ng, auth2 */
 var tracking = require('./../utils/tracking.js');
 
@@ -30788,7 +30838,7 @@ Authentication.prototype.onSignIn = function (googleUser) {
 
 module.exports = Authentication;
 
-},{"./../utils/tracking.js":99}],99:[function(require,module,exports){
+},{"./../utils/tracking.js":100}],100:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
     if (document.domain === 'localhost') {
@@ -30834,9 +30884,9 @@ Tracking.prototype.user = function (container, email) {
 
 module.exports = new Tracking();
 
-},{}],100:[function(require,module,exports){
-module.exports = "1.1.0";
 },{}],101:[function(require,module,exports){
+module.exports = "1.1.0";
+},{}],102:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -30867,7 +30917,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],102:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],103:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ColumnControls = Backbone.View.extend({
@@ -30890,7 +30940,7 @@ var ColumnControls = Backbone.View.extend({
 
 module.exports = ColumnControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],103:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],104:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30923,7 +30973,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],104:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],105:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -30934,17 +30984,24 @@ var formats = new Backbone.Collection([
     {value: '%m/%Y', label: 'MM/YYYY - eg 01 2015'},
     {value: '%b/%Y', label: 'Month YYYY - eg Jan 2015'},
     {value: '%b/%y', label: 'Month YY - eg Jan 14'},
+    {value: '%Y/%m/%d', label: 'YYYY/MM/DD - eg 2014/11/28'},
     {value: '%d/%m/%y', label: 'DD/MM/YY - eg 31/01/14'},
     {value: '%m/%d/%y', label: 'MM/DD/YY - eg 01/31/14'},
     {value: '%d/%B/%Y', label: 'Date Month YYYY (long) - eg 01 January 2015'},
     {value: '%d/%b/%Y', label: 'Date Month YYYY (short) - eg 01 Jan 2015'},
+    {value: '%d/%b/%y', label: 'Date Month YY (short) - eg 01 Jan 15'},
     {value: '%B/%d/%Y', label: 'Month Date YYYY (long) - eg January 01 2015'},
     {value: '%b/%d/%Y', label: 'Month Date YYYY (short) - eg Jan 01 2015'},
     {value: '%d/%m/%Y/%H:%M', label: 'Date Time (Short) - eg 31/01/2015 23:00'},
+    {value: '%d/%b/%Y/%H:%M', label: 'Date Month (Short) Time - eg 31/Mar/2015 23:00'},
     {value: '%d/%m/%Y/%H:%M:%S', label: 'Date Time with seconds - eg 31/01/2015 23:00:59'},
     {value: '%H:%M', label: 'Time only - 23:00'},
     {value: 'JAVASCRIPT', label: 'Date Time (Long) - eg Thu Jan 30 2015 23:00:00 GMT+0000 (GMT)'},
-    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'}
+    {value: 'ISO', label: 'ISO 8601 - eg 2015-01-30T12:23:00.000Z'},
+    {value: '%q/%y', label: 'Quarters with short year last - eg Q1 05'},
+    {value: '%q/%Y', label: 'Quarters with Long year last - eg Q1 2005'},
+    {value: '%y/%q', label: 'Quarters with short year first - eg 05 Q1'},
+    {value: '%Y/%q', label: 'Quarters with Long year first - eg 2005 Q1'}
 ]);
 
 var ViewDateFormat = Backbone.View.extend({
@@ -30989,7 +31046,7 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":54}],105:[function(require,module,exports){
+},{"./../core/backbone.js":54}],106:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Datatypes = require('../charting/Datatypes.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31072,7 +31129,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":103,"./Highlight.js":110,"./SeriesControls.js":116}],106:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":104,"./Highlight.js":111,"./SeriesControls.js":117}],107:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
@@ -31172,7 +31229,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":99,"./DependantAxisControls.js":105,"./IndependentAxisControls.js":112}],107:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":100,"./DependantAxisControls.js":106,"./IndependentAxisControls.js":113}],108:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -31190,7 +31247,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],108:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],109:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('../models/GraphicVariation.js');
@@ -31249,7 +31306,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":109}],109:[function(require,module,exports){
+},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":110}],110:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var oCharts = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart;
@@ -31337,7 +31394,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],110:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],111:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -31373,7 +31430,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],111:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],112:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./../models/import.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -31573,7 +31630,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":99}],112:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":100}],113:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./AxisLabel.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31653,7 +31710,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":101,"./Datatype.js":103,"./DateFormat.js":104,"./Highlight.js":110}],113:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":102,"./Datatype.js":104,"./DateFormat.js":105,"./Highlight.js":111}],114:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -31698,7 +31755,7 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":54,"./../help/index.js":59}],114:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../help/index.js":59}],115:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var LineControls = Backbone.View.extend({
@@ -31724,7 +31781,7 @@ var LineControls = Backbone.View.extend({
 
 module.exports = LineControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],115:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],116:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
@@ -31840,7 +31897,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":99,"./ColumnControls.js":102,"./GraphicTypeControls.js":107,"./LineControls.js":114,"util":38}],116:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":100,"./ColumnControls.js":103,"./GraphicTypeControls.js":108,"./LineControls.js":115,"util":38}],117:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./SeriesList.js');
 
@@ -31881,7 +31938,7 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":53,"./SeriesList.js":117}],117:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./SeriesList.js":118}],118:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -32358,4 +32415,4 @@ function nightingale() {
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":98,"./utils/version":100,"./views/GraphicControls.js":106,"./views/GraphicTypes.js":108,"./views/ImportData.js":111,"./views/InlineHelp.js":113,"./views/SelectedVariation.js":115}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":22,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":99,"./utils/version":101,"./views/GraphicControls.js":107,"./views/GraphicTypes.js":109,"./views/ImportData.js":112,"./views/InlineHelp.js":114,"./views/SelectedVariation.js":116}]},{},["nightingale"]);
