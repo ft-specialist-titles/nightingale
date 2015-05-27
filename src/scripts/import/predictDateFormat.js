@@ -91,6 +91,7 @@ var predictedDateFormat = function (value) {
     var format = [];
     var partsWithGuesses =  parts.filter(function(part){ return part.guess(); });
     var has = hasValidDateParts(parts, partsWithGuesses);
+    if (!has) return null;
 
     calculatePartFormat(partsWithGuesses, has); //work out day, month or year if others are not guesses
     calculatePartFormat(partsWithGuesses, has); //2nd pass, in-case previous was updated and we know now the other
