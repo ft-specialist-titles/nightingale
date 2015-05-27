@@ -3,7 +3,7 @@ var pkg = require('./package.json');
 module.exports = {
     build: ['sass', 'mustache', 'browserify'],
     test: 'karma',
-    release: ['git', 'gh-pages'],
+    release: ['gh-pages'],
     serve: 'staticApp',
     browserify: {
         insertGlobals : true,
