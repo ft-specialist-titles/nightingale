@@ -17,7 +17,6 @@ var Authentication = require('./utils/authentication.js');
 
 var _ = require('underscore');
 var $ = require('jquery');
-var version = require('./utils/version');
 
 function init() {
 
@@ -185,7 +184,6 @@ function nightingale() {
     var auth = new Authentication(init);
     auth.renderButton();
     return {
-        version: version,
         oChartsVersion: require('o-charts').version
     };
 }
