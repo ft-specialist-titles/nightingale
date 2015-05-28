@@ -30945,8 +30945,6 @@ Tracking.prototype.user = function (container, email) {
 module.exports = new Tracking();
 
 },{}],101:[function(require,module,exports){
-module.exports = "1.1.0";
-},{}],102:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -30977,7 +30975,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],103:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],102:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ColumnControls = Backbone.View.extend({
@@ -31000,7 +30998,7 @@ var ColumnControls = Backbone.View.extend({
 
 module.exports = ColumnControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],104:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],103:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -31033,7 +31031,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],105:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],104:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -31106,7 +31104,7 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":54}],106:[function(require,module,exports){
+},{"./../core/backbone.js":54}],105:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Datatypes = require('../charting/Datatypes.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31189,7 +31187,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":104,"./Highlight.js":111,"./SeriesControls.js":117}],107:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":103,"./Highlight.js":110,"./SeriesControls.js":116}],106:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
@@ -31289,7 +31287,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":100,"./DependantAxisControls.js":106,"./IndependentAxisControls.js":113}],108:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":100,"./DependantAxisControls.js":105,"./IndependentAxisControls.js":112}],107:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -31307,7 +31305,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],109:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],108:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('../models/GraphicVariation.js');
@@ -31366,7 +31364,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":110}],110:[function(require,module,exports){
+},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":109}],109:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var oCharts = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart;
@@ -31454,7 +31452,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],111:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],110:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -31490,7 +31488,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],112:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],111:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./../models/import.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -31690,7 +31688,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":100}],113:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":100}],112:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./AxisLabel.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31770,7 +31768,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":102,"./Datatype.js":104,"./DateFormat.js":105,"./Highlight.js":111}],114:[function(require,module,exports){
+},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":101,"./Datatype.js":103,"./DateFormat.js":104,"./Highlight.js":110}],113:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -31815,7 +31813,7 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":54,"./../help/index.js":59}],115:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../help/index.js":59}],114:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var LineControls = Backbone.View.extend({
@@ -31841,7 +31839,7 @@ var LineControls = Backbone.View.extend({
 
 module.exports = LineControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],116:[function(require,module,exports){
+},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],115:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
@@ -31957,7 +31955,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":100,"./ColumnControls.js":103,"./GraphicTypeControls.js":108,"./LineControls.js":115,"util":38}],117:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":100,"./ColumnControls.js":102,"./GraphicTypeControls.js":107,"./LineControls.js":114,"util":38}],116:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./SeriesList.js');
 
@@ -31998,7 +31996,7 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":53,"./SeriesList.js":118}],118:[function(require,module,exports){
+},{"./../core/RegionView.js":53,"./SeriesList.js":117}],117:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -32300,7 +32298,6 @@ var Authentication = require('./utils/authentication.js');
 
 var _ = require("./../../bower_components/underscore/underscore.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
-var version = require('./utils/version');
 
 function init() {
 
@@ -32468,11 +32465,10 @@ function nightingale() {
     var auth = new Authentication(init);
     auth.renderButton();
     return {
-        version: version,
         oChartsVersion: require("./../../bower_components/o-charts/src/scripts/o-charts.js").version
     };
 }
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":99,"./utils/version":101,"./views/GraphicControls.js":107,"./views/GraphicTypes.js":109,"./views/ImportData.js":112,"./views/InlineHelp.js":114,"./views/SelectedVariation.js":116}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":99,"./views/GraphicControls.js":106,"./views/GraphicTypes.js":108,"./views/ImportData.js":111,"./views/InlineHelp.js":113,"./views/SelectedVariation.js":115}]},{},["nightingale"]);
