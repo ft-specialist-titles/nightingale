@@ -23,6 +23,7 @@ function formatDate(dateString, format) {
 }
 
 function setDateIntervalAverage(file, typeInfo){
+    if (!typeInfo.mostPopularDateFormat) return;
     var days = [];
     var months = [];
     var years = [];
