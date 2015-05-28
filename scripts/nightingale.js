@@ -23671,8 +23671,13 @@ Plot.prototype.x = function(key, seriesNumber){ //seriesNumber: grrr.
 };
 
 Plot.prototype.y = function(value, stack){
-    var yValue = (this.model.stack) ? stackSeries(this.model, value, stack) : value;
-    var maxValue = (this.model.chartType == 'column') ? Math.max(0, yValue) : yValue;
+    if (this.model.chartType == 'line') return this.axes.valueScale(value);
+    var maxValue = Math.max(0, value);
+    if (this.model.stack) {
+        var yValue = stackSeries(this.model, value, stack);
+        var height = this.model.stacks[stack][this.model.stacks[stack].length-1];
+        maxValue = (yValue<0) ? yValue - height : Math.max(0, yValue);
+    }
     return this.axes.valueScale(maxValue);
 };
 
@@ -25427,7 +25432,7 @@ module.exports = {
 };
 
 },{}],34:[function(require,module,exports){
-module.exports = "0.2.2";
+module.exports = "0.2.3";
 },{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
@@ -30029,12 +30034,14 @@ function setDateGroupings(grouping){
 
 var ColumnControls = Backbone.Model.extend({
 
-    defaults: {
+    defaults:{
         //groupDates: false
+        stack: false
     },
 
-    overrideConfig: function (config) {
+    overrideConfig: function(config){
         //config.groupDates = setDateGroupings(this.attributes.groupDates);
+        config.stack = this.attributes.stack;
         return config;
     }
 
@@ -30582,7 +30589,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<!--<div class=\"radio\">-->\n    <!--<h4>Date Groupings</h4>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"false\"> Off-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n    <!--</label>-->\n    <!--<label>-->\n        <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n    <!--</label>-->\n<!--</div>-->\n";
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n<!--</label>-->\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],92:[function(require,module,exports){
@@ -30935,7 +30942,7 @@ var ColumnControls = Backbone.View.extend({
     template: require('./../templates/type-controls-column.hbs'),
 
     bindings: {
-        '[name="groupDates"]': 'groupDates'
+        '[name="stack"]': 'stack' //make this into stack
     },
 
     render: function () {
