@@ -22,6 +22,10 @@ var ViewIndependantAxisControls = RegionView.extend({
         this.listenTo(this.dataImport.columns, 'reset', this.render);
     },
 
+    cleanup: function() {
+        this.stopListening();
+    },
+
     regions: {
         '[data-region="label"]': function () {
             return new ViewAxisLabel({

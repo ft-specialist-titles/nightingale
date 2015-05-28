@@ -27,6 +27,10 @@ var ViewSelectedVariation = RegionView.extend({
         this.listenTo(this.model.errors, 'reset', this.renderErrors);
     },
 
+    cleanup: function() {
+        this.stopListening();
+    },
+
     className: 'view-selected-variation',
 
     template: require('./../templates/selected-variation.hbs'),

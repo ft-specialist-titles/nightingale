@@ -168,6 +168,10 @@ var ViewSeriesList = CollectionView.extend({
             this.listenTo(this.model, 'change:isOther', this.updateClassName);
         },
 
+        cleanup: function() {
+            this.stopListening();
+        },
+
         className: function () {
             return 'view-series-list-item series-' + (this.model.get('isOther') ? 'other' : this.index + 1);
         },

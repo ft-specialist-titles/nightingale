@@ -27,11 +27,14 @@ function init() {
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
+    // REFACTOR THIS into it's own custom collection
     var types = new Backbone.Collection([
         new GraphicType({
             typeName: 'Line'
         }, {
             graphic: graphic,
+            // GraphicType should internally decide which type
+            // of controls suits it
             controls: new LineControls(),
             variations: Variations
         }),
@@ -43,6 +46,7 @@ function init() {
             variations: Variations
         })
     ]);
+    types.comparator = 'suitabilityRanking';
 
     var charts = new ViewGraphicTypes({collection: types});
     document.getElementById('charts').appendChild(charts.render().el);
@@ -76,6 +80,19 @@ function init() {
     });
 
     importData.on('change:data', function (model, data) {
+        // work out what style is recommended.
+        var chartStyle = model.get('recommendedChartStyle');
+        // and sort our chart types based on that.
+        types.forEach(function(t) {
+            if (t.get('typeName') == chartStyle) {
+                t.set('suitabilityRanking', -100, {silent : true});
+            } else {
+                t.set('suitabilityRanking', 100, {silent : true});
+            }
+        });
+        types.sort();
+
+        // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
 

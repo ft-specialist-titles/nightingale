@@ -36,10 +36,20 @@ var CollectionView = Backbone.View.extend({
         });
     },
 
+    cleanup: function() {
+        this.stopListening();
+        this.removeViews();
+    },
+
     itemsDirty: false,
 
     removeViews: function () {
         this._views.forEach(function (view) {
+            try {
+                view.cleanup();
+            } catch (e) {
+                throw new Error("This view doesn't have a Cleanup Method. Please implement it", view, e);
+            }
             view.remove();
         });
         this._views = [];
@@ -70,7 +80,19 @@ var CollectionView = Backbone.View.extend({
             this._views = this.createViews();
         }
         this._views.forEach(function (view) {
-            if (render) view.render();
+            if (render) {
+                // this check is here to avoid rendering
+                // GraphicVariation views twice, which used to
+                // cause null bounding box errors on o-charts.
+                // Rendering is debounced on the view itself, so
+                // here we just access the debounced render method
+                if (view.debouncedRender) {
+                    view.debouncedRender();
+                } else {
+                // the rest of the views go here
+                    view.render();
+                }
+            }
             el.appendChild(view.el);
         });
     },

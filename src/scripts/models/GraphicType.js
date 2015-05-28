@@ -9,7 +9,8 @@ var GraphicType = Backbone.Model.extend({
     },
 
     defaults: {
-        typeName: ''
+        typeName: '',
+        suitabilityRanking: 0
     }
 });
 

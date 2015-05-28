@@ -8,6 +8,7 @@ var describeColumns = require('../import/describeColumns.js');
 var setPopularDateFormat = require('../import/setPopularDateFormat.js');
 var unitGenerator = require('o-charts').util.dates.unitGenerator;
 
+
 var Threshold = function (numRows) {
     var percent = 95;
     var s = 100 / numRows;
@@ -18,7 +19,7 @@ var Threshold = function (numRows) {
     return this;
 };
 
-function formatDate(dateString, format) {
+function parseDate(dateString, format) {
     return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
 }
 
@@ -29,8 +30,8 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = formatDate(typeInfo.dateValues[i-1], format);
-        var end = formatDate(date,format);
+        var start = parseDate(typeInfo.dateValues[i-1], format);
+        var end = parseDate(date,format);
         days.push((d3.time.days(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
@@ -48,6 +49,60 @@ function setDateIntervalAverage(file, typeInfo){
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
 }
 
+function getDateRange(typeInfo) {
+    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    var start = parseDate(typeInfo.dateValues[0], format);
+    var lastIdx = typeInfo.dateValues.length - 1;
+    var end = parseDate(typeInfo.dateValues[lastIdx], format);
+
+    return [start, end];
+}
+
+
+function findRecommendedChartStyle(typeInfo) {
+
+    // what's the maximum acceptable number of columns
+    var MAX_ACCEPTABLE_NUMBER_OF_COLUMNS = 15;
+
+    // if it isn't a discrete period, we can return early and assume
+    // we want a line chart
+    if (typeof typeInfo.units === 'undefined') {
+        return 'Line';
+    }
+
+    var range = getDateRange(typeInfo);
+
+    var density = 0;
+
+    var rangeFunction;
+
+    switch (typeInfo.units[0]) {
+        case "monthly":
+            density = d3.time.months(range[0], range[1]).length;
+            break;
+        case "quarterly":
+            density = (d3.time.months(range[0], range[1]).length / 3) | 0;
+            break;
+        case "yearly":
+            density = d3.time.years(range[0], range[1]).length;
+            break;
+        default:
+            density = -1;
+            break;
+    }
+
+    // we now check that the time span of the data provided doesn't
+    // excede a set number of 'periods'
+    var isTooDense = density > MAX_ACCEPTABLE_NUMBER_OF_COLUMNS;
+
+    if (isTooDense) {
+        return 'Line';
+    }
+
+    return 'Column';
+
+}
+
 var DataImport = Backbone.Model.extend({
 
     defaults: {
@@ -56,6 +111,7 @@ var DataImport = Backbone.Model.extend({
         dataAsString: '',
         numRows: 0,
         numCols: 0,
+        recommendedChartStyle: 'Line',
         colNames: [],
         pipelineOptions: null,
         warning: {
@@ -81,11 +137,11 @@ var DataImport = Backbone.Model.extend({
         var threshold = new Threshold(file.numRows);
         var originalData = JSON.parse(JSON.stringify(file.data));
         var typeInfo;
+        var recommendedChartStyle;
 
         for (var i = 0, x = newColumns.length; i < x; i++) {
 
             typeInfo = newColumns[i].get('typeInfo');
-
             if (typeInfo.datatype === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
@@ -93,10 +149,18 @@ var DataImport = Backbone.Model.extend({
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
+
+                    // here we find a suggestion for what the most likely chart
+                    // the user will want to see is. Currently, our rules are only time-based
+                    // therefore we do the check in hire (where we're sure it's a TIME column)
+                    recommendedChartStyle = findRecommendedChartStyle(typeInfo);
+
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
                     typeInfo.datatype = DataTypes.NUMERIC;
                     newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
+
+
             }
         }
 
@@ -109,6 +173,7 @@ var DataImport = Backbone.Model.extend({
             colNames: file.colNames,
             numRows: file.numRows,
             pipelineOptions: file.pipelineOptions,
+            recommendedChartStyle: recommendedChartStyle,
             warning: {
                 message: file.warningMessage,
                 rows: file.warningRows

@@ -97,6 +97,7 @@ var ViewImportData = Backbone.View.extend({
 
     remove: function () {
         this.undelegateEvents();
+        this.stopListening();
         return Backbone.View.prototype.remove.apply(this, arguments);
     },
 
