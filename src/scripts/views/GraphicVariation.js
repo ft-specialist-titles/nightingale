@@ -15,6 +15,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     initialize: function (options) {
         this.chart = chartTypes[this.model.graphicType.get('typeName')];
         var debounced = _.bind(_.debounce(this.render, 50), this);
+        this.debouncedRender = debounced;
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
         this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
@@ -31,6 +32,10 @@ var ViewGraphicVariation = Backbone.View.extend({
 
     events: {
         'click .graphic-container>svg.graphic': 'select'
+    },
+
+    cleanup: function() {
+        this.stopListening();
     },
 
     select: function (event) {
