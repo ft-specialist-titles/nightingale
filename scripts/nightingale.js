@@ -28513,10 +28513,20 @@ var CollectionView = Backbone.View.extend({
         });
     },
 
+    cleanup: function() {
+        this.stopListening();
+        this.removeViews();
+    },
+
     itemsDirty: false,
 
     removeViews: function () {
         this._views.forEach(function (view) {
+            try {
+                view.cleanup();
+            } catch (e) {
+                throw new Error("This view doesn't have a Cleanup Method. Please implement it", view, e);
+            }
             view.remove();
         });
         this._views = [];
@@ -28547,7 +28557,19 @@ var CollectionView = Backbone.View.extend({
             this._views = this.createViews();
         }
         this._views.forEach(function (view) {
-            if (render) view.render();
+            if (render) {
+                // this check is here to avoid rendering
+                // GraphicVariation views twice, which used to
+                // cause null bounding box errors on o-charts.
+                // Rendering is debounced on the view itself, so
+                // here we just access the debounced render method
+                if (view.debouncedRender) {
+                    view.debouncedRender();
+                } else {
+                // the rest of the views go here
+                    view.render();
+                }
+            }
             el.appendChild(view.el);
         });
     },
@@ -30108,7 +30130,8 @@ var GraphicType = Backbone.Model.extend({
     },
 
     defaults: {
-        typeName: ''
+        typeName: '',
+        suitabilityRanking: 0
     }
 });
 
@@ -30251,6 +30274,7 @@ var describeColumns = require('../import/describeColumns.js');
 var setPopularDateFormat = require('../import/setPopularDateFormat.js');
 var unitGenerator = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.dates.unitGenerator;
 
+
 var Threshold = function (numRows) {
     var percent = 95;
     var s = 100 / numRows;
@@ -30261,7 +30285,7 @@ var Threshold = function (numRows) {
     return this;
 };
 
-function formatDate(dateString, format) {
+function parseDate(dateString, format) {
     return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
 }
 
@@ -30273,8 +30297,8 @@ function setDateIntervalAverage(file, typeInfo){
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = formatDate(typeInfo.dateValues[i-1], format);
-        var end = formatDate(date,format);
+        var start = parseDate(typeInfo.dateValues[i-1], format);
+        var end = parseDate(date,format);
         days.push((d3.time.days(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
@@ -30292,6 +30316,60 @@ function setDateIntervalAverage(file, typeInfo){
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
 }
 
+function getDateRange(typeInfo) {
+    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    var start = parseDate(typeInfo.dateValues[0], format);
+    var lastIdx = typeInfo.dateValues.length - 1;
+    var end = parseDate(typeInfo.dateValues[lastIdx], format);
+
+    return [start, end];
+}
+
+
+function findRecommendedChartStyle(typeInfo) {
+
+    // what's the maximum acceptable number of columns
+    var MAX_ACCEPTABLE_NUMBER_OF_COLUMNS = 15;
+
+    // if it isn't a discrete period, we can return early and assume
+    // we want a line chart
+    if (typeof typeInfo.units === 'undefined') {
+        return 'Line';
+    }
+
+    var range = getDateRange(typeInfo);
+
+    var density = 0;
+
+    var rangeFunction;
+
+    switch (typeInfo.units[0]) {
+        case "monthly":
+            density = d3.time.months(range[0], range[1]).length;
+            break;
+        case "quarterly":
+            density = (d3.time.months(range[0], range[1]).length / 3) | 0;
+            break;
+        case "yearly":
+            density = d3.time.years(range[0], range[1]).length;
+            break;
+        default:
+            density = -1;
+            break;
+    }
+
+    // we now check that the time span of the data provided doesn't
+    // excede a set number of 'periods'
+    var isTooDense = density > MAX_ACCEPTABLE_NUMBER_OF_COLUMNS;
+
+    if (isTooDense) {
+        return 'Line';
+    }
+
+    return 'Column';
+
+}
+
 var DataImport = Backbone.Model.extend({
 
     defaults: {
@@ -30300,6 +30378,7 @@ var DataImport = Backbone.Model.extend({
         dataAsString: '',
         numRows: 0,
         numCols: 0,
+        recommendedChartStyle: 'Line',
         colNames: [],
         pipelineOptions: null,
         warning: {
@@ -30325,11 +30404,11 @@ var DataImport = Backbone.Model.extend({
         var threshold = new Threshold(file.numRows);
         var originalData = JSON.parse(JSON.stringify(file.data));
         var typeInfo;
+        var recommendedChartStyle;
 
         for (var i = 0, x = newColumns.length; i < x; i++) {
 
             typeInfo = newColumns[i].get('typeInfo');
-
             if (typeInfo.datatype === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
@@ -30337,10 +30416,18 @@ var DataImport = Backbone.Model.extend({
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
+
+                    // here we find a suggestion for what the most likely chart
+                    // the user will want to see is. Currently, our rules are only time-based
+                    // therefore we do the check in hire (where we're sure it's a TIME column)
+                    recommendedChartStyle = findRecommendedChartStyle(typeInfo);
+
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
                     typeInfo.datatype = DataTypes.NUMERIC;
                     newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
+
+
             }
         }
 
@@ -30353,6 +30440,7 @@ var DataImport = Backbone.Model.extend({
             colNames: file.colNames,
             numRows: file.numRows,
             pipelineOptions: file.pipelineOptions,
+            recommendedChartStyle: recommendedChartStyle,
             warning: {
                 message: file.warningMessage,
                 rows: file.warningRows
@@ -31339,6 +31427,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     initialize: function (options) {
         this.chart = chartTypes[this.model.graphicType.get('typeName')];
         var debounced = _.bind(_.debounce(this.render, 50), this);
+        this.debouncedRender = debounced;
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
         this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
@@ -31355,6 +31444,10 @@ var ViewGraphicVariation = Backbone.View.extend({
 
     events: {
         'click .graphic-container>svg.graphic': 'select'
+    },
+
+    cleanup: function() {
+        this.stopListening();
     },
 
     select: function (event) {
@@ -31545,6 +31638,7 @@ var ViewImportData = Backbone.View.extend({
 
     remove: function () {
         this.undelegateEvents();
+        this.stopListening();
         return Backbone.View.prototype.remove.apply(this, arguments);
     },
 
@@ -31668,6 +31762,10 @@ var ViewIndependantAxisControls = RegionView.extend({
             }
         });
         this.listenTo(this.dataImport.columns, 'reset', this.render);
+    },
+
+    cleanup: function() {
+        this.stopListening();
     },
 
     regions: {
@@ -31824,6 +31922,10 @@ var ViewSelectedVariation = RegionView.extend({
         this.listenTo(this.model.graphicType.controls, 'change', debounced);
         this.listenTo(this.model.graphic.chart.dataset, 'change:rows', debounced);
         this.listenTo(this.model.errors, 'reset', this.renderErrors);
+    },
+
+    cleanup: function() {
+        this.stopListening();
     },
 
     className: 'view-selected-variation',
@@ -32124,6 +32226,10 @@ var ViewSeriesList = CollectionView.extend({
             this.listenTo(this.model, 'change:isOther', this.updateClassName);
         },
 
+        cleanup: function() {
+            this.stopListening();
+        },
+
         className: function () {
             return 'view-series-list-item series-' + (this.model.get('isOther') ? 'other' : this.index + 1);
         },
@@ -32264,11 +32370,14 @@ function init() {
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
+    // REFACTOR THIS into it's own custom collection
     var types = new Backbone.Collection([
         new GraphicType({
             typeName: 'Line'
         }, {
             graphic: graphic,
+            // GraphicType should internally decide which type
+            // of controls suits it
             controls: new LineControls(),
             variations: Variations
         }),
@@ -32280,6 +32389,7 @@ function init() {
             variations: Variations
         })
     ]);
+    types.comparator = 'suitabilityRanking';
 
     var charts = new ViewGraphicTypes({collection: types});
     document.getElementById('charts').appendChild(charts.render().el);
@@ -32313,6 +32423,19 @@ function init() {
     });
 
     importData.on('change:data', function (model, data) {
+        // work out what style is recommended.
+        var chartStyle = model.get('recommendedChartStyle');
+        // and sort our chart types based on that.
+        types.forEach(function(t) {
+            if (t.get('typeName') == chartStyle) {
+                t.set('suitabilityRanking', -100, {silent : true});
+            } else {
+                t.set('suitabilityRanking', 100, {silent : true});
+            }
+        });
+        types.sort();
+
+        // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
 
