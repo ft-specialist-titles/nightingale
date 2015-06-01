@@ -112,7 +112,7 @@ var DataImport = Backbone.Model.extend({
         dataAsString: '',
         numRows: 0,
         numCols: 0,
-        recommendedChartStyle: 'Line',
+        recommendedChartStyle: 'Column',
         colNames: [],
         pipelineOptions: null,
         warning: {
