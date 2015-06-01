@@ -22955,7 +22955,9 @@ function categoryAxis() {
         yOffset: 0,
         xOffset: 0,
         labelWidth: 0,
-        showDomain: false
+        showDomain: false,
+        categorical: false,
+        keepD3Style: true
     };
 
     function render(g) {
@@ -22965,13 +22967,6 @@ function categoryAxis() {
         g.append('g').attr('class', 'x axis').each(function () {
             var g = d3.select(this);
             labels.add(g, config);
-            //remove text-anchor attribute from year positions
-            g.selectAll('.primary text').attr({
-                x: null,
-                y: null,
-                dy: 15 + config.tickSize
-            });
-            styler(g, true);
         });
 
         if (!config.showDomain) {
@@ -22982,6 +22977,12 @@ function categoryAxis() {
     render.simple = function (bool) {
         if (!arguments.length) return config.simple;
         config.simple = bool;
+        return render;
+    };
+
+    render.categorical = function (bool) {
+        if (!arguments.length) return config.categorical;
+        config.categorical = bool;
         return render;
     };
 
@@ -23030,6 +23031,9 @@ function categoryAxis() {
     render.scale = function (scale, units) {
         if (!arguments.length) return config.axes[0].scale();
         units = units || ['unknown'];
+        if (config.categorical){
+            units = ['categorical'];
+        }
         config.scale = scale;
         config.units = units;
 
@@ -23135,7 +23139,7 @@ Create.prototype.independentScale = function (scale) {
     var model = this.model;
     if(scale == 'ordinal'){
         this.timeScale = ordinalScale(model, this);
-        this.timeAxis = axis.category();
+        this.timeAxis = axis.category().categorical(model.categorical);
     } else {
         this.timeScale = timeScale(model);
         this.timeAxis = axis.date();
@@ -23183,7 +23187,6 @@ var d3 = require("./../../../../d3/d3.js");
 var labels = require('../util/labels.js');
 var dates = require('../util/dates.js');
 var dateScale = require('./date.scale.js');
-var styler = require('../util/chart-attribute-styles');
 var timeDiff = dates.timeDiff;
 
 function dateAxis() {
@@ -23201,7 +23204,8 @@ function dateAxis() {
         yOffset: 0,
         xOffset: 0,
         labelWidth: 0,
-        showDomain: false
+        showDomain: false,
+        keepD3Style: false
     };
 
     function render(g) {
@@ -23209,15 +23213,7 @@ function dateAxis() {
         g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
 
         g.append('g').attr('class', 'x axis').each(function () {
-            var g = d3.select(this);
-            labels.add(g, config);
-            //remove text-anchor attribute from year positions
-            g.selectAll('.primary text').attr({
-                x: null,
-                y: null,
-                dy: 15 + config.tickSize
-            });
-            styler(g);
+            labels.add(d3.select(this), config);
         });
 
         if (!config.showDomain) {
@@ -23295,7 +23291,7 @@ function dateAxis() {
 
 module.exports = dateAxis;
 
-},{"../util/chart-attribute-styles":25,"../util/dates.js":27,"../util/labels.js":29,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
+},{"../util/dates.js":27,"../util/labels.js":29,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var utils = require('../util/dates.js');
 
@@ -23815,7 +23811,7 @@ function columnChart(g){
 
 	var create = new axes.Create(chartSVG, model);
     create.dependentScale('number');
-    create.independentScale(model.groupData ? 'ordinal' : 'time');
+    create.independentScale((model.groupData || model.categorical) ? 'ordinal' : 'time');
 
 	var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = 0;
@@ -24611,8 +24607,8 @@ function setExtents(model){
 function timeDomain(model, chartType) {
     if (model.timeDomain) { return model.timeDomain;  }
 
-    if (model.groupData && chartType === 'column'){
-        model.data = groupDates(model, model.units);
+    if ((model.groupData || model.categorical) && chartType === 'column'){
+        model.data = (model.groupData && !model.categorical) ? groupDates(model, model.units) : model.data;
         return model.data.map(function (d) {
             return d[model.x.series.key];
         });
@@ -24627,9 +24623,10 @@ function sumStackedValues(model){
     var extents = [];
     model.data.map(function (d, j) {
         var key, sum = 0;
-        for (key in d.values[0]) {
+        var values = Array.isArray(d.values) ? d.values[0] : d;
+        for (key in values) {
             if (key !== model.x.series.originalKey) {
-                sum += d.values[0][key];
+                sum += values[key];
             }
         }
         extents.push(sum);
@@ -24674,8 +24671,10 @@ function verifyData(model) {
             error.message = 'Empty row';
         } else if (!s) {
             error.message = 'X axis value is empty or null';
-        } else if (!isDate(s)) {
+        } else if (!isDate(s) && model.chartType == 'line') {
             error.message = 'Value is not a valid date';
+        } else if (!isDate(s)) {
+            model.categorical = true;
         }
 
         if (error.message) {
@@ -24709,7 +24708,6 @@ function groupDates(m, units){
             return  dateStr.join(' ');
 		})
 		.entries(m.data);
-	m.x.series.originalKey = m.x.series.key;
 	m.x.series.key = 'key';
 	return m.data;
 }
@@ -24921,6 +24919,9 @@ var groups = {
     },
     centuries: function (d, i) {
         return d.split(' ')[1];
+    },
+    categorical: function (d, i) {
+        return d;
     }
 };
 
@@ -25120,6 +25121,7 @@ module.exports = Dressing;
 },{"../element/logo.js":20,"../element/series-key.js":21,"../element/text-area.js":22}],29:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var dates = require('../util/dates');
+var styler = require('./chart-attribute-styles');
 var dateFormatter = dates.formatter;
 
 module.exports = {
@@ -25144,17 +25146,35 @@ module.exports = {
     add: function(g, config){
         var self = this;
         var options = { row: 0 };
+
         config.axes.forEach(function (axis, i) {
             self.addRow(g, axis, options, config);
             options.row ++;
         });
+
+        //remove text-anchor attribute from year positions
+        g.selectAll('.primary text').attr({
+            x: null,
+            y: null,
+            dy: 15 + config.tickSize
+        });
+
     },
+
     addRow: function(g, axis, options, config){
         var rowClass = (options.row) ? 'secondary': 'primary';
         g.append('g')
             .attr('class', rowClass)
             .attr('transform', 'translate(0,' + (options.row * config.lineHeight) + ')')
             .call(axis);
+
+        // style the row before we do any removing, to ensure that
+        // collision detection is done correctly
+        styler(g, config.keepD3Style);
+
+        if (config.categorical) {
+            return;
+        }
 
         this.removeDuplicates(g, '.' + rowClass + ' text');
         if (options.extendTicks) {
@@ -25170,6 +25190,7 @@ module.exports = {
             this.removeMonths(g, axis, options, config);
         }
         this.removeOverlapping(g, '.' + rowClass + ' text');
+
     },
 
     intersection: function (a, b) {
@@ -25273,7 +25294,7 @@ module.exports = {
     }
 };
 
-},{"../util/dates":27,"./../../../../d3/d3.js":4}],30:[function(require,module,exports){
+},{"../util/dates":27,"./../../../../d3/d3.js":4,"./chart-attribute-styles":25}],30:[function(require,module,exports){
 //a place to define custom line interpolators
 
 var d3 = require("./../../../../d3/d3.js");
@@ -25417,6 +25438,7 @@ function normalise(value) {
     if (typeof d.label === 'function') {
         d.label = d.label();
     }
+    d.originalKey = d.key;
 
     return d;
 }
@@ -25432,7 +25454,7 @@ module.exports = {
 };
 
 },{}],34:[function(require,module,exports){
-module.exports = "0.2.3";
+module.exports = "0.3.1";
 },{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
