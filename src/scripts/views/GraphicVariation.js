@@ -39,6 +39,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     },
 
     select: function (event) {
+        document.querySelector('#charts').classList.remove('full');
         Backbone.trigger('selectVariation', this.model, event.currentTarget);
     },
 
@@ -67,6 +68,11 @@ var ViewGraphicVariation = Backbone.View.extend({
         if (!config) {
             this.empty();
             return;
+        }
+        // add the variationName as classes (for layout)
+        var chartClasses = this.model.variation.get('variationName').split(' ');
+        for (var i = 0; i < chartClasses.length; i++) {
+            this.el.classList.add(chartClasses[i]);
         }
 
         this.el.innerHTML = this.template();

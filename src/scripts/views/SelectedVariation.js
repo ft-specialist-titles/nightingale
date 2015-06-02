@@ -37,6 +37,7 @@ var ViewSelectedVariation = RegionView.extend({
 
     events: {
         'click [name="save"]': 'save',
+        'click [name="hide"]': 'hide'
     },
 
     regions: {
@@ -91,6 +92,10 @@ var ViewSelectedVariation = RegionView.extend({
             setTimeout(removeDisabledState, 200);
         });
         tracking.trackEvent('saveImage-' + format);
+    },
+
+    hide: function() {
+        document.querySelector('#charts').classList.add('full');
     },
 
     render: function () {

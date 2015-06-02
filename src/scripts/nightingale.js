@@ -48,7 +48,9 @@ function init() {
     types.comparator = 'suitabilityRanking';
 
     var charts = new ViewGraphicTypes({collection: types});
-    document.getElementById('charts').appendChild(charts.render().el);
+    var chartsEl = document.getElementById('charts');
+    chartsEl.classList.add('full');
+    chartsEl.appendChild(charts.render().el);
 
     var viewSelectedVariation;
     Backbone.on('selectVariation', function (variation) {
@@ -86,8 +88,10 @@ function init() {
         types.forEach(function(t) {
             if (t.get('typeName') == chartStyle) {
                 t.set('suitabilityRanking', -100, {silent : true});
+                t.set('recommended', true);
             } else {
                 t.set('suitabilityRanking', 100, {silent : true});
+                t.set('recommended', false);
             }
         });
         types.sort();

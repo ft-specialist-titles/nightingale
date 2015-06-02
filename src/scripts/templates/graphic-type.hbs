@@ -1,1 +1,9 @@
-<div data-region="variations"></div>
+<h2>
+  {{#if recommended}}
+    Recommended style <small>{{ typeName }} chart</small>
+  {{else}}
+    Other styles
+  {{/if}}
+
+</h2>
+<div class="variations-container" data-region="variations"></div>
