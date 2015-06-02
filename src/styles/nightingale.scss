@@ -49,6 +49,8 @@ svg {
     }
 }
 
+$transition-time: 0.25s;
+
 $neutral-grey: rgb(50%, 50%, 50%);
 // good background for colour refernce.
 $ui-grey: rgb(30%, 30%, 30%);
@@ -71,6 +73,12 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     overflow-x: hidden;
     background-color: #e5e5e5;
     box-shadow: inset 0px 0px 17px -4px rgba(0, 0, 0, 0.42);
+    transition: $transition-time right;
+
+    &.full {
+        right: 0;
+    }
+
 }
 
 #charts::-webkit-scrollbar {
@@ -109,7 +117,14 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     overflow-x: hidden;
     overflow-y: auto;
     border-left: 1px solid #c0c0c0;
+    transition: $transition-time right;
+
+    #charts.full + & {
+        right: -360px;
+    }
+
 }
+
 
 .view-selected-variation {
     h1 {
@@ -192,26 +207,67 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     padding: 10px;
 }
 
-.view-graphic-variation {
-    margin: 15px auto 15px auto;
-    .graphic-container {
-        border: 3px solid transparent;
-        background-color: transparent;
-        display: block;
-        box-sizing: content-box;
-        line-height: 0;
-        &:hover {
-            border-color: rgba(0, 0, 0, .7);
-            cursor: pointer;
+
+.view-graphic-variation-collection {
+
+    display: block;
+
+
+    h2 {
+        margin-left: 15px;
+        border-top: 4px solid #D0D0D0;
+
+        .recommended {
+            transform: scale(0.8, 0.8);
         }
-        &.error {
-            border-color: $btn-danger-border;
+
+        &:first-child {
+            margin-top: 10px;
         }
-        .graphic {
-            background-color: #fff1e0;
+
+    }
+    div.variations-container {
+        display: flex;
+        flex-flow: row wrap;
+        font-size: 0;
+        align-items: flex-end;
+        justify-content: flex-start;
+        margin-left: 15px;
+        .view-graphic-variation {
+            margin-right: 15px;
+            &.small {
+                width: 30%;
+            }
+
+            &.regular {
+                width: 60%;
+            }
+
+            &.large {
+                width: 100%;
+            }
+
+            .graphic-container {
+                border: 3px solid transparent;
+                background-color: transparent;
+                display: block;
+                box-sizing: content-box;
+                line-height: 0;
+                &:hover {
+                    border-color: rgba(0, 0, 0, .7);
+                    cursor: pointer;
+                }
+                &.error {
+                    border-color: $btn-danger-border;
+                }
+                .graphic {
+                    background-color: #fff1e0;
+                }
+            }
         }
     }
 }
+
 
 .chart-name {
     border-bottom: 1px solid $ui-grey;
