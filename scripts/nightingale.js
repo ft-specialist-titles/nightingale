@@ -30462,7 +30462,7 @@ var DataImport = Backbone.Model.extend({
             colNames: file.colNames,
             numRows: file.numRows,
             pipelineOptions: file.pipelineOptions,
-            recommendedChartStyle: recommendedChartStyle,
+            recommendedChartStyle: recommendedChartStyle || "Column",
             warning: {
                 message: file.warningMessage,
                 rows: file.warningRows
@@ -32448,6 +32448,7 @@ function init() {
         // work out what style is recommended.
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
+
         types.forEach(function(t) {
             if (t.get('typeName') == chartStyle) {
                 t.set('suitabilityRanking', -100, {silent : true});
