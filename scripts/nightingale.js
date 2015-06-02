@@ -28491,9 +28491,9 @@ module.exports = {
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
-    {width: 300, height: null, variationName: 'regular web inline'},
-    {width: 186, height: null, variationName: 'small web inline'},
     {width: 600, height: null, variationName: 'large web inline'},
+    {width: 300, height: null, variationName: 'regular web inline'},
+    {width: 186, height: null, variationName: 'small web inline'}
 ]);
 
 },{"./../core/backbone.js":54}],52:[function(require,module,exports){
@@ -30593,8 +30593,20 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 },{"hbsfy/runtime":46}],83:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
-module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div data-region=\"variations\"></div>\n";
+module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "    Recommended style <small>"
+    + this.escapeExpression(((helper = (helper = helpers.typeName || (depth0 != null ? depth0.typeName : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"typeName","hash":{},"data":data}) : helper)))
+    + " chart</small>\n";
+},"3":function(depth0,helpers,partials,data) {
+    return "    Other styles\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<h2>\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.recommended : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.program(3, data, 0),"data":data})) != null ? stack1 : "")
+    + "\n</h2>\n<div class=\"variations-container\" data-region=\"variations\"></div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],84:[function(require,module,exports){
@@ -30692,7 +30704,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
     + "px</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Height</th>\n            <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
-    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n    </div>\n</div>\n";
+    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n        <button role=\"button\" type=\"button\" name=\"hide\" class=\"btn btn-lg btn-block btn-default\">Hide</button>\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],91:[function(require,module,exports){
@@ -31473,6 +31485,7 @@ var ViewGraphicVariation = Backbone.View.extend({
     },
 
     select: function (event) {
+        document.querySelector('#charts').classList.remove('full');
         Backbone.trigger('selectVariation', this.model, event.currentTarget);
     },
 
@@ -31501,6 +31514,11 @@ var ViewGraphicVariation = Backbone.View.extend({
         if (!config) {
             this.empty();
             return;
+        }
+        // add the variationName as classes (for layout)
+        var chartClasses = this.model.variation.get('variationName').split(' ');
+        for (var i = 0; i < chartClasses.length; i++) {
+            this.el.classList.add(chartClasses[i]);
         }
 
         this.el.innerHTML = this.template();
@@ -31956,6 +31974,7 @@ var ViewSelectedVariation = RegionView.extend({
 
     events: {
         'click [name="save"]': 'save',
+        'click [name="hide"]': 'hide'
     },
 
     regions: {
@@ -32010,6 +32029,10 @@ var ViewSelectedVariation = RegionView.extend({
             setTimeout(removeDisabledState, 200);
         });
         tracking.trackEvent('saveImage-' + format);
+    },
+
+    hide: function() {
+        document.querySelector('#charts').classList.add('full');
     },
 
     render: function () {
@@ -32414,7 +32437,9 @@ function init() {
     types.comparator = 'suitabilityRanking';
 
     var charts = new ViewGraphicTypes({collection: types});
-    document.getElementById('charts').appendChild(charts.render().el);
+    var chartsEl = document.getElementById('charts');
+    chartsEl.classList.add('full');
+    chartsEl.appendChild(charts.render().el);
 
     var viewSelectedVariation;
     Backbone.on('selectVariation', function (variation) {
@@ -32452,8 +32477,10 @@ function init() {
         types.forEach(function(t) {
             if (t.get('typeName') == chartStyle) {
                 t.set('suitabilityRanking', -100, {silent : true});
+                t.set('recommended', true);
             } else {
                 t.set('suitabilityRanking', 100, {silent : true});
+                t.set('recommended', false);
             }
         });
         types.sort();

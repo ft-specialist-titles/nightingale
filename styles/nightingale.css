@@ -5014,7 +5014,11 @@ svg .chart-title:hover, svg .chart-subtitle:hover, svg .chart-source:hover, svg 
   right: 360px;
   overflow-x: hidden;
   background-color: #e5e5e5;
-  box-shadow: inset 0px 0px 17px -4px rgba(0, 0, 0, 0.42); }
+  box-shadow: inset 0px 0px 17px -4px rgba(0, 0, 0, 0.42);
+  -webkit-transition: 0.25s right;
+          transition: 0.25s right; }
+  #charts.full {
+    right: 0; }
 
 #charts::-webkit-scrollbar {
   background: transparent;
@@ -5048,7 +5052,11 @@ svg .chart-title:hover, svg .chart-subtitle:hover, svg .chart-source:hover, svg 
   padding: 10px;
   overflow-x: hidden;
   overflow-y: auto;
-  border-left: 1px solid #c0c0c0; }
+  border-left: 1px solid #c0c0c0;
+  -webkit-transition: 0.25s right;
+          transition: 0.25s right; }
+  #charts.full + #selection {
+    right: -360px; }
 
 .view-selected-variation h1 {
   margin-top: 0; }
@@ -5111,21 +5119,56 @@ svg .chart-title:hover, svg .chart-subtitle:hover, svg .chart-source:hover, svg 
 .view-graphic-type {
   padding: 10px; }
 
-.view-graphic-variation {
-  margin: 15px auto 15px auto; }
-  .view-graphic-variation .graphic-container {
-    border: 3px solid transparent;
-    background-color: transparent;
-    display: block;
-    box-sizing: content-box;
-    line-height: 0; }
-    .view-graphic-variation .graphic-container:hover {
-      border-color: rgba(0, 0, 0, 0.7);
-      cursor: pointer; }
-    .view-graphic-variation .graphic-container.error {
-      border-color: #d43f3a; }
-    .view-graphic-variation .graphic-container .graphic {
-      background-color: #fff1e0; }
+.view-graphic-variation-collection {
+  display: block; }
+  .view-graphic-variation-collection h2 {
+    margin-left: 15px;
+    border-top: 4px solid #D0D0D0; }
+    .view-graphic-variation-collection h2 .recommended {
+      -webkit-transform: scale(0.8, 0.8);
+          -ms-transform: scale(0.8, 0.8);
+              transform: scale(0.8, 0.8); }
+    .view-graphic-variation-collection h2:first-child {
+      margin-top: 10px; }
+  .view-graphic-variation-collection div.variations-container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-flow: row wrap;
+        -ms-flex-flow: row wrap;
+            flex-flow: row wrap;
+    font-size: 0;
+    -webkit-box-align: end;
+    -webkit-align-items: flex-end;
+        -ms-flex-align: end;
+            align-items: flex-end;
+    -webkit-box-pack: start;
+    -webkit-justify-content: flex-start;
+        -ms-flex-pack: start;
+            justify-content: flex-start;
+    margin-left: 15px; }
+    .view-graphic-variation-collection div.variations-container .view-graphic-variation {
+      margin-right: 15px; }
+      .view-graphic-variation-collection div.variations-container .view-graphic-variation.small {
+        width: 30%; }
+      .view-graphic-variation-collection div.variations-container .view-graphic-variation.regular {
+        width: 60%; }
+      .view-graphic-variation-collection div.variations-container .view-graphic-variation.large {
+        width: 100%; }
+      .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container {
+        border: 3px solid transparent;
+        background-color: transparent;
+        display: block;
+        box-sizing: content-box;
+        line-height: 0; }
+        .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container:hover {
+          border-color: rgba(0, 0, 0, 0.7);
+          cursor: pointer; }
+        .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container.error {
+          border-color: #d43f3a; }
+        .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container .graphic {
+          background-color: #fff1e0; }
 
 .chart-name {
   border-bottom: 1px solid #1e1e1e;
