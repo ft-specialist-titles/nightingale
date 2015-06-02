@@ -174,7 +174,7 @@ var DataImport = Backbone.Model.extend({
             colNames: file.colNames,
             numRows: file.numRows,
             pipelineOptions: file.pipelineOptions,
-            recommendedChartStyle: recommendedChartStyle,
+            recommendedChartStyle: recommendedChartStyle || "Column",
             warning: {
                 message: file.warningMessage,
                 rows: file.warningRows
