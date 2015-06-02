@@ -62,8 +62,23 @@ describe('validateFileDataTypes can ', function () {
 
     it('guess a nulls', function () {
         expect(sniffDataType.bind(dataTypes)(null, 0)).toBe(undefined);
-        expect(dataTypes[0].nulls).toBe(1);
+        expect(sniffDataType.bind(dataTypes)(' * ', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('*', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('-', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)(':', 0)).toBe(undefined);
+        expect(dataTypes[0].nulls).toBe(5);
         expect(dataTypes[0].dates).toBe(0);
+        expect(dataTypes[0].numbers).toBe(0);
+        expect(dataTypes[0].strings).toBe(0);
+
+        expect(sniffDataType.bind(dataTypes)('*footnote', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('minus-', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('time:', 0)).toBe(undefined);
+        expect(sniffDataType.bind(dataTypes)('/', 0)).toBe(undefined);
+        expect(dataTypes[0].nulls).toBe(5);
+        expect(dataTypes[0].dates).toBe(0);
+        expect(dataTypes[0].numbers).toBe(0);
+        expect(dataTypes[0].strings).toBe(4);
 
     });
 

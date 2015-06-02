@@ -47,7 +47,7 @@ var sniffDataType = function (value, colNum) {
 
     value = value.trim();
 
-    if (value === '*') {
+    if (/^[-:*]$/.test(value)) {
         o.nulls++;
         return;
     }
