@@ -5080,6 +5080,10 @@ svg .chart-title:hover, svg .chart-subtitle:hover, svg .chart-source:hover, svg 
   font-size: 12px;
   font-weight: normal;
   color: #777777; }
+.view-graphic-controls .checkbox label {
+  font-size: 14px; }
+.view-graphic-controls .checkbox:first-child {
+  margin-top: 0px; }
 .view-graphic-controls .form-control {
   padding: 6px;
   font-family: 'BentonSans' sans-serif; }

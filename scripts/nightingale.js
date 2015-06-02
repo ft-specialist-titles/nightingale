@@ -30694,15 +30694,15 @@ var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
-  return "<div>\n    <table class=\"table table-bordered table-condensed\">\n        <tbody>\n        <tr>\n            <th class=\"property-name\">Chart type</th>\n            <td class=\"property-value\">"
+  return "<div class=\"view-graphic-controls\">\n    <div class=\"panel panel-default\">\n        <div class=\"panel-heading\">Chart Details</div>\n        <div class=\"panel-body\">\n            <table class=\"table table-bordered table-condensed\">\n                <tbody>\n                <tr>\n                    <th class=\"property-name\">Chart type</th>\n                    <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.graphicType : depth0)) != null ? stack1.typeName : stack1), depth0))
-    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Variation</th>\n            <td class=\"property-value\">"
+    + "</td>\n                </tr>\n                <tr>\n                    <th class=\"property-name\">Variation</th>\n                    <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.variation : depth0)) != null ? stack1.variationName : stack1), depth0))
-    + "</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Width</th>\n            <td class=\"property-value\">"
+    + "</td>\n                </tr>\n                <tr>\n                    <th class=\"property-name\">Width</th>\n                    <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.width : stack1), depth0))
-    + "px</td>\n        </tr>\n        <tr>\n            <th class=\"property-name\">Height</th>\n            <td class=\"property-value\">"
+    + "px</td>\n                </tr>\n                <tr>\n                    <th class=\"property-name\">Height</th>\n                    <td class=\"property-value\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.svg : depth0)) != null ? stack1.height : stack1), depth0))
-    + "px</td>\n        </tr>\n        </tbody>\n    </table>\n    <hr>\n    <div data-region=\"graphic-type-controls\"></div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n        <button role=\"button\" type=\"button\" name=\"hide\" class=\"btn btn-lg btn-block btn-default\">Hide</button>\n    </div>\n</div>\n";
+    + "px</td>\n                </tr>\n                </tbody>\n            </table>\n        </div>\n    </div>\n    <div class=\"panel panel-default\">\n        <div class=\"panel-heading\">Chart Controls</div>\n        <div class=\"panel-body\" data-region=\"graphic-type-controls\"></div>\n    </div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n        <button role=\"button\" type=\"button\" name=\"hide\" class=\"btn btn-lg btn-block btn-default\">Hide</button>\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],91:[function(require,module,exports){
