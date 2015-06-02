@@ -143,7 +143,7 @@ var DataImport = Backbone.Model.extend({
         for (var i = 0, x = newColumns.length; i < x; i++) {
 
             typeInfo = newColumns[i].get('typeInfo');
-            if (typeInfo.datatype === DataTypes.TIME) {
+            if (typeInfo.dataType === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
                 setDateIntervalAverage(file, typeInfo);
@@ -157,7 +157,7 @@ var DataImport = Backbone.Model.extend({
                     recommendedChartStyle = findRecommendedChartStyle(typeInfo);
 
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
-                    typeInfo.datatype = DataTypes.NUMERIC;
+                    typeInfo.dataType = DataTypes.NUMERIC;
                     newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
 

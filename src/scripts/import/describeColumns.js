@@ -20,22 +20,22 @@ function describeColumns(file){
 
     dataTypeCounters.forEach(function (typeCounter) {
         if (threshold.isAbove(typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NONE;
+            typeCounter.dataType = DataTypes.NONE;
         } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NUMERIC;
+            typeCounter.dataType = DataTypes.NUMERIC;
         } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.TIME;
+            typeCounter.dataType = DataTypes.TIME;
         } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.CATEGORICAL;
+            typeCounter.dataType = DataTypes.CATEGORICAL;
         } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NUMERIC;
+            typeCounter.dataType = DataTypes.NUMERIC;
         } else {
-            typeCounter.datatype = DataTypes.NONE;
+            typeCounter.dataType = DataTypes.NONE;
         }
     });
 
     dataTypeCounters.forEach(function (counter) {
-        var type = counter.datatype;
+        var type = counter.dataType;
         if (DataTypes.isTime(type) || DataTypes.isCategorical(type)) {
             if (!xAxis) {
                 xAxis = counter;

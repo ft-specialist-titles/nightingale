@@ -31,7 +31,7 @@ var ViewDependantAxisControls = RegionView.extend({
                 dataImport: this.dataImport
             });
         },
-        '[data-region="datatype"]': function () {
+        '[data-region="dataType"]': function () {
             return new ViewDatatype({
                 model: this.model,
                 show: {categorical: false}
@@ -59,11 +59,11 @@ var ViewDependantAxisControls = RegionView.extend({
             }
         },
         '[data-section-name="forecast"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         },
         '[data-section-name="label-format"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isNumeric
         },
         '[name="prefix"]': 'prefix',

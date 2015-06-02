@@ -5,11 +5,11 @@ var Column = require('../models/Column.js');
 
 var defaultDatatype = DataTypes.TIME;
 
-function convertPipelineIndexHeader(property, datatype) {
+function convertPipelineIndexHeader(property, dataType) {
     if (property === '&') {
-        if (DataTypes.isCategorical(datatype)) {
+        if (DataTypes.isCategorical(dataType)) {
             return 'Category';
-        } else if (DataTypes.isTime(datatype)) {
+        } else if (DataTypes.isTime(dataType)) {
             return 'Time';
         }
     }
@@ -21,7 +21,7 @@ var IndependantAxis = Axis.extend({
     initialize: function () {
         this.on('change:property', function (model, value) {
             this.set({
-                suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
+                suggestedLabel: convertPipelineIndexHeader(value, this.get('dataType')),
                 label: null
             });
         });
@@ -29,7 +29,7 @@ var IndependantAxis = Axis.extend({
 
     defaults: _.extend({}, Axis.prototype.defaults, {
         name: Axis.X,
-        datatype: defaultDatatype
+        dataType: defaultDatatype
     }),
 
     useColumn: function (column) {
@@ -41,14 +41,14 @@ var IndependantAxis = Axis.extend({
         }
 
         var typeInfo = column.get('typeInfo');
-        var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
+        var dataType = typeInfo && typeInfo.dataType ? typeInfo.dataType : defaultDatatype;
         var units = typeInfo && typeInfo.units;
-        var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        var dateFormat = DataTypes.isTime(dataType) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
         this.set({
             property: column.get('property'),
-            datatype: datatype,
+            dataType: dataType,
             dateFormat: dateFormat,
             units: units
         });
@@ -57,7 +57,7 @@ var IndependantAxis = Axis.extend({
     createColumn: function () {
         var attributes = _.extend({}, this._column.attributes);
         attributes.property = this.attributes.property;
-        attributes.datatype = this.attributes.datatype;
+        attributes.dataType = this.attributes.dataType;
         attributes.label = this.attributes.label || this.attributes.property;
         attributes.axis = Axis.X;
         return new Column(attributes);

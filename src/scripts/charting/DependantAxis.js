@@ -34,14 +34,14 @@ var DependantAxis = Axis.extend({
             var warning = '';
             if (numCols === 0) {
                 this.set({
-                    datatype: DataTypes.NONE,
+                    dataType: DataTypes.NONE,
                     suggestedLabel: ''
                 });
             } else if (numCols === 1) {
                 var column = this.columns.at(0);
                 var typeInfo = column.get('typeInfo');
                 this.set({
-                    datatype: typeInfo.datatype,
+                    dataType: typeInfo.dataType,
                     suggestedLabel: captitalizeFirstLetter(column.get('property'))
                 });
             } else if (numCols > 1) {
@@ -49,7 +49,7 @@ var DependantAxis = Axis.extend({
                 var last;
                 var types = {};
                 for (var i = numCols; i--;) {
-                    current = this.columns.at(i).get('typeInfo').datatype;
+                    current = this.columns.at(i).get('typeInfo').dataType;
                     if (last && current && current !== last) {
                         warning = 'Mismatching datatypes';
                         break;
@@ -67,7 +67,7 @@ var DependantAxis = Axis.extend({
                 var mostPopularType = types.length ? types[0][0] : DataTypes.CATEGORICAL;
                 this.set({
                     suggestedLabel: '',
-                    datatype: mostPopularType
+                    dataType: mostPopularType
                 });
             }
             this.set('warningMessage', warning);
@@ -79,7 +79,7 @@ var DependantAxis = Axis.extend({
     },
     defaults: _.extend({}, Axis.prototype.defaults, {
         name: Axis.Y,
-        datatype: defaultDatatype,
+        dataType: defaultDatatype,
         hasSeries: false,
         multiseries: false,
         numSeries: 0,

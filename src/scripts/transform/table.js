@@ -32,7 +32,7 @@ function transformTable(data, columns, transform, type, customLogic) {
     for (var i = 0, x = columns.length; i < x; i++) {
         typeInfo = columns[i].get('typeInfo');
         colName = typeInfo.colName;
-        if (type(typeInfo.datatype)) {
+        if (type(typeInfo.dataType)) {
             transformFn = transform(typeInfo);
             if (transformFn) {
                 series(data, colName, transformFn, customLogic);

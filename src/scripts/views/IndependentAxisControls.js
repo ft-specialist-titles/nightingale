@@ -32,7 +32,7 @@ var ViewIndependantAxisControls = RegionView.extend({
                 model: this.model
             });
         },
-        '[data-region="datatype"]': function () {
+        '[data-region="dataType"]': function () {
             return new ViewDatatype({
                 model: this.model,
                 show: {
@@ -67,7 +67,7 @@ var ViewIndependantAxisControls = RegionView.extend({
             }
         },
         '[data-region="dateFormat"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         }
     },

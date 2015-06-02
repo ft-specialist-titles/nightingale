@@ -166,10 +166,10 @@ function init() {
     }
 
     // REFACTOR: this logic should be in a model somewhere.
-    graphic.chart.xAxis.on('change:datatype change:dateFormat', function (model) {
+    graphic.chart.xAxis.on('change:dataType change:dateFormat', function (model) {
 
         var property = model.get('property');
-        var datatype = model.get('datatype');
+        var dataType = model.get('dataType');
         var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
@@ -177,9 +177,9 @@ function init() {
 //todo: pm date format dropdown on change
 
         //transform the data
-        if (Datatypes.isNumeric(datatype)) {
+        if (Datatypes.isNumeric(dataType)) {
             transform.series(revertedDataset, property, transform.number());
-        } else if (Datatypes.isTime(datatype) && dateFormat) {
+        } else if (Datatypes.isTime(dataType) && dateFormat) {
             transform.series(revertedDataset, property, transform.time(dateFormat));
         }
 

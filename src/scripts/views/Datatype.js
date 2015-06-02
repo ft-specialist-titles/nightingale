@@ -12,12 +12,12 @@ var ViewDatatype = Backbone.View.extend({
         });
     },
 
-    className: 'view-datatype',
+    className: 'view-dataType',
 
     template: require('./../templates/datatype.hbs'),
 
     bindings: {
-        '[name="datatype"]': 'datatype'
+        '[name="dataType"]': 'dataType'
     },
 
     render: function () {

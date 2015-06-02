@@ -9,15 +9,15 @@ var ViewHighlight = Backbone.View.extend({
 
     bindings: {
         '[data-section-name="categorical"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isCategorical
         },
         '[data-section-name="numeric"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isNumeric
         },
         '[data-section-name="time"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         }
     },

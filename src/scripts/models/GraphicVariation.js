@@ -50,7 +50,7 @@ var GraphicVariation = Backbone.Model.extend({
             units: this.graphic.chart.xAxis.get('units'),
             data: data,
             dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
+            dataType: this.graphic.chart.xAxis.get('dataType'),
             x: {
                 series: {
                     key: xAxisProperty,

@@ -7,7 +7,7 @@ var Axis = Backbone.Model.extend({
             label: '',
             labelOverride: false,
             suggestedLabel: '',
-            datatype: Datatypes.CATEGORICAL,
+            dataType: Datatypes.CATEGORICAL,
             warningMessage: '',
             dateFormat: '',
             prefix: '',
