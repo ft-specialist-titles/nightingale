@@ -130,6 +130,22 @@ var DataImport = Backbone.Model.extend({
         this.listenTo(this, 'invalid', this.discardData);
     },
 
+    recomputeRecommendedChartStyle: function() {
+        var typeInfo,
+            recommendedChartStyle = 'Column';
+
+        for (var i = 0, l = this.columns.length; i < l; i++) {
+            typeInfo = this.columns.at(i).get('typeInfo');
+            if (typeInfo.dataType === DataTypes.TIME) {
+                if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
+                    recommendedChartStyle = findRecommendedChartStyle(typeInfo);
+                }
+            }
+        }
+
+        this.set('recommendedChartStyle', recommendedChartStyle);
+    },
+
     validate: function (attributes, options) {
 
         var file = new ValidateFile(attributes);
