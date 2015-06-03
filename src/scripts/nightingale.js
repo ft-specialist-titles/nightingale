@@ -80,13 +80,13 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importData.on('change:data', function (model, data) {
+    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
         // work out what style is recommended.
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
 
         types.forEach(function(t) {
-            if (t.get('typeName') == chartStyle) {
+            if (t.get('typeName') === chartStyle) {
                 t.set('suitabilityRanking', -100, {silent : true});
                 t.set('recommended', true);
             } else {
@@ -95,7 +95,9 @@ function init() {
             }
         });
         types.sort();
+    });
 
+    importData.on('change:data', function (model, data) {
         // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });

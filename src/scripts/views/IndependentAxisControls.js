@@ -20,6 +20,19 @@ var ViewIndependantAxisControls = RegionView.extend({
             }
         });
         this.listenTo(this.dataImport.columns, 'reset', this.render);
+        this.listenTo(this.model, 'change:dataType', function(model, dataType) {
+            switch (dataType) {
+                case 'categorical':
+                    options.dataImport.set('recommendedChartStyle', 'Column');
+                    break;
+                case 'numeric':
+                    options.dataImport.set('recommendedChartStyle', 'Column');
+                    break;
+                default:
+                    this.dataImport.recomputeRecommendedChartStyle();
+                    break;
+            }
+        });
     },
 
     cleanup: function() {
