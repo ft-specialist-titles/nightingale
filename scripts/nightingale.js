@@ -30414,6 +30414,22 @@ var DataImport = Backbone.Model.extend({
         this.listenTo(this, 'invalid', this.discardData);
     },
 
+    recomputeRecommendedChartStyle: function() {
+        var typeInfo,
+            recommendedChartStyle = 'Column';
+
+        for (var i = 0, l = this.columns.length; i < l; i++) {
+            typeInfo = this.columns.at(i).get('typeInfo');
+            if (typeInfo.dataType === DataTypes.TIME) {
+                if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
+                    recommendedChartStyle = findRecommendedChartStyle(typeInfo);
+                }
+            }
+        }
+
+        this.set('recommendedChartStyle', recommendedChartStyle);
+    },
+
     validate: function (attributes, options) {
 
         var file = new ValidateFile(attributes);
@@ -31798,6 +31814,19 @@ var ViewIndependantAxisControls = RegionView.extend({
             }
         });
         this.listenTo(this.dataImport.columns, 'reset', this.render);
+        this.listenTo(this.model, 'change:dataType', function(model, dataType) {
+            switch (dataType) {
+                case 'categorical':
+                    options.dataImport.set('recommendedChartStyle', 'Column');
+                    break;
+                case 'numeric':
+                    options.dataImport.set('recommendedChartStyle', 'Column');
+                    break;
+                default:
+                    this.dataImport.recomputeRecommendedChartStyle();
+                    break;
+            }
+        });
     },
 
     cleanup: function() {
@@ -32465,13 +32494,13 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importData.on('change:data', function (model, data) {
+    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
         // work out what style is recommended.
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
 
         types.forEach(function(t) {
-            if (t.get('typeName') == chartStyle) {
+            if (t.get('typeName') === chartStyle) {
                 t.set('suitabilityRanking', -100, {silent : true});
                 t.set('recommended', true);
             } else {
@@ -32480,7 +32509,9 @@ function init() {
             }
         });
         types.sort();
+    });
 
+    importData.on('change:data', function (model, data) {
         // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
