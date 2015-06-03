@@ -22956,7 +22956,7 @@ function categoryAxis() {
         xOffset: 0,
         labelWidth: 0,
         showDomain: false,
-        categorical: false,
+        dataType: 'categorical',
         keepD3Style: true
     };
 
@@ -22980,9 +22980,9 @@ function categoryAxis() {
         return render;
     };
 
-    render.categorical = function (bool) {
-        if (!arguments.length) return config.categorical;
-        config.categorical = bool;
+    render.dataType = function (dataType) {
+        if (!arguments.length) return config.dataType;
+        config.dataType = dataType;
         return render;
     };
 
@@ -23031,7 +23031,7 @@ function categoryAxis() {
     render.scale = function (scale, units) {
         if (!arguments.length) return config.axes[0].scale();
         units = units || ['unknown'];
-        if (config.categorical){
+        if (config.dataType === 'categorical'){
             units = ['categorical'];
         }
         config.scale = scale;
@@ -23139,7 +23139,7 @@ Create.prototype.independentScale = function (scale) {
     var model = this.model;
     if(scale == 'ordinal'){
         this.timeScale = ordinalScale(model, this);
-        this.timeAxis = axis.category().categorical(model.categorical);
+        this.timeAxis = axis.category().dataType(model.dataType);
     } else {
         this.timeScale = timeScale(model);
         this.timeAxis = axis.date();
@@ -23811,7 +23811,7 @@ function columnChart(g){
 
 	var create = new axes.Create(chartSVG, model);
     create.dependentScale('number');
-    create.independentScale((model.groupData || model.categorical) ? 'ordinal' : 'time');
+    create.independentScale((model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time');
 
 	var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = 0;
@@ -24607,8 +24607,8 @@ function setExtents(model){
 function timeDomain(model, chartType) {
     if (model.timeDomain) { return model.timeDomain;  }
 
-    if ((model.groupData || model.categorical) && chartType === 'column'){
-        model.data = (model.groupData && !model.categorical) ? groupDates(model, model.units) : model.data;
+    if ((model.groupData || model.dataType === 'categorical') && chartType === 'column'){
+        model.data = (model.groupData && model.dataType !=='categorical') ? groupDates(model, model.units) : model.data;
         return model.data.map(function (d) {
             return d[model.x.series.key];
         });
@@ -24673,8 +24673,6 @@ function verifyData(model) {
             error.message = 'X axis value is empty or null';
         } else if (!isDate(s) && model.chartType == 'line') {
             error.message = 'Value is not a valid date';
-        } else if (!isDate(s)) {
-            model.categorical = true;
         }
 
         if (error.message) {
@@ -25170,7 +25168,7 @@ module.exports = {
         // collision detection is done correctly
         styler(g, config.keepD3Style);
 
-        if (config.categorical) {
+        if (config.dataType === 'categorical') {
             return;
         }
 
@@ -25452,7 +25450,7 @@ module.exports = {
 };
 
 },{}],34:[function(require,module,exports){
-module.exports = "0.3.2";
+module.exports = "0.3.3";
 },{}],35:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
@@ -28344,14 +28342,14 @@ var DependantAxis = Axis.extend({
             var warning = '';
             if (numCols === 0) {
                 this.set({
-                    datatype: DataTypes.NONE,
+                    dataType: DataTypes.NONE,
                     suggestedLabel: ''
                 });
             } else if (numCols === 1) {
                 var column = this.columns.at(0);
                 var typeInfo = column.get('typeInfo');
                 this.set({
-                    datatype: typeInfo.datatype,
+                    dataType: typeInfo.dataType,
                     suggestedLabel: captitalizeFirstLetter(column.get('property'))
                 });
             } else if (numCols > 1) {
@@ -28359,7 +28357,7 @@ var DependantAxis = Axis.extend({
                 var last;
                 var types = {};
                 for (var i = numCols; i--;) {
-                    current = this.columns.at(i).get('typeInfo').datatype;
+                    current = this.columns.at(i).get('typeInfo').dataType;
                     if (last && current && current !== last) {
                         warning = 'Mismatching datatypes';
                         break;
@@ -28377,7 +28375,7 @@ var DependantAxis = Axis.extend({
                 var mostPopularType = types.length ? types[0][0] : DataTypes.CATEGORICAL;
                 this.set({
                     suggestedLabel: '',
-                    datatype: mostPopularType
+                    dataType: mostPopularType
                 });
             }
             this.set('warningMessage', warning);
@@ -28389,7 +28387,7 @@ var DependantAxis = Axis.extend({
     },
     defaults: _.extend({}, Axis.prototype.defaults, {
         name: Axis.Y,
-        datatype: defaultDatatype,
+        dataType: defaultDatatype,
         hasSeries: false,
         multiseries: false,
         numSeries: 0,
@@ -28406,11 +28404,11 @@ var Column = require('../models/Column.js');
 
 var defaultDatatype = DataTypes.TIME;
 
-function convertPipelineIndexHeader(property, datatype) {
+function convertPipelineIndexHeader(property, dataType) {
     if (property === '&') {
-        if (DataTypes.isCategorical(datatype)) {
+        if (DataTypes.isCategorical(dataType)) {
             return 'Category';
-        } else if (DataTypes.isTime(datatype)) {
+        } else if (DataTypes.isTime(dataType)) {
             return 'Time';
         }
     }
@@ -28422,7 +28420,7 @@ var IndependantAxis = Axis.extend({
     initialize: function () {
         this.on('change:property', function (model, value) {
             this.set({
-                suggestedLabel: convertPipelineIndexHeader(value, this.get('datatype')),
+                suggestedLabel: convertPipelineIndexHeader(value, this.get('dataType')),
                 label: null
             });
         });
@@ -28430,7 +28428,7 @@ var IndependantAxis = Axis.extend({
 
     defaults: _.extend({}, Axis.prototype.defaults, {
         name: Axis.X,
-        datatype: defaultDatatype
+        dataType: defaultDatatype
     }),
 
     useColumn: function (column) {
@@ -28442,14 +28440,14 @@ var IndependantAxis = Axis.extend({
         }
 
         var typeInfo = column.get('typeInfo');
-        var datatype = typeInfo && typeInfo.datatype ? typeInfo.datatype : defaultDatatype;
+        var dataType = typeInfo && typeInfo.dataType ? typeInfo.dataType : defaultDatatype;
         var units = typeInfo && typeInfo.units;
-        var dateFormat = DataTypes.isTime(datatype) && typeInfo ? typeInfo.mostPopularDateFormat : null;
+        var dateFormat = DataTypes.isTime(dataType) && typeInfo ? typeInfo.mostPopularDateFormat : null;
         this._column = column;
 
         this.set({
             property: column.get('property'),
-            datatype: datatype,
+            dataType: dataType,
             dateFormat: dateFormat,
             units: units
         });
@@ -28458,7 +28456,7 @@ var IndependantAxis = Axis.extend({
     createColumn: function () {
         var attributes = _.extend({}, this._column.attributes);
         attributes.property = this.attributes.property;
-        attributes.datatype = this.attributes.datatype;
+        attributes.dataType = this.attributes.dataType;
         attributes.label = this.attributes.label || this.attributes.property;
         attributes.axis = Axis.X;
         return new Column(attributes);
@@ -29084,22 +29082,22 @@ function describeColumns(file){
 
     dataTypeCounters.forEach(function (typeCounter) {
         if (threshold.isAbove(typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NONE;
+            typeCounter.dataType = DataTypes.NONE;
         } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NUMERIC;
+            typeCounter.dataType = DataTypes.NUMERIC;
         } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.TIME;
+            typeCounter.dataType = DataTypes.TIME;
         } else if (threshold.isAbove(typeCounter.strings + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.CATEGORICAL;
+            typeCounter.dataType = DataTypes.CATEGORICAL;
         } else if (threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
-            typeCounter.datatype = DataTypes.NUMERIC;
+            typeCounter.dataType = DataTypes.NUMERIC;
         } else {
-            typeCounter.datatype = DataTypes.NONE;
+            typeCounter.dataType = DataTypes.NONE;
         }
     });
 
     dataTypeCounters.forEach(function (counter) {
-        var type = counter.datatype;
+        var type = counter.dataType;
         if (DataTypes.isTime(type) || DataTypes.isCategorical(type)) {
             if (!xAxis) {
                 xAxis = counter;
@@ -29921,7 +29919,7 @@ var Axis = Backbone.Model.extend({
             label: '',
             labelOverride: false,
             suggestedLabel: '',
-            datatype: Datatypes.CATEGORICAL,
+            dataType: Datatypes.CATEGORICAL,
             warningMessage: '',
             dateFormat: '',
             prefix: '',
@@ -30210,7 +30208,7 @@ var GraphicVariation = Backbone.Model.extend({
             units: this.graphic.chart.xAxis.get('units'),
             data: data,
             dateParser: this.graphic.chart.xAxis.get('dateFormat'),
-
+            dataType: this.graphic.chart.xAxis.get('dataType'),
             x: {
                 series: {
                     key: xAxisProperty,
@@ -30429,7 +30427,7 @@ var DataImport = Backbone.Model.extend({
         for (var i = 0, x = newColumns.length; i < x; i++) {
 
             typeInfo = newColumns[i].get('typeInfo');
-            if (typeInfo.datatype === DataTypes.TIME) {
+            if (typeInfo.dataType === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
                 setDateIntervalAverage(file, typeInfo);
@@ -30443,7 +30441,7 @@ var DataImport = Backbone.Model.extend({
                     recommendedChartStyle = findRecommendedChartStyle(typeInfo);
 
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
-                    typeInfo.datatype = DataTypes.NUMERIC;
+                    typeInfo.dataType = DataTypes.NUMERIC;
                     newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
 
@@ -30552,7 +30550,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
     + ")</span>"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.warningMessage : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"datatype\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
+    + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"dataType\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],80:[function(require,module,exports){
@@ -30567,7 +30565,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
-  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"datatype\">\n"
+  return "<label>Data type</label>\n<div class=\"btn-group btn-group-justified btn-group-radio\" name=\"dataType\">\n"
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.numeric : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.time : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.show : depth0)) != null ? stack1.categorical : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
@@ -30643,7 +30641,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"datatype\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
+    return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"dataType\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":46}],89:[function(require,module,exports){
@@ -30852,7 +30850,7 @@ function transformTable(data, columns, transform, type, customLogic) {
     for (var i = 0, x = columns.length; i < x; i++) {
         typeInfo = columns[i].get('typeInfo');
         colName = typeInfo.colName;
-        if (type(typeInfo.datatype)) {
+        if (type(typeInfo.dataType)) {
             transformFn = transform(typeInfo);
             if (transformFn) {
                 series(data, colName, transformFn, customLogic);
@@ -31090,12 +31088,12 @@ var ViewDatatype = Backbone.View.extend({
         });
     },
 
-    className: 'view-datatype',
+    className: 'view-dataType',
 
     template: require('./../templates/datatype.hbs'),
 
     bindings: {
-        '[name="datatype"]': 'datatype'
+        '[name="dataType"]': 'dataType'
     },
 
     render: function () {
@@ -31215,7 +31213,7 @@ var ViewDependantAxisControls = RegionView.extend({
                 dataImport: this.dataImport
             });
         },
-        '[data-region="datatype"]': function () {
+        '[data-region="dataType"]': function () {
             return new ViewDatatype({
                 model: this.model,
                 show: {categorical: false}
@@ -31243,11 +31241,11 @@ var ViewDependantAxisControls = RegionView.extend({
             }
         },
         '[data-section-name="forecast"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         },
         '[data-section-name="label-format"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isNumeric
         },
         '[name="prefix"]': 'prefix',
@@ -31552,15 +31550,15 @@ var ViewHighlight = Backbone.View.extend({
 
     bindings: {
         '[data-section-name="categorical"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isCategorical
         },
         '[data-section-name="numeric"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isNumeric
         },
         '[data-section-name="time"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         }
     },
@@ -31812,7 +31810,7 @@ var ViewIndependantAxisControls = RegionView.extend({
                 model: this.model
             });
         },
-        '[data-region="datatype"]': function () {
+        '[data-region="dataType"]': function () {
             return new ViewDatatype({
                 model: this.model,
                 show: {
@@ -31847,7 +31845,7 @@ var ViewIndependantAxisControls = RegionView.extend({
             }
         },
         '[data-region="dateFormat"]': {
-            observe: 'datatype',
+            observe: 'dataType',
             visible: Datatypes.isTime
         }
     },
@@ -32553,10 +32551,10 @@ function init() {
     }
 
     // REFACTOR: this logic should be in a model somewhere.
-    graphic.chart.xAxis.on('change:datatype change:dateFormat', function (model) {
+    graphic.chart.xAxis.on('change:dataType change:dateFormat', function (model) {
 
         var property = model.get('property');
-        var datatype = model.get('datatype');
+        var dataType = model.get('dataType');
         var currentDataset = importData.get('data');
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
@@ -32564,9 +32562,9 @@ function init() {
 //todo: pm date format dropdown on change
 
         //transform the data
-        if (Datatypes.isNumeric(datatype)) {
+        if (Datatypes.isNumeric(dataType)) {
             transform.series(revertedDataset, property, transform.number());
-        } else if (Datatypes.isTime(datatype) && dateFormat) {
+        } else if (Datatypes.isTime(dataType) && dateFormat) {
             transform.series(revertedDataset, property, transform.time(dateFormat));
         }
 
