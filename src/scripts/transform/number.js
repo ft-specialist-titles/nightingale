@@ -27,7 +27,7 @@ function createNumberTransformer(options) {
 
         if (d === '') return _NaN;
 
-        if (d === '*') return null;
+        if (/^[*:-]$/.test(d)) return null;
 
         return Number(d);
 
