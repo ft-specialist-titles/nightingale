@@ -36,6 +36,8 @@ var GraphicVariation = Backbone.Model.extend({
 
         var g = this.graphic.toJSON();
 
+        var typeName = this.graphicType.get('typeName');
+
         var config = {
 
             width: this.variation.get('width'),
@@ -46,7 +48,8 @@ var GraphicVariation = Backbone.Model.extend({
             source: g.source,
             hideSource: g.noSource,
             footnote: g.footnote,
-
+            dependentAxisOrient: (typeName === 'Bar') ? 'bottom' : 'left',
+            independentAxisOrient: (typeName === 'Bar') ? 'left' : 'bottom',
             units: this.graphic.chart.xAxis.get('units'),
             data: data,
             dateParser: this.graphic.chart.xAxis.get('dateFormat'),

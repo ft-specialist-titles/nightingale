@@ -5,12 +5,14 @@ var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
 var ViewLineControls = require('./LineControls.js');
 var ViewColumnControls = require('./ColumnControls.js');
+var ViewBarControls = require('./BarControls.js');
 var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
 
 var controls = {
     'Line' : ViewLineControls,
-    'Column' : ViewColumnControls
+    'Column' : ViewColumnControls,
+    'Bar' : ViewBarControls
 };
 
 var ViewSelectedVariation = RegionView.extend({

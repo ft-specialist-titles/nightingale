@@ -10,6 +10,7 @@ var ViewSelectedVariation = require('./views/SelectedVariation.js');
 var Variations = require('./charting/Variations.js');
 var LineControls = require('./models/LineControls.js');
 var ColumnControls = require('./models/ColumnControls.js');
+var BarControls = require('./models/BarControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
@@ -42,6 +43,13 @@ function init() {
         }, {
             graphic: graphic,
             controls: new ColumnControls(),
+            variations: Variations
+        }),
+        new GraphicType({
+            typeName: 'Bar'
+        }, {
+            graphic: graphic,
+            controls: new BarControls(),
             variations: Variations
         })
     ]);

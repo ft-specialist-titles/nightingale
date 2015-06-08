@@ -217,11 +217,14 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     padding: 10px;
 }
 
-
 .view-graphic-variation-collection {
 
     display: block;
 
+
+    &:nth-child(n+3) h2 {
+        visibility: hidden;
+    }
 
     h2 {
         margin-left: 15px;
