@@ -1,13 +1,15 @@
 var Backbone = require('./../core/backbone.js');
 var _ = require('underscore');
 
-var ColumnControls = Backbone.Model.extend({
+var BarControls = Backbone.Model.extend({
 
     defaults:{
+        flipXAxis: false,
         stack: false
     },
 
     overrideConfig: function(config){
+        config.dependentAxisOrient = this.attributes.flipXAxis ? 'bottom' : 'top';
         config.stack = this.attributes.stack;
         return config;
     }
@@ -15,4 +17,4 @@ var ColumnControls = Backbone.Model.extend({
 });
 
 
-module.exports = ColumnControls;
+module.exports = BarControls;

@@ -6,7 +6,8 @@ var _ = require('underscore');
 
 var chartTypes = {
     'Line' : oCharts.line,
-    'Column' : oCharts.column
+    'Column' : oCharts.column,
+    'Bar' : oCharts.bar
 };
 
 //todo: variation -- to variant
