@@ -30940,8 +30940,6 @@ var transform = require('./../transform/index.js');
 var ValidateFile = require('../import/validateFile.js');
 var describeColumns = require('../import/describeColumns.js');
 var setPopularDateFormat = require('../import/setPopularDateFormat.js');
-var unitGenerator = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.dates.unitGenerator;
-
 
 var Threshold = function (numRows) {
     var percent = 95;
@@ -30957,17 +30955,18 @@ function parseDate(dateString, format) {
     return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
 }
 
-function setDateIntervalAverage(file, typeInfo){
-    if (!typeInfo.mostPopularDateFormat) return;
+function dateGroupings(typeInfo, dateFormat){
+    if (!typeInfo.mostPopularDateFormat && !dateFormat) return;
+    dateFormat = dateFormat || typeInfo.mostPopularDateFormat;
     var days = [];
     var weeks = [];
     var months = [];
     var years = [];
-    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    var d3Formatter = d3.time.format(dateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = parseDate(typeInfo.dateValues[i-1], format);
-        var end = parseDate(date,format);
+        var start = parseDate(typeInfo.dateValues[i-1], d3Formatter);
+        var end = parseDate(date,d3Formatter);
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -30978,9 +30977,8 @@ function setDateIntervalAverage(file, typeInfo){
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
-    //todo: move this check first to improve speed of processing
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
-        typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
+        dateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
     var weekly = (weekAverage === 1);
     var daily = (dayAverage === 1);
@@ -31077,6 +31075,18 @@ var DataImport = Backbone.Model.extend({
         this.listenTo(this, 'invalid', this.discardData);
     },
 
+    groupDates: function(dateFormat) {
+        var typeInfo, units;
+        for (var i = 0, l = this.columns.length; i < l; i++) {
+            typeInfo = this.columns.at(i).get('typeInfo');
+            if (typeInfo.dataType === DataTypes.TIME) {
+                dateGroupings(typeInfo, dateFormat);
+                units = typeInfo.units;
+            }
+        }
+        return units;
+    },
+
     recomputeRecommendedChartStyle: function() {
         var typeInfo,
             recommendedChartStyle = 'Column';
@@ -31109,7 +31119,7 @@ var DataImport = Backbone.Model.extend({
             if (typeInfo.dataType === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
-                setDateIntervalAverage(file, typeInfo);
+                dateGroupings(typeInfo);
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
@@ -31181,7 +31191,7 @@ var DataImport = Backbone.Model.extend({
 
 module.exports = DataImport;
 
-},{"../import/describeColumns.js":61,"../import/setPopularDateFormat.js":64,"../import/validateFile.js":65,"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../transform/index.js":96,"./Axis.js":68}],79:[function(require,module,exports){
+},{"../import/describeColumns.js":61,"../import/setPopularDateFormat.js":64,"../import/validateFile.js":65,"./../../../bower_components/d3/d3.js":4,"./../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../transform/index.js":96,"./Axis.js":68}],79:[function(require,module,exports){
 if (!Function.prototype.bind) {
     Function.prototype.bind = function (oThis) {
         if (typeof this !== 'function') {
@@ -33123,7 +33133,7 @@ var LineControls = require('./models/LineControls.js');
 var ColumnControls = require('./models/ColumnControls.js');
 var BarControls = require('./models/BarControls.js');
 var transform = require('./transform/index.js');
-var Datatypes = require('./charting/Datatypes.js');
+var DataTypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
 var Authentication = require('./utils/authentication.js');
 
@@ -33199,8 +33209,7 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
-        // work out what style is recommended.
+    function reorderChartStyle(model) {
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
 
@@ -33214,9 +33223,16 @@ function init() {
             }
         });
         types.sort();
+    }
+
+    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
+        // work out what style is recommended.
+        reorderChartStyle(model);
     });
 
     importData.on('change:data', function (model, data) {
+        // work out what style is recommended.
+        reorderChartStyle(model);
         // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
@@ -33266,8 +33282,6 @@ function init() {
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
-        //todo: pm: it knows it should group dates -> update the controls somehow!
-        //console.log(graphic.chart.xAxis.get('groupDates'))
         graphic.chart.yAxis.columns.reset(dims.Y || []);
         graphic.chart.zAxis.columns.reset(dims.Z || []);
 
@@ -33295,12 +33309,11 @@ function init() {
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
 
-//todo: pm date format dropdown on change
+        graphic.chart.xAxis.attributes.units = importData.groupDates(dateFormat);
 
-        //transform the data
-        if (Datatypes.isNumeric(dataType)) {
+        if (DataTypes.isNumeric(dataType)) {
             transform.series(revertedDataset, property, transform.number());
-        } else if (Datatypes.isTime(dataType) && dateFormat) {
+        } else if (DataTypes.isTime(dataType) && dateFormat) {
             transform.series(revertedDataset, property, transform.time(dateFormat));
         }
 
