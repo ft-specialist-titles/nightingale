@@ -12,7 +12,7 @@ var LineControls = require('./models/LineControls.js');
 var ColumnControls = require('./models/ColumnControls.js');
 var BarControls = require('./models/BarControls.js');
 var transform = require('./transform/index.js');
-var Datatypes = require('./charting/Datatypes.js');
+var DataTypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
 var Authentication = require('./utils/authentication.js');
 
@@ -88,8 +88,7 @@ function init() {
         graphic.set(expectedValues);
     });
 
-    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
-        // work out what style is recommended.
+    function reorderChartStyle(model) {
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
 
@@ -103,9 +102,16 @@ function init() {
             }
         });
         types.sort();
+    }
+
+    importData.on('change:recommendedChartStyle', function(model, recommendedChartStyle) {
+        // work out what style is recommended.
+        reorderChartStyle(model);
     });
 
     importData.on('change:data', function (model, data) {
+        // work out what style is recommended.
+        reorderChartStyle(model);
         // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
@@ -155,8 +161,6 @@ function init() {
         } else {
             graphic.chart.xAxis.set(graphic.chart.xAxis.defaults);
         }
-        //todo: pm: it knows it should group dates -> update the controls somehow!
-        //console.log(graphic.chart.xAxis.get('groupDates'))
         graphic.chart.yAxis.columns.reset(dims.Y || []);
         graphic.chart.zAxis.columns.reset(dims.Z || []);
 
@@ -184,12 +188,11 @@ function init() {
         var dateFormat = model.get('dateFormat');
         var revertedDataset = revertColumn(currentDataset, property);
 
-//todo: pm date format dropdown on change
+        graphic.chart.xAxis.attributes.units = importData.groupDates(dateFormat);
 
-        //transform the data
-        if (Datatypes.isNumeric(dataType)) {
+        if (DataTypes.isNumeric(dataType)) {
             transform.series(revertedDataset, property, transform.number());
-        } else if (Datatypes.isTime(dataType) && dateFormat) {
+        } else if (DataTypes.isTime(dataType) && dateFormat) {
             transform.series(revertedDataset, property, transform.time(dateFormat));
         }
 

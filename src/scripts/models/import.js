@@ -6,8 +6,6 @@ var transform = require('./../transform/index.js');
 var ValidateFile = require('../import/validateFile.js');
 var describeColumns = require('../import/describeColumns.js');
 var setPopularDateFormat = require('../import/setPopularDateFormat.js');
-var unitGenerator = require('o-charts').util.dates.unitGenerator;
-
 
 var Threshold = function (numRows) {
     var percent = 95;
@@ -23,17 +21,18 @@ function parseDate(dateString, format) {
     return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
 }
 
-function setDateIntervalAverage(file, typeInfo){
-    if (!typeInfo.mostPopularDateFormat) return;
+function dateGroupings(typeInfo, dateFormat){
+    if (!typeInfo.mostPopularDateFormat && !dateFormat) return;
+    dateFormat = dateFormat || typeInfo.mostPopularDateFormat;
     var days = [];
     var weeks = [];
     var months = [];
     var years = [];
-    var format = d3.time.format(typeInfo.mostPopularDateFormat);
+    var d3Formatter = d3.time.format(dateFormat);
     typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = parseDate(typeInfo.dateValues[i-1], format);
-        var end = parseDate(date,format);
+        var start = parseDate(typeInfo.dateValues[i-1], d3Formatter);
+        var end = parseDate(date,d3Formatter);
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -44,9 +43,8 @@ function setDateIntervalAverage(file, typeInfo){
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
-    //todo: move this check first to improve speed of processing
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
-        typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
+        dateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
     var weekly = (weekAverage === 1);
     var daily = (dayAverage === 1);
@@ -143,6 +141,18 @@ var DataImport = Backbone.Model.extend({
         this.listenTo(this, 'invalid', this.discardData);
     },
 
+    groupDates: function(dateFormat) {
+        var typeInfo, units;
+        for (var i = 0, l = this.columns.length; i < l; i++) {
+            typeInfo = this.columns.at(i).get('typeInfo');
+            if (typeInfo.dataType === DataTypes.TIME) {
+                dateGroupings(typeInfo, dateFormat);
+                units = typeInfo.units;
+            }
+        }
+        return units;
+    },
+
     recomputeRecommendedChartStyle: function() {
         var typeInfo,
             recommendedChartStyle = 'Column';
@@ -175,7 +185,7 @@ var DataImport = Backbone.Model.extend({
             if (typeInfo.dataType === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
-                setDateIntervalAverage(file, typeInfo);
+                dateGroupings(typeInfo);
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
