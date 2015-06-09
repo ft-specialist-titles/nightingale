@@ -26,6 +26,7 @@ function parseDate(dateString, format) {
 function setDateIntervalAverage(file, typeInfo){
     if (!typeInfo.mostPopularDateFormat) return;
     var days = [];
+    var weeks = [];
     var months = [];
     var years = [];
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
@@ -34,10 +35,12 @@ function setDateIntervalAverage(file, typeInfo){
         var start = parseDate(typeInfo.dateValues[i-1], format);
         var end = parseDate(date,format);
         days.push((d3.time.days(start, end)).length);
+        weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
     });
     var dayAverage = d3.mean(days);
+    var weekAverage = d3.mean(weeks);
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
@@ -45,9 +48,13 @@ function setDateIntervalAverage(file, typeInfo){
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
         typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
+    var weekly = (weekAverage === 1);
+    var daily = (dayAverage === 1);
     typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
     typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (weekly) ? ['weekly', 'monthly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (daily) ? ['daily', 'monthly', 'yearly'] : typeInfo.units;
 }
 
 function getDateRange(typeInfo) {
@@ -78,6 +85,12 @@ function findRecommendedChartStyle(typeInfo) {
     var rangeFunction;
 
     switch (typeInfo.units[0]) {
+        case "daily":
+            density = d3.time.days(range[0], range[1]).length;
+            break;
+        case "weekly":
+            density = d3.time.weeks(range[0], range[1]).length;
+            break;
         case "monthly":
             density = d3.time.months(range[0], range[1]).length;
             break;
