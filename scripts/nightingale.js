@@ -23603,6 +23603,7 @@ function dateAxis() {
 
     render.orient = function (string) {
         if (!arguments.length) return config.axes[0].orient();
+        if (!config.axes.length) return; //todo: why i sthis being called when axes dont exist
         config.axes[0].orient(string);
         return render;
     };
@@ -23628,6 +23629,8 @@ function dateAxis() {
     render.scale = function (scale, units) {
         if (!arguments.length) return config.axes[0].scale();
         if (!units ||
+            (units[0] === 'daily' && timeDiff(scale.domain()).months > 1) ||
+            (units[0] === 'weekly' && timeDiff(scale.domain()).years > 1) ||
             (units[0] === 'quarterly' && timeDiff(scale.domain()).decades > 1) ||
             (units[0] === 'monthly' && timeDiff(scale.domain()).years > 4.9) ||
             (units[0] === 'yearly' && timeDiff(scale.domain()).years > 10)){
@@ -23661,7 +23664,9 @@ var interval = {
     monthly: d3.time.month,
     months: d3.time.month,
     weeks: d3.time.week,
+    weekly: d3.time.week,
     days: d3.time.day,
+    daily: d3.time.day,
     hours: d3.time.hours
 };
 
@@ -23675,7 +23680,9 @@ var increment = {
     monthly: 1,
     months: 1,
     weeks: 1,
+    weekly: 1,
     days: 1,
+    daily: 1,
     hours: 1
 };
 
@@ -24577,6 +24584,7 @@ function ftLogo(g, dim) {
     var d = 'M21.777,53.336c0,6.381,1.707,7.1,8.996,7.37v2.335H1.801v-2.335c6.027-0.27,7.736-0.989,7.736-7.37v-41.67 c0-6.387-1.708-7.104-7.556-7.371V1.959h51.103l0.363,13.472h-2.519c-2.16-6.827-4.502-8.979-16.467-8.979h-9.27 c-2.785,0-3.415,0.624-3.415,3.142v19.314h4.565c9.54,0,11.61-1.712,12.779-8.089h2.338v21.559h-2.338 c-1.259-7.186-4.859-8.981-12.779-8.981h-4.565V53.336z M110.955,1.959H57.328l-1.244,13.477h3.073c1.964-6.601,4.853-8.984,11.308-8.984h7.558v46.884 c0,6.381-1.71,7.1-8.637,7.37v2.335H98.9v-2.335c-6.931-0.27-8.64-0.989-8.64-7.37V6.453h7.555c6.458,0,9.351,2.383,11.309,8.984 h3.075L110.955,1.959z';
     var path = g.append('path').attr('d', d); //measure and rescale to the bounds
     var rect = path.node().getBoundingClientRect();
+    if (!rect.width) return; //todo: look into why this is being added before a svg exists?
     //the logo is square so
     var scale = Math.min(dim / rect.width, dim / rect.height);
 
@@ -25288,6 +25296,7 @@ function groupDates(m, units){
     m.data.forEach(function(d,i){
         var dateStr = [dateUtil.formatter[units[0]](d[m.x.series.key], i, firstDate)];
         units[1] && dateStr.push(dateUtil.formatter[units[1]](d[m.x.series.key], i, firstDate));
+        units[2] && dateStr.push(dateUtil.formatter[units[2]](d[m.x.series.key], i, firstDate));
         data.push({key:dateStr.join(' '),values:[d]});
     });
     m.data = data;
@@ -25299,7 +25308,7 @@ function needsGrouping(units){
     if (!units) return false;
     var isGroupingUnit = false;
     units.forEach(function(unit){
-        var groupThis = ['quarterly', 'monthly', 'yearly'].indexOf(unit);
+        var groupThis = ['weekly', 'quarterly', 'monthly', 'yearly'].indexOf(unit);
         isGroupingUnit = isGroupingUnit || (groupThis>-1);
     });
     return isGroupingUnit;
@@ -25418,6 +25427,9 @@ var formatter = {
     quarterly: function (d, i) {
         return 'Q' + Math.floor((d.getMonth() + 3) / 3);
     },
+    weekly: function (d, i) {
+        return d3.time.format('%W')(d);
+    },
     monthly: function (d, i) {
         return formatter.months(d, i);
     },
@@ -25434,6 +25446,10 @@ var formatter = {
 
     days: function (d, i) {
         return d3.time.format('%e')(d);
+    },
+
+    daily: function (d, i) {
+        return d3.time.format('%d')(d);
     },
 
     hours: function (d, i) {
@@ -25495,8 +25511,19 @@ var groups = {
     quarterly: function (d, i) {
         return d.split(' ')[0];
     },
-    monthly: function (d, i) {
+    weekly: function (d, i) {
         return d.split(' ')[0];
+    },
+    daily: function (d, i) {
+        if (d[0] === ' ') {
+            d = d.substring(1);
+        }
+        return d.split(' ')[0];
+    },
+    monthly: function (d, i) {
+        var parts = d.split(' ');
+        var pos = (parts.length == 3) ? 1 : 0;
+        return parts[pos];
     },
     months: function (d, i) {
         return d.split(' ')[0];
@@ -25773,6 +25800,12 @@ module.exports = {
         if (config.units[0] == 'quarterly'){
             this.removeQuarters(g, axis, options);
         }
+        if (config.units[0] == 'weekly'){
+            this.removeWeekly(g, axis, options);
+        }
+        if (config.units[0] == 'daily'){
+            this.removeDaily(g, axis, options);
+        }
         if (config.units[0] == 'monthly'){
             this.removeMonths(g, axis, options, config);
         }
@@ -25812,6 +25845,18 @@ module.exports = {
 
     removeQuarters: function(g, axis, options){
         if (!this.overlapping(g.selectAll(".primary text")) || options.extendTicks) return;
+        options.row--;
+        options.extendTicks = true;
+        g.select(".primary").remove();
+    },
+    removeWeekly: function(g, axis, options){
+        if (options.extendTicks) return;
+        options.row--;
+        options.extendTicks = true;
+        g.select(".primary").remove();
+    },
+    removeDaily: function(g, axis, options){
+        if (options.extendTicks) return;
         options.row--;
         options.extendTicks = true;
         g.select(".primary").remove();
@@ -26041,7 +26086,7 @@ module.exports = {
 };
 
 },{}],35:[function(require,module,exports){
-module.exports = "0.4.0";
+module.exports = "0.4.1";
 },{}],36:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
@@ -30915,6 +30960,7 @@ function parseDate(dateString, format) {
 function setDateIntervalAverage(file, typeInfo){
     if (!typeInfo.mostPopularDateFormat) return;
     var days = [];
+    var weeks = [];
     var months = [];
     var years = [];
     var format = d3.time.format(typeInfo.mostPopularDateFormat);
@@ -30923,10 +30969,12 @@ function setDateIntervalAverage(file, typeInfo){
         var start = parseDate(typeInfo.dateValues[i-1], format);
         var end = parseDate(date,format);
         days.push((d3.time.days(start, end)).length);
+        weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
         years.push((d3.time.years(start, end)).length);
     });
     var dayAverage = d3.mean(days);
+    var weekAverage = d3.mean(weeks);
     var monthAverage = d3.mean(months);
     var yearAverage = d3.mean(years);
     var yearly = (dayAverage > 363 && dayAverage < 367 && yearAverage === 1);
@@ -30934,9 +30982,13 @@ function setDateIntervalAverage(file, typeInfo){
     var quarterly = (dayAverage > 88 && dayAverage < 92 && monthAverage === 3) ||
         typeInfo.mostPopularDateFormat.indexOf('%q')>=0;
     var monthly = (dayAverage > 27 && dayAverage < 32 && monthAverage === 1);
+    var weekly = (weekAverage === 1);
+    var daily = (dayAverage === 1);
     typeInfo.units = (yearly) ? ['yearly'] : typeInfo.units;
     typeInfo.units = (quarterly) ? ['quarterly', 'yearly'] : typeInfo.units;
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (weekly) ? ['weekly', 'monthly', 'yearly'] : typeInfo.units;
+    typeInfo.units = (daily) ? ['daily', 'monthly', 'yearly'] : typeInfo.units;
 }
 
 function getDateRange(typeInfo) {
@@ -30967,6 +31019,12 @@ function findRecommendedChartStyle(typeInfo) {
     var rangeFunction;
 
     switch (typeInfo.units[0]) {
+        case "daily":
+            density = d3.time.days(range[0], range[1]).length;
+            break;
+        case "weekly":
+            density = d3.time.weeks(range[0], range[1]).length;
+            break;
         case "monthly":
             density = d3.time.months(range[0], range[1]).length;
             break;
