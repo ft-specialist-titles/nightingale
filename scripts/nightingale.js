@@ -575,7 +575,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":35}],2:[function(require,module,exports){
+},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":36}],2:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2185,7 +2185,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../underscore/underscore.js":35}],3:[function(require,module,exports){
+},{"./../underscore/underscore.js":36}],3:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.4 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -4507,37 +4507,47 @@ if (typeof jQuery === 'undefined') {
 },{}],4:[function(require,module,exports){
 !function() {
   var d3 = {
-    version: "3.4.13"
-  };
-  if (!Date.now) Date.now = function() {
-    return +new Date();
+    version: "3.5.5"
   };
   var d3_arraySlice = [].slice, d3_array = function(list) {
     return d3_arraySlice.call(list);
   };
-  var d3_document = document, d3_documentElement = d3_document.documentElement, d3_window = window;
-  try {
-    d3_array(d3_documentElement.childNodes)[0].nodeType;
-  } catch (e) {
-    d3_array = function(list) {
-      var i = list.length, array = new Array(i);
-      while (i--) array[i] = list[i];
-      return array;
-    };
+  var d3_document = this.document;
+  function d3_documentElement(node) {
+    return node && (node.ownerDocument || node.document || node).documentElement;
   }
-  try {
-    d3_document.createElement("div").style.setProperty("opacity", 0, "");
-  } catch (error) {
-    var d3_element_prototype = d3_window.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = d3_window.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
-    d3_element_prototype.setAttribute = function(name, value) {
-      d3_element_setAttribute.call(this, name, value + "");
-    };
-    d3_element_prototype.setAttributeNS = function(space, local, value) {
-      d3_element_setAttributeNS.call(this, space, local, value + "");
-    };
-    d3_style_prototype.setProperty = function(name, value, priority) {
-      d3_style_setProperty.call(this, name, value + "", priority);
-    };
+  function d3_window(node) {
+    return node && (node.ownerDocument && node.ownerDocument.defaultView || node.document && node || node.defaultView);
+  }
+  if (d3_document) {
+    try {
+      d3_array(d3_document.documentElement.childNodes)[0].nodeType;
+    } catch (e) {
+      d3_array = function(list) {
+        var i = list.length, array = new Array(i);
+        while (i--) array[i] = list[i];
+        return array;
+      };
+    }
+  }
+  if (!Date.now) Date.now = function() {
+    return +new Date();
+  };
+  if (d3_document) {
+    try {
+      d3_document.createElement("DIV").style.setProperty("opacity", 0, "");
+    } catch (error) {
+      var d3_element_prototype = this.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = this.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
+      d3_element_prototype.setAttribute = function(name, value) {
+        d3_element_setAttribute.call(this, name, value + "");
+      };
+      d3_element_prototype.setAttributeNS = function(space, local, value) {
+        d3_element_setAttributeNS.call(this, space, local, value + "");
+      };
+      d3_style_prototype.setProperty = function(name, value, priority) {
+        d3_style_setProperty.call(this, name, value + "", priority);
+      };
+    }
   }
   d3.ascending = d3_ascending;
   function d3_ascending(a, b) {
@@ -4549,10 +4559,16 @@ if (typeof jQuery === 'undefined') {
   d3.min = function(array, f) {
     var i = -1, n = array.length, a, b;
     if (arguments.length === 1) {
-      while (++i < n && !((a = array[i]) != null && a <= a)) a = undefined;
+      while (++i < n) if ((b = array[i]) != null && b >= b) {
+        a = b;
+        break;
+      }
       while (++i < n) if ((b = array[i]) != null && a > b) a = b;
     } else {
-      while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
+      while (++i < n) if ((b = f.call(array, array[i], i)) != null && b >= b) {
+        a = b;
+        break;
+      }
       while (++i < n) if ((b = f.call(array, array[i], i)) != null && a > b) a = b;
     }
     return a;
@@ -4560,10 +4576,16 @@ if (typeof jQuery === 'undefined') {
   d3.max = function(array, f) {
     var i = -1, n = array.length, a, b;
     if (arguments.length === 1) {
-      while (++i < n && !((a = array[i]) != null && a <= a)) a = undefined;
+      while (++i < n) if ((b = array[i]) != null && b >= b) {
+        a = b;
+        break;
+      }
       while (++i < n) if ((b = array[i]) != null && b > a) a = b;
     } else {
-      while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
+      while (++i < n) if ((b = f.call(array, array[i], i)) != null && b >= b) {
+        a = b;
+        break;
+      }
       while (++i < n) if ((b = f.call(array, array[i], i)) != null && b > a) a = b;
     }
     return a;
@@ -4571,13 +4593,19 @@ if (typeof jQuery === 'undefined') {
   d3.extent = function(array, f) {
     var i = -1, n = array.length, a, b, c;
     if (arguments.length === 1) {
-      while (++i < n && !((a = c = array[i]) != null && a <= a)) a = c = undefined;
+      while (++i < n) if ((b = array[i]) != null && b >= b) {
+        a = c = b;
+        break;
+      }
       while (++i < n) if ((b = array[i]) != null) {
         if (a > b) a = b;
         if (c < b) c = b;
       }
     } else {
-      while (++i < n && !((a = c = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
+      while (++i < n) if ((b = f.call(array, array[i], i)) != null && b >= b) {
+        a = c = b;
+        break;
+      }
       while (++i < n) if ((b = f.call(array, array[i], i)) != null) {
         if (a > b) a = b;
         if (c < b) c = b;
@@ -4607,7 +4635,7 @@ if (typeof jQuery === 'undefined') {
     } else {
       while (++i < n) if (d3_numeric(a = d3_number(f.call(array, array[i], i)))) s += a; else --j;
     }
-    return j ? s / j : undefined;
+    if (j) return s / j;
   };
   d3.quantile = function(values, p) {
     var H = (values.length - 1) * p + 1, h = Math.floor(H), v = +values[h - 1], e = H - h;
@@ -4620,7 +4648,32 @@ if (typeof jQuery === 'undefined') {
     } else {
       while (++i < n) if (d3_numeric(a = d3_number(f.call(array, array[i], i)))) numbers.push(a);
     }
-    return numbers.length ? d3.quantile(numbers.sort(d3_ascending), .5) : undefined;
+    if (numbers.length) return d3.quantile(numbers.sort(d3_ascending), .5);
+  };
+  d3.variance = function(array, f) {
+    var n = array.length, m = 0, a, d, s = 0, i = -1, j = 0;
+    if (arguments.length === 1) {
+      while (++i < n) {
+        if (d3_numeric(a = d3_number(array[i]))) {
+          d = a - m;
+          m += d / ++j;
+          s += d * (a - m);
+        }
+      }
+    } else {
+      while (++i < n) {
+        if (d3_numeric(a = d3_number(f.call(array, array[i], i)))) {
+          d = a - m;
+          m += d / ++j;
+          s += d * (a - m);
+        }
+      }
+    }
+    if (j > 1) return s / (j - 1);
+  };
+  d3.deviation = function() {
+    var v = d3.variance.apply(this, arguments);
+    return v ? Math.sqrt(v) : v;
   };
   function d3_bisector(compare) {
     return {
@@ -4652,11 +4705,15 @@ if (typeof jQuery === 'undefined') {
       return d3_ascending(f(d), x);
     } : f);
   };
-  d3.shuffle = function(array) {
-    var m = array.length, t, i;
+  d3.shuffle = function(array, i0, i1) {
+    if ((m = arguments.length) < 3) {
+      i1 = array.length;
+      if (m < 2) i0 = 0;
+    }
+    var m = i1 - i0, t, i;
     while (m) {
       i = Math.random() * m-- | 0;
-      t = array[m], array[m] = array[i], array[i] = t;
+      t = array[m + i0], array[m + i0] = array[i + i0], array[i + i0] = t;
     }
     return array;
   };
@@ -4744,11 +4801,18 @@ if (typeof jQuery === 'undefined') {
       });
     }
   }
-  d3.map = function(object) {
+  d3.map = function(object, f) {
     var map = new d3_Map();
-    if (object instanceof d3_Map) object.forEach(function(key, value) {
-      map.set(key, value);
-    }); else for (var key in object) map.set(key, object[key]);
+    if (object instanceof d3_Map) {
+      object.forEach(function(key, value) {
+        map.set(key, value);
+      });
+    } else if (Array.isArray(object)) {
+      var i = -1, n = object.length, o;
+      if (arguments.length === 1) while (++i < n) map.set(i, object[i]); else while (++i < n) map.set(f.call(object, o = object[i], i), o);
+    } else {
+      for (var key in object) map.set(key, object[key]);
+    }
     return map;
   };
   function d3_Map() {
@@ -4896,6 +4960,9 @@ if (typeof jQuery === 'undefined') {
     }
   });
   d3.behavior = {};
+  function d3_identity(d) {
+    return d;
+  }
   d3.rebind = function(target, source) {
     var i = 1, n = arguments.length, method;
     while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method]);
@@ -5002,8 +5069,12 @@ if (typeof jQuery === 'undefined') {
     return n.querySelector(s);
   }, d3_selectAll = function(s, n) {
     return n.querySelectorAll(s);
-  }, d3_selectMatcher = d3_documentElement.matches || d3_documentElement[d3_vendorSymbol(d3_documentElement, "matchesSelector")], d3_selectMatches = function(n, s) {
-    return d3_selectMatcher.call(n, s);
+  }, d3_selectMatches = function(n, s) {
+    var d3_selectMatcher = n.matches || n[d3_vendorSymbol(n, "matchesSelector")];
+    d3_selectMatches = function(n, s) {
+      return d3_selectMatcher.call(n, s);
+    };
+    return d3_selectMatches(n, s);
   };
   if (typeof Sizzle === "function") {
     d3_select = function(s, n) {
@@ -5013,7 +5084,7 @@ if (typeof jQuery === 'undefined') {
     d3_selectMatches = Sizzle.matchesSelector;
   }
   d3.selection = function() {
-    return d3_selectionRoot;
+    return d3.select(d3_document.documentElement);
   };
   var d3_selectionPrototype = d3.selection.prototype = [];
   d3_selectionPrototype.select = function(selector) {
@@ -5173,7 +5244,10 @@ if (typeof jQuery === 'undefined') {
         for (priority in name) this.each(d3_selection_style(priority, name[priority], value));
         return this;
       }
-      if (n < 2) return d3_window.getComputedStyle(this.node(), null).getPropertyValue(name);
+      if (n < 2) {
+        var node = this.node();
+        return d3_window(node).getComputedStyle(node, null).getPropertyValue(name);
+      }
       priority = "";
     }
     return this.each(d3_selection_style(name, value, priority));
@@ -5239,11 +5313,14 @@ if (typeof jQuery === 'undefined') {
     });
   };
   function d3_selection_creator(name) {
-    return typeof name === "function" ? name : (name = d3.ns.qualify(name)).local ? function() {
+    function create() {
+      var document = this.ownerDocument, namespace = this.namespaceURI;
+      return namespace ? document.createElementNS(namespace, name) : document.createElement(name);
+    }
+    function createNS() {
       return this.ownerDocument.createElementNS(name.space, name.local);
-    } : function() {
-      return this.ownerDocument.createElementNS(this.namespaceURI, name);
-    };
+    }
+    return typeof name === "function" ? name : (name = d3.ns.qualify(name)).local ? createNS : create;
   }
   d3_selectionPrototype.insert = function(name, before) {
     name = d3_selection_creator(name);
@@ -5253,11 +5330,12 @@ if (typeof jQuery === 'undefined') {
     });
   };
   d3_selectionPrototype.remove = function() {
-    return this.each(function() {
-      var parent = this.parentNode;
-      if (parent) parent.removeChild(this);
-    });
+    return this.each(d3_selectionRemove);
   };
+  function d3_selectionRemove() {
+    var parent = this.parentNode;
+    if (parent) parent.removeChild(this);
+  }
   d3_selectionPrototype.data = function(value, key) {
     var i = -1, n = this.length, group, node;
     if (!arguments.length) {
@@ -5466,40 +5544,28 @@ if (typeof jQuery === 'undefined') {
       return node;
     };
   }
-  d3_selectionPrototype.transition = function() {
-    var id = d3_transitionInheritId || ++d3_transitionId, subgroups = [], subgroup, node, transition = d3_transitionInherit || {
-      time: Date.now(),
-      ease: d3_ease_cubicInOut,
-      delay: 0,
-      duration: 250
-    };
-    for (var j = -1, m = this.length; ++j < m; ) {
-      subgroups.push(subgroup = []);
-      for (var group = this[j], i = -1, n = group.length; ++i < n; ) {
-        if (node = group[i]) d3_transitionNode(node, i, id, transition);
-        subgroup.push(node);
-      }
-    }
-    return d3_transition(subgroups, id);
-  };
-  d3_selectionPrototype.interrupt = function() {
-    return this.each(d3_selection_interrupt);
-  };
-  function d3_selection_interrupt() {
-    var lock = this.__transition__;
-    if (lock) ++lock.active;
-  }
   d3.select = function(node) {
-    var group = [ typeof node === "string" ? d3_select(node, d3_document) : node ];
-    group.parentNode = d3_documentElement;
+    var group;
+    if (typeof node === "string") {
+      group = [ d3_select(node, d3_document) ];
+      group.parentNode = d3_document.documentElement;
+    } else {
+      group = [ node ];
+      group.parentNode = d3_documentElement(node);
+    }
     return d3_selection([ group ]);
   };
   d3.selectAll = function(nodes) {
-    var group = d3_array(typeof nodes === "string" ? d3_selectAll(nodes, d3_document) : nodes);
-    group.parentNode = d3_documentElement;
+    var group;
+    if (typeof nodes === "string") {
+      group = d3_array(d3_selectAll(nodes, d3_document));
+      group.parentNode = d3_document.documentElement;
+    } else {
+      group = nodes;
+      group.parentNode = null;
+    }
     return d3_selection([ group ]);
   };
-  var d3_selectionRoot = d3.select(d3_documentElement);
   d3_selectionPrototype.on = function(type, listener, capture) {
     var n = arguments.length;
     if (n < 3) {
@@ -5547,9 +5613,11 @@ if (typeof jQuery === 'undefined') {
     mouseenter: "mouseover",
     mouseleave: "mouseout"
   });
-  d3_selection_onFilters.forEach(function(k) {
-    if ("on" + k in d3_document) d3_selection_onFilters.remove(k);
-  });
+  if (d3_document) {
+    d3_selection_onFilters.forEach(function(k) {
+      if ("on" + k in d3_document) d3_selection_onFilters.remove(k);
+    });
+  }
   function d3_selection_onListener(listener, argumentz) {
     return function(e) {
       var o = d3.event;
@@ -5571,20 +5639,23 @@ if (typeof jQuery === 'undefined') {
       }
     };
   }
-  var d3_event_dragSelect = "onselectstart" in d3_document ? null : d3_vendorSymbol(d3_documentElement.style, "userSelect"), d3_event_dragId = 0;
-  function d3_event_dragSuppress() {
-    var name = ".dragsuppress-" + ++d3_event_dragId, click = "click" + name, w = d3.select(d3_window).on("touchmove" + name, d3_eventPreventDefault).on("dragstart" + name, d3_eventPreventDefault).on("selectstart" + name, d3_eventPreventDefault);
+  var d3_event_dragSelect, d3_event_dragId = 0;
+  function d3_event_dragSuppress(node) {
+    var name = ".dragsuppress-" + ++d3_event_dragId, click = "click" + name, w = d3.select(d3_window(node)).on("touchmove" + name, d3_eventPreventDefault).on("dragstart" + name, d3_eventPreventDefault).on("selectstart" + name, d3_eventPreventDefault);
+    if (d3_event_dragSelect == null) {
+      d3_event_dragSelect = "onselectstart" in node ? false : d3_vendorSymbol(node.style, "userSelect");
+    }
     if (d3_event_dragSelect) {
-      var style = d3_documentElement.style, select = style[d3_event_dragSelect];
+      var style = d3_documentElement(node).style, select = style[d3_event_dragSelect];
       style[d3_event_dragSelect] = "none";
     }
     return function(suppressClick) {
       w.on(name, null);
       if (d3_event_dragSelect) style[d3_event_dragSelect] = select;
       if (suppressClick) {
-        function off() {
+        var off = function() {
           w.on(click, null);
-        }
+        };
         w.on(click, function() {
           d3_eventPreventDefault();
           off();
@@ -5596,24 +5667,27 @@ if (typeof jQuery === 'undefined') {
   d3.mouse = function(container) {
     return d3_mousePoint(container, d3_eventSource());
   };
-  var d3_mouse_bug44083 = /WebKit/.test(d3_window.navigator.userAgent) ? -1 : 0;
+  var d3_mouse_bug44083 = this.navigator && /WebKit/.test(this.navigator.userAgent) ? -1 : 0;
   function d3_mousePoint(container, e) {
     if (e.changedTouches) e = e.changedTouches[0];
     var svg = container.ownerSVGElement || container;
     if (svg.createSVGPoint) {
       var point = svg.createSVGPoint();
-      if (d3_mouse_bug44083 < 0 && (d3_window.scrollX || d3_window.scrollY)) {
-        svg = d3.select("body").append("svg").style({
-          position: "absolute",
-          top: 0,
-          left: 0,
-          margin: 0,
-          padding: 0,
-          border: "none"
-        }, "important");
-        var ctm = svg[0][0].getScreenCTM();
-        d3_mouse_bug44083 = !(ctm.f || ctm.e);
-        svg.remove();
+      if (d3_mouse_bug44083 < 0) {
+        var window = d3_window(container);
+        if (window.scrollX || window.scrollY) {
+          svg = d3.select("body").append("svg").style({
+            position: "absolute",
+            top: 0,
+            left: 0,
+            margin: 0,
+            padding: 0,
+            border: "none"
+          }, "important");
+          var ctm = svg[0][0].getScreenCTM();
+          d3_mouse_bug44083 = !(ctm.f || ctm.e);
+          svg.remove();
+        }
       }
       if (d3_mouse_bug44083) point.x = e.pageX, point.y = e.pageY; else point.x = e.clientX, 
       point.y = e.clientY;
@@ -5632,13 +5706,13 @@ if (typeof jQuery === 'undefined') {
     }
   };
   d3.behavior.drag = function() {
-    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_behavior_dragMouseSubject, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_behavior_dragTouchSubject, "touchmove", "touchend");
+    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_window, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend");
     function drag() {
       this.on("mousedown.drag", mousedown).on("touchstart.drag", touchstart);
     }
     function dragstart(id, position, subject, move, end) {
       return function() {
-        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject()).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(), position0 = position(parent, dragId);
+        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject(target)).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(target), position0 = position(parent, dragId);
         if (origin) {
           dragOffset = origin.apply(that, arguments);
           dragOffset = [ dragOffset.x - position0[0], dragOffset.y - position0[1] ];
@@ -5683,12 +5757,6 @@ if (typeof jQuery === 'undefined') {
   function d3_behavior_dragTouchId() {
     return d3.event.changedTouches[0].identifier;
   }
-  function d3_behavior_dragTouchSubject() {
-    return d3.event.target;
-  }
-  function d3_behavior_dragMouseSubject() {
-    return d3_window;
-  }
   d3.touches = function(container, touches) {
     if (arguments.length < 2) touches = d3_eventSource().touches;
     return touches ? d3_array(touches).map(function(touch) {
@@ -5697,7 +5765,7 @@ if (typeof jQuery === 'undefined') {
       return point;
     }) : [];
   };
-  var π = Math.PI, τ = 2 * π, halfπ = π / 2, ε = 1e-6, ε2 = ε * ε, d3_radians = π / 180, d3_degrees = 180 / π;
+  var ε = 1e-6, ε2 = ε * ε, π = Math.PI, τ = 2 * π, τε = τ - ε, halfπ = π / 2, d3_radians = π / 180, d3_degrees = 180 / π;
   function d3_sgn(x) {
     return x > 0 ? 1 : x < 0 ? -1 : 0;
   }
@@ -5742,7 +5810,16 @@ if (typeof jQuery === 'undefined') {
       x: 0,
       y: 0,
       k: 1
-    }, translate0, center0, center, size = [ 960, 500 ], scaleExtent = d3_behavior_zoomInfinity, mousedown = "mousedown.zoom", mousemove = "mousemove.zoom", mouseup = "mouseup.zoom", mousewheelTimer, touchstart = "touchstart.zoom", touchtime, event = d3_eventDispatch(zoom, "zoomstart", "zoom", "zoomend"), x0, x1, y0, y1;
+    }, translate0, center0, center, size = [ 960, 500 ], scaleExtent = d3_behavior_zoomInfinity, duration = 250, zooming = 0, mousedown = "mousedown.zoom", mousemove = "mousemove.zoom", mouseup = "mouseup.zoom", mousewheelTimer, touchstart = "touchstart.zoom", touchtime, event = d3_eventDispatch(zoom, "zoomstart", "zoom", "zoomend"), x0, x1, y0, y1;
+    if (!d3_behavior_zoomWheel) {
+      d3_behavior_zoomWheel = "onwheel" in d3_document ? (d3_behavior_zoomDelta = function() {
+        return -d3.event.deltaY * (d3.event.deltaMode ? 120 : 1);
+      }, "wheel") : "onmousewheel" in d3_document ? (d3_behavior_zoomDelta = function() {
+        return d3.event.wheelDelta;
+      }, "mousewheel") : (d3_behavior_zoomDelta = function() {
+        return -d3.event.detail;
+      }, "MozMousePixelScroll");
+    }
     function zoom(g) {
       g.on(mousedown, mousedowned).on(d3_behavior_zoomWheel + ".zoom", mousewheeled).on("dblclick.zoom", dblclicked).on(touchstart, touchstarted);
     }
@@ -5758,7 +5835,7 @@ if (typeof jQuery === 'undefined') {
             };
             zoomstarted(dispatch);
           }).tween("zoom:zoom", function() {
-            var dx = size[0], dy = size[1], cx = dx / 2, cy = dy / 2, i = d3.interpolateZoom([ (cx - view.x) / view.k, (cy - view.y) / view.k, dx / view.k ], [ (cx - view1.x) / view1.k, (cy - view1.y) / view1.k, dx / view1.k ]);
+            var dx = size[0], dy = size[1], cx = center0 ? center0[0] : dx / 2, cy = center0 ? center0[1] : dy / 2, i = d3.interpolateZoom([ (cx - view.x) / view.k, (cy - view.y) / view.k, dx / view.k ], [ (cx - view1.x) / view1.k, (cy - view1.y) / view1.k, dx / view1.k ]);
             return function(t) {
               var l = i(t), k = dx / l[2];
               this.__chart__ = view = {
@@ -5768,6 +5845,8 @@ if (typeof jQuery === 'undefined') {
               };
               zoomed(dispatch);
             };
+          }).each("interrupt.zoom", function() {
+            zoomended(dispatch);
           }).each("end.zoom", function() {
             zoomended(dispatch);
           });
@@ -5814,6 +5893,11 @@ if (typeof jQuery === 'undefined') {
       size = _ && [ +_[0], +_[1] ];
       return zoom;
     };
+    zoom.duration = function(_) {
+      if (!arguments.length) return duration;
+      duration = +_;
+      return zoom;
+    };
     zoom.x = function(z) {
       if (!arguments.length) return x1;
       x1 = z;
@@ -5850,6 +5934,18 @@ if (typeof jQuery === 'undefined') {
       view.x += p[0] - l[0];
       view.y += p[1] - l[1];
     }
+    function zoomTo(that, p, l, k) {
+      that.__chart__ = {
+        x: view.x,
+        y: view.y,
+        k: view.k
+      };
+      scaleTo(Math.pow(2, k));
+      translateTo(center0 = p, l);
+      that = d3.select(that);
+      if (duration > 0) that = that.transition().duration(duration);
+      that.call(zoom.event);
+    }
     function rescale() {
       if (x1) x1.domain(x0.range().map(function(x) {
         return (x - view.x) / view.k;
@@ -5859,7 +5955,7 @@ if (typeof jQuery === 'undefined') {
       }).map(y0.invert));
     }
     function zoomstarted(dispatch) {
-      dispatch({
+      if (!zooming++) dispatch({
         type: "zoomstart"
       });
     }
@@ -5872,12 +5968,13 @@ if (typeof jQuery === 'undefined') {
       });
     }
     function zoomended(dispatch) {
-      dispatch({
+      if (!--zooming) dispatch({
         type: "zoomend"
       });
+      center0 = null;
     }
     function mousedowned() {
-      var that = this, target = d3.event.target, dispatch = event.of(that, arguments), dragged = 0, subject = d3.select(d3_window).on(mousemove, moved).on(mouseup, ended), location0 = location(d3.mouse(that)), dragRestore = d3_event_dragSuppress();
+      var that = this, target = d3.event.target, dispatch = event.of(that, arguments), dragged = 0, subject = d3.select(d3_window(that)).on(mousemove, moved).on(mouseup, ended), location0 = location(d3.mouse(that)), dragRestore = d3_event_dragSuppress(that);
       d3_selection_interrupt.call(that);
       zoomstarted(dispatch);
       function moved() {
@@ -5892,8 +5989,7 @@ if (typeof jQuery === 'undefined') {
       }
     }
     function touchstarted() {
-      var that = this, dispatch = event.of(that, arguments), locations0 = {}, distance0 = 0, scale0, zoomName = ".zoom-" + d3.event.changedTouches[0].identifier, touchmove = "touchmove" + zoomName, touchend = "touchend" + zoomName, targets = [], subject = d3.select(that), dragRestore = d3_event_dragSuppress();
-      d3_selection_interrupt.call(that);
+      var that = this, dispatch = event.of(that, arguments), locations0 = {}, distance0 = 0, scale0, zoomName = ".zoom-" + d3.event.changedTouches[0].identifier, touchmove = "touchmove" + zoomName, touchend = "touchend" + zoomName, targets = [], subject = d3.select(that), dragRestore = d3_event_dragSuppress(that);
       started();
       zoomstarted(dispatch);
       subject.on(mousedown, null).on(touchstart, started);
@@ -5916,11 +6012,9 @@ if (typeof jQuery === 'undefined') {
         var touches = relocate(), now = Date.now();
         if (touches.length === 1) {
           if (now - touchtime < 500) {
-            var p = touches[0], l = locations0[p.identifier];
-            scaleTo(view.k * 2);
-            translateTo(p, l);
+            var p = touches[0];
+            zoomTo(that, p, locations0[p.identifier], Math.floor(Math.log(view.k) / Math.LN2) + 1);
             d3_eventPreventDefault();
-            zoomed(dispatch);
           }
           touchtime = now;
         } else if (touches.length > 1) {
@@ -5930,6 +6024,7 @@ if (typeof jQuery === 'undefined') {
       }
       function moved() {
         var touches = d3.touches(that), p0, l0, p1, l1;
+        d3_selection_interrupt.call(that);
         for (var i = 0, n = touches.length; i < n; ++i, l1 = null) {
           p1 = touches[i];
           if (l1 = locations0[p1.identifier]) {
@@ -5977,23 +6072,12 @@ if (typeof jQuery === 'undefined') {
       zoomed(dispatch);
     }
     function dblclicked() {
-      var dispatch = event.of(this, arguments), p = d3.mouse(this), l = location(p), k = Math.log(view.k) / Math.LN2;
-      zoomstarted(dispatch);
-      scaleTo(Math.pow(2, d3.event.shiftKey ? Math.ceil(k) - 1 : Math.floor(k) + 1));
-      translateTo(p, l);
-      zoomed(dispatch);
-      zoomended(dispatch);
+      var p = d3.mouse(this), k = Math.log(view.k) / Math.LN2;
+      zoomTo(this, p, location(p), d3.event.shiftKey ? Math.ceil(k) - 1 : Math.floor(k) + 1);
     }
     return d3.rebind(zoom, event, "on");
   };
-  var d3_behavior_zoomInfinity = [ 0, Infinity ];
-  var d3_behavior_zoomDelta, d3_behavior_zoomWheel = "onwheel" in d3_document ? (d3_behavior_zoomDelta = function() {
-    return -d3.event.deltaY * (d3.event.deltaMode ? 120 : 1);
-  }, "wheel") : "onmousewheel" in d3_document ? (d3_behavior_zoomDelta = function() {
-    return d3.event.wheelDelta;
-  }, "mousewheel") : (d3_behavior_zoomDelta = function() {
-    return -d3.event.detail;
-  }, "MozMousePixelScroll");
+  var d3_behavior_zoomInfinity = [ 0, Infinity ], d3_behavior_zoomDelta, d3_behavior_zoomWheel;
   d3.color = d3_color;
   function d3_color() {}
   d3_color.prototype.toString = function() {
@@ -6138,7 +6222,9 @@ if (typeof jQuery === 'undefined') {
         }
       }
     }
-    if (color = d3_rgb_names.get(format)) return rgb(color.r, color.g, color.b);
+    if (color = d3_rgb_names.get(format.toLowerCase())) {
+      return rgb(color.r, color.g, color.b);
+    }
     if (format != null && format.charAt(0) === "#" && !isNaN(color = parseInt(format.slice(1), 16))) {
       if (format.length === 4) {
         r = (color & 3840) >> 4;
@@ -6301,6 +6387,7 @@ if (typeof jQuery === 'undefined') {
     plum: 14524637,
     powderblue: 11591910,
     purple: 8388736,
+    rebeccapurple: 6697881,
     red: 16711680,
     rosybrown: 12357519,
     royalblue: 4286945,
@@ -6339,9 +6426,6 @@ if (typeof jQuery === 'undefined') {
     };
   }
   d3.functor = d3_functor;
-  function d3_identity(d) {
-    return d;
-  }
   d3.xhr = d3_xhrType(d3_identity);
   function d3_xhrType(response) {
     return function(url, mimeType, callback) {
@@ -6352,7 +6436,7 @@ if (typeof jQuery === 'undefined') {
   }
   function d3_xhr(url, mimeType, response, callback) {
     var xhr = {}, dispatch = d3.dispatch("beforesend", "progress", "load", "error"), headers = {}, request = new XMLHttpRequest(), responseType = null;
-    if (d3_window.XDomainRequest && !("withCredentials" in request) && /^(http(s)?:)?\/\//.test(url)) request = new XDomainRequest();
+    if (this.XDomainRequest && !("withCredentials" in request) && /^(http(s)?:)?\/\//.test(url)) request = new XDomainRequest();
     "onload" in request ? request.onload = request.onerror = respond : request.onreadystatechange = function() {
       request.readyState > 3 && respond();
     };
@@ -6538,7 +6622,7 @@ if (typeof jQuery === 'undefined') {
   };
   d3.csv = d3.dsv(",", "text/csv");
   d3.tsv = d3.dsv("	", "text/tab-separated-values");
-  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = d3_window[d3_vendorSymbol(d3_window, "requestAnimationFrame")] || function(callback) {
+  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = this[d3_vendorSymbol(this, "requestAnimationFrame")] || function(callback) {
     setTimeout(callback, 17);
   };
   d3.timer = function(callback, delay, then) {
@@ -7638,6 +7722,15 @@ if (typeof jQuery === 'undefined') {
       d3_geo_centroidPointXYZ(x0, y0, z0);
     }
   }
+  function d3_geo_compose(a, b) {
+    function compose(x, y) {
+      return x = a(x, y), b(x[0], x[1]);
+    }
+    if (a.invert && b.invert) compose.invert = function(x, y) {
+      return x = b.invert(x, y), x && a.invert(x[0], x[1]);
+    };
+    return compose;
+  }
   function d3_true() {
     return true;
   }
@@ -8236,15 +8329,6 @@ if (typeof jQuery === 'undefined') {
       return ca !== cb ? ca - cb : ca === 0 ? b[1] - a[1] : ca === 1 ? a[0] - b[0] : ca === 2 ? a[1] - b[1] : b[0] - a[0];
     }
   }
-  function d3_geo_compose(a, b) {
-    function compose(x, y) {
-      return x = a(x, y), b(x[0], x[1]);
-    }
-    if (a.invert && b.invert) compose.invert = function(x, y) {
-      return x = b.invert(x, y), x && a.invert(x[0], x[1]);
-    };
-    return compose;
-  }
   function d3_geo_conic(projectAt) {
     var φ0 = 0, φ1 = π / 3, m = d3_geo_projectionMutator(projectAt), p = m(φ0, φ1);
     p.parallels = function(_) {
@@ -8516,7 +8600,7 @@ if (typeof jQuery === 'undefined') {
       result: d3_noop
     };
     function point(x, y) {
-      context.moveTo(x, y);
+      context.moveTo(x + pointRadius, y);
       context.arc(x, y, pointRadius, 0, τ);
     }
     function pointLineStart(x, y) {
@@ -10024,11 +10108,11 @@ if (typeof jQuery === 'undefined') {
         }
       }
       function insertChild(n, d, x, y, x1, y1, x2, y2) {
-        var sx = (x1 + x2) * .5, sy = (y1 + y2) * .5, right = x >= sx, bottom = y >= sy, i = (bottom << 1) + right;
+        var xm = (x1 + x2) * .5, ym = (y1 + y2) * .5, right = x >= xm, below = y >= ym, i = below << 1 | right;
         n.leaf = false;
         n = n.nodes[i] || (n.nodes[i] = d3_geom_quadtreeNode());
-        if (right) x1 = sx; else x2 = sx;
-        if (bottom) y1 = sy; else y2 = sy;
+        if (right) x1 = xm; else x2 = xm;
+        if (below) y1 = ym; else y2 = ym;
         insert(n, d, x, y, x1, y1, x2, y2);
       }
       var root = d3_geom_quadtreeNode();
@@ -10037,6 +10121,9 @@ if (typeof jQuery === 'undefined') {
       };
       root.visit = function(f) {
         d3_geom_quadtreeVisit(f, root, x1_, y1_, x2_, y2_);
+      };
+      root.find = function(point) {
+        return d3_geom_quadtreeFind(root, point[0], point[1], x1_, y1_, x2_, y2_);
       };
       i = -1;
       if (x1 == null) {
@@ -10090,6 +10177,42 @@ if (typeof jQuery === 'undefined') {
       if (children[2]) d3_geom_quadtreeVisit(f, children[2], x1, sy, sx, y2);
       if (children[3]) d3_geom_quadtreeVisit(f, children[3], sx, sy, x2, y2);
     }
+  }
+  function d3_geom_quadtreeFind(root, x, y, x0, y0, x3, y3) {
+    var minDistance2 = Infinity, closestPoint;
+    (function find(node, x1, y1, x2, y2) {
+      if (x1 > x3 || y1 > y3 || x2 < x0 || y2 < y0) return;
+      if (point = node.point) {
+        var point, dx = x - node.x, dy = y - node.y, distance2 = dx * dx + dy * dy;
+        if (distance2 < minDistance2) {
+          var distance = Math.sqrt(minDistance2 = distance2);
+          x0 = x - distance, y0 = y - distance;
+          x3 = x + distance, y3 = y + distance;
+          closestPoint = point;
+        }
+      }
+      var children = node.nodes, xm = (x1 + x2) * .5, ym = (y1 + y2) * .5, right = x >= xm, below = y >= ym;
+      for (var i = below << 1 | right, j = i + 4; i < j; ++i) {
+        if (node = children[i & 3]) switch (i & 3) {
+         case 0:
+          find(node, x1, y1, xm, ym);
+          break;
+
+         case 1:
+          find(node, xm, y1, x2, ym);
+          break;
+
+         case 2:
+          find(node, x1, ym, xm, y2);
+          break;
+
+         case 3:
+          find(node, xm, ym, x2, y2);
+          break;
+        }
+      }
+    })(root, x0, y0, x3, y3);
+    return closestPoint;
   }
   d3.interpolateRgb = d3_interpolateRgb;
   function d3_interpolateRgb(a, b) {
@@ -10774,8 +10897,8 @@ if (typeof jQuery === 'undefined') {
             neighbors[o.target.index].push(o.source);
           }
         }
-        var candidates = neighbors[i], j = -1, m = candidates.length, x;
-        while (++j < m) if (!isNaN(x = candidates[j][dimension])) return x;
+        var candidates = neighbors[i], j = -1, l = candidates.length, x;
+        while (++j < l) if (!isNaN(x = candidates[j][dimension])) return x;
         return Math.random() * size;
       }
       return force.resume();
@@ -10982,49 +11105,50 @@ if (typeof jQuery === 'undefined') {
     return d3_layout_hierarchyRebind(partition, hierarchy);
   };
   d3.layout.pie = function() {
-    var value = Number, sort = d3_layout_pieSortByValue, startAngle = 0, endAngle = τ;
+    var value = Number, sort = d3_layout_pieSortByValue, startAngle = 0, endAngle = τ, padAngle = 0;
     function pie(data) {
-      var values = data.map(function(d, i) {
+      var n = data.length, values = data.map(function(d, i) {
         return +value.call(pie, d, i);
-      });
-      var a = +(typeof startAngle === "function" ? startAngle.apply(this, arguments) : startAngle);
-      var k = ((typeof endAngle === "function" ? endAngle.apply(this, arguments) : endAngle) - a) / d3.sum(values);
-      var index = d3.range(data.length);
+      }), a = +(typeof startAngle === "function" ? startAngle.apply(this, arguments) : startAngle), da = (typeof endAngle === "function" ? endAngle.apply(this, arguments) : endAngle) - a, p = Math.min(Math.abs(da) / n, +(typeof padAngle === "function" ? padAngle.apply(this, arguments) : padAngle)), pa = p * (da < 0 ? -1 : 1), k = (da - n * pa) / d3.sum(values), index = d3.range(n), arcs = [], v;
       if (sort != null) index.sort(sort === d3_layout_pieSortByValue ? function(i, j) {
         return values[j] - values[i];
       } : function(i, j) {
         return sort(data[i], data[j]);
       });
-      var arcs = [];
       index.forEach(function(i) {
-        var d;
         arcs[i] = {
           data: data[i],
-          value: d = values[i],
+          value: v = values[i],
           startAngle: a,
-          endAngle: a += d * k
+          endAngle: a += v * k + pa,
+          padAngle: p
         };
       });
       return arcs;
     }
-    pie.value = function(x) {
+    pie.value = function(_) {
       if (!arguments.length) return value;
-      value = x;
+      value = _;
       return pie;
     };
-    pie.sort = function(x) {
+    pie.sort = function(_) {
       if (!arguments.length) return sort;
-      sort = x;
+      sort = _;
       return pie;
     };
-    pie.startAngle = function(x) {
+    pie.startAngle = function(_) {
       if (!arguments.length) return startAngle;
-      startAngle = x;
+      startAngle = _;
       return pie;
     };
-    pie.endAngle = function(x) {
+    pie.endAngle = function(_) {
       if (!arguments.length) return endAngle;
-      endAngle = x;
+      endAngle = _;
+      return pie;
+    };
+    pie.padAngle = function(_) {
+      if (!arguments.length) return padAngle;
+      padAngle = _;
       return pie;
     };
     return pie;
@@ -12123,11 +12247,24 @@ if (typeof jQuery === 'undefined') {
     };
     scale.rangePoints = function(x, padding) {
       if (arguments.length < 2) padding = 0;
-      var start = x[0], stop = x[1], step = (stop - start) / (Math.max(1, domain.length - 1) + padding);
-      range = steps(domain.length < 2 ? (start + stop) / 2 : start + step * padding / 2, step);
+      var start = x[0], stop = x[1], step = domain.length < 2 ? (start = (start + stop) / 2, 
+      0) : (stop - start) / (domain.length - 1 + padding);
+      range = steps(start + step * padding / 2, step);
       rangeBand = 0;
       ranger = {
         t: "rangePoints",
+        a: arguments
+      };
+      return scale;
+    };
+    scale.rangeRoundPoints = function(x, padding) {
+      if (arguments.length < 2) padding = 0;
+      var start = x[0], stop = x[1], step = domain.length < 2 ? (start = stop = Math.round((start + stop) / 2), 
+      0) : (stop - start) / (domain.length - 1 + padding) | 0;
+      range = steps(start + Math.round(step * padding / 2 + (stop - start - (domain.length - 1 + padding) * step) / 2), step);
+      rangeBand = 0;
+      ranger = {
+        t: "rangeRoundPoints",
         a: arguments
       };
       return scale;
@@ -12148,8 +12285,8 @@ if (typeof jQuery === 'undefined') {
     scale.rangeRoundBands = function(x, padding, outerPadding) {
       if (arguments.length < 2) padding = 0;
       if (arguments.length < 3) outerPadding = padding;
-      var reverse = x[1] < x[0], start = x[reverse - 0], stop = x[1 - reverse], step = Math.floor((stop - start) / (domain.length - padding + 2 * outerPadding)), error = stop - start - (domain.length - padding) * step;
-      range = steps(start + Math.round(error / 2), step);
+      var reverse = x[1] < x[0], start = x[reverse - 0], stop = x[1 - reverse], step = Math.floor((stop - start) / (domain.length - padding + 2 * outerPadding));
+      range = steps(start + Math.round((stop - start - (domain.length - padding) * step) / 2), step);
       if (reverse) range.reverse();
       rangeBand = Math.round(step * (1 - padding));
       ranger = {
@@ -12306,12 +12443,86 @@ if (typeof jQuery === 'undefined') {
     return identity;
   }
   d3.svg = {};
+  function d3_zero() {
+    return 0;
+  }
   d3.svg.arc = function() {
-    var innerRadius = d3_svg_arcInnerRadius, outerRadius = d3_svg_arcOuterRadius, startAngle = d3_svg_arcStartAngle, endAngle = d3_svg_arcEndAngle;
+    var innerRadius = d3_svg_arcInnerRadius, outerRadius = d3_svg_arcOuterRadius, cornerRadius = d3_zero, padRadius = d3_svg_arcAuto, startAngle = d3_svg_arcStartAngle, endAngle = d3_svg_arcEndAngle, padAngle = d3_svg_arcPadAngle;
     function arc() {
-      var r0 = innerRadius.apply(this, arguments), r1 = outerRadius.apply(this, arguments), a0 = startAngle.apply(this, arguments) + d3_svg_arcOffset, a1 = endAngle.apply(this, arguments) + d3_svg_arcOffset, da = (a1 < a0 && (da = a0, 
-      a0 = a1, a1 = da), a1 - a0), df = da < π ? "0" : "1", c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
-      return da >= d3_svg_arcMax ? r0 ? "M0," + r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + -r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + r1 + "M0," + r0 + "A" + r0 + "," + r0 + " 0 1,0 0," + -r0 + "A" + r0 + "," + r0 + " 0 1,0 0," + r0 + "Z" : "M0," + r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + -r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + r1 + "Z" : r0 ? "M" + r1 * c0 + "," + r1 * s0 + "A" + r1 + "," + r1 + " 0 " + df + ",1 " + r1 * c1 + "," + r1 * s1 + "L" + r0 * c1 + "," + r0 * s1 + "A" + r0 + "," + r0 + " 0 " + df + ",0 " + r0 * c0 + "," + r0 * s0 + "Z" : "M" + r1 * c0 + "," + r1 * s0 + "A" + r1 + "," + r1 + " 0 " + df + ",1 " + r1 * c1 + "," + r1 * s1 + "L0,0" + "Z";
+      var r0 = Math.max(0, +innerRadius.apply(this, arguments)), r1 = Math.max(0, +outerRadius.apply(this, arguments)), a0 = startAngle.apply(this, arguments) - halfπ, a1 = endAngle.apply(this, arguments) - halfπ, da = Math.abs(a1 - a0), cw = a0 > a1 ? 0 : 1;
+      if (r1 < r0) rc = r1, r1 = r0, r0 = rc;
+      if (da >= τε) return circleSegment(r1, cw) + (r0 ? circleSegment(r0, 1 - cw) : "") + "Z";
+      var rc, cr, rp, ap, p0 = 0, p1 = 0, x0, y0, x1, y1, x2, y2, x3, y3, path = [];
+      if (ap = (+padAngle.apply(this, arguments) || 0) / 2) {
+        rp = padRadius === d3_svg_arcAuto ? Math.sqrt(r0 * r0 + r1 * r1) : +padRadius.apply(this, arguments);
+        if (!cw) p1 *= -1;
+        if (r1) p1 = d3_asin(rp / r1 * Math.sin(ap));
+        if (r0) p0 = d3_asin(rp / r0 * Math.sin(ap));
+      }
+      if (r1) {
+        x0 = r1 * Math.cos(a0 + p1);
+        y0 = r1 * Math.sin(a0 + p1);
+        x1 = r1 * Math.cos(a1 - p1);
+        y1 = r1 * Math.sin(a1 - p1);
+        var l1 = Math.abs(a1 - a0 - 2 * p1) <= π ? 0 : 1;
+        if (p1 && d3_svg_arcSweep(x0, y0, x1, y1) === cw ^ l1) {
+          var h1 = (a0 + a1) / 2;
+          x0 = r1 * Math.cos(h1);
+          y0 = r1 * Math.sin(h1);
+          x1 = y1 = null;
+        }
+      } else {
+        x0 = y0 = 0;
+      }
+      if (r0) {
+        x2 = r0 * Math.cos(a1 - p0);
+        y2 = r0 * Math.sin(a1 - p0);
+        x3 = r0 * Math.cos(a0 + p0);
+        y3 = r0 * Math.sin(a0 + p0);
+        var l0 = Math.abs(a0 - a1 + 2 * p0) <= π ? 0 : 1;
+        if (p0 && d3_svg_arcSweep(x2, y2, x3, y3) === 1 - cw ^ l0) {
+          var h0 = (a0 + a1) / 2;
+          x2 = r0 * Math.cos(h0);
+          y2 = r0 * Math.sin(h0);
+          x3 = y3 = null;
+        }
+      } else {
+        x2 = y2 = 0;
+      }
+      if ((rc = Math.min(Math.abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments))) > .001) {
+        cr = r0 < r1 ^ cw ? 0 : 1;
+        var oc = x3 == null ? [ x2, y2 ] : x1 == null ? [ x0, y0 ] : d3_geom_polygonIntersect([ x0, y0 ], [ x3, y3 ], [ x1, y1 ], [ x2, y2 ]), ax = x0 - oc[0], ay = y0 - oc[1], bx = x1 - oc[0], by = y1 - oc[1], kc = 1 / Math.sin(Math.acos((ax * bx + ay * by) / (Math.sqrt(ax * ax + ay * ay) * Math.sqrt(bx * bx + by * by))) / 2), lc = Math.sqrt(oc[0] * oc[0] + oc[1] * oc[1]);
+        if (x1 != null) {
+          var rc1 = Math.min(rc, (r1 - lc) / (kc + 1)), t30 = d3_svg_arcCornerTangents(x3 == null ? [ x2, y2 ] : [ x3, y3 ], [ x0, y0 ], r1, rc1, cw), t12 = d3_svg_arcCornerTangents([ x1, y1 ], [ x2, y2 ], r1, rc1, cw);
+          if (rc === rc1) {
+            path.push("M", t30[0], "A", rc1, ",", rc1, " 0 0,", cr, " ", t30[1], "A", r1, ",", r1, " 0 ", 1 - cw ^ d3_svg_arcSweep(t30[1][0], t30[1][1], t12[1][0], t12[1][1]), ",", cw, " ", t12[1], "A", rc1, ",", rc1, " 0 0,", cr, " ", t12[0]);
+          } else {
+            path.push("M", t30[0], "A", rc1, ",", rc1, " 0 1,", cr, " ", t12[0]);
+          }
+        } else {
+          path.push("M", x0, ",", y0);
+        }
+        if (x3 != null) {
+          var rc0 = Math.min(rc, (r0 - lc) / (kc - 1)), t03 = d3_svg_arcCornerTangents([ x0, y0 ], [ x3, y3 ], r0, -rc0, cw), t21 = d3_svg_arcCornerTangents([ x2, y2 ], x1 == null ? [ x0, y0 ] : [ x1, y1 ], r0, -rc0, cw);
+          if (rc === rc0) {
+            path.push("L", t21[0], "A", rc0, ",", rc0, " 0 0,", cr, " ", t21[1], "A", r0, ",", r0, " 0 ", cw ^ d3_svg_arcSweep(t21[1][0], t21[1][1], t03[1][0], t03[1][1]), ",", 1 - cw, " ", t03[1], "A", rc0, ",", rc0, " 0 0,", cr, " ", t03[0]);
+          } else {
+            path.push("L", t21[0], "A", rc0, ",", rc0, " 0 0,", cr, " ", t03[0]);
+          }
+        } else {
+          path.push("L", x2, ",", y2);
+        }
+      } else {
+        path.push("M", x0, ",", y0);
+        if (x1 != null) path.push("A", r1, ",", r1, " 0 ", l1, ",", cw, " ", x1, ",", y1);
+        path.push("L", x2, ",", y2);
+        if (x3 != null) path.push("A", r0, ",", r0, " 0 ", l0, ",", 1 - cw, " ", x3, ",", y3);
+      }
+      path.push("Z");
+      return path.join("");
+    }
+    function circleSegment(r1, cw) {
+      return "M0," + r1 + "A" + r1 + "," + r1 + " 0 1," + cw + " 0," + -r1 + "A" + r1 + "," + r1 + " 0 1," + cw + " 0," + r1;
     }
     arc.innerRadius = function(v) {
       if (!arguments.length) return innerRadius;
@@ -12321,6 +12532,16 @@ if (typeof jQuery === 'undefined') {
     arc.outerRadius = function(v) {
       if (!arguments.length) return outerRadius;
       outerRadius = d3_functor(v);
+      return arc;
+    };
+    arc.cornerRadius = function(v) {
+      if (!arguments.length) return cornerRadius;
+      cornerRadius = d3_functor(v);
+      return arc;
+    };
+    arc.padRadius = function(v) {
+      if (!arguments.length) return padRadius;
+      padRadius = v == d3_svg_arcAuto ? d3_svg_arcAuto : d3_functor(v);
       return arc;
     };
     arc.startAngle = function(v) {
@@ -12333,13 +12554,18 @@ if (typeof jQuery === 'undefined') {
       endAngle = d3_functor(v);
       return arc;
     };
+    arc.padAngle = function(v) {
+      if (!arguments.length) return padAngle;
+      padAngle = d3_functor(v);
+      return arc;
+    };
     arc.centroid = function() {
-      var r = (innerRadius.apply(this, arguments) + outerRadius.apply(this, arguments)) / 2, a = (startAngle.apply(this, arguments) + endAngle.apply(this, arguments)) / 2 + d3_svg_arcOffset;
+      var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2, a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - halfπ;
       return [ Math.cos(a) * r, Math.sin(a) * r ];
     };
     return arc;
   };
-  var d3_svg_arcOffset = -halfπ, d3_svg_arcMax = τ - ε;
+  var d3_svg_arcAuto = "auto";
   function d3_svg_arcInnerRadius(d) {
     return d.innerRadius;
   }
@@ -12351,6 +12577,17 @@ if (typeof jQuery === 'undefined') {
   }
   function d3_svg_arcEndAngle(d) {
     return d.endAngle;
+  }
+  function d3_svg_arcPadAngle(d) {
+    return d && d.padAngle;
+  }
+  function d3_svg_arcSweep(x0, y0, x1, y1) {
+    return (x0 - x1) * y0 - (y0 - y1) * x0 > 0 ? 0 : 1;
+  }
+  function d3_svg_arcCornerTangents(p0, p1, r1, rc, cw) {
+    var x01 = p0[0] - p1[0], y01 = p0[1] - p1[1], lo = (cw ? rc : -rc) / Math.sqrt(x01 * x01 + y01 * y01), ox = lo * y01, oy = -lo * x01, x1 = p0[0] + ox, y1 = p0[1] + oy, x2 = p1[0] + ox, y2 = p1[1] + oy, x3 = (x1 + x2) / 2, y3 = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, d2 = dx * dx + dy * dy, r = r1 - rc, D = x1 * y2 - x2 * y1, d = (dy < 0 ? -1 : 1) * Math.sqrt(r * r * d2 - D * D), cx0 = (D * dy - dx * d) / d2, cy0 = (-D * dx - dy * d) / d2, cx1 = (D * dy + dx * d) / d2, cy1 = (-D * dx + dy * d) / d2, dx0 = cx0 - x3, dy0 = cy0 - y3, dx1 = cx1 - x3, dy1 = cy1 - y3;
+    if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) cx0 = cx1, cy0 = cy1;
+    return [ [ cx0 - ox, cy0 - oy ], [ cx0 * r1 / r, cy0 * r1 / r ] ];
   }
   function d3_svg_line(projection) {
     var x = d3_geom_pointX, y = d3_geom_pointY, defined = d3_true, interpolate = d3_svg_lineLinear, interpolateKey = interpolate.key, tension = .7;
@@ -12442,7 +12679,7 @@ if (typeof jQuery === 'undefined') {
     return path.join("");
   }
   function d3_svg_lineCardinalOpen(points, tension) {
-    return points.length < 4 ? d3_svg_lineLinear(points) : points[1] + d3_svg_lineHermite(points.slice(1, points.length - 1), d3_svg_lineCardinalTangents(points, tension));
+    return points.length < 4 ? d3_svg_lineLinear(points) : points[1] + d3_svg_lineHermite(points.slice(1, -1), d3_svg_lineCardinalTangents(points, tension));
   }
   function d3_svg_lineCardinalClosed(points, tension) {
     return points.length < 3 ? d3_svg_lineLinear(points) : points[0] + d3_svg_lineHermite((points.push(points[0]), 
@@ -12612,7 +12849,7 @@ if (typeof jQuery === 'undefined') {
     while (++i < n) {
       point = points[i];
       r = point[0];
-      a = point[1] + d3_svg_arcOffset;
+      a = point[1] - halfπ;
       point[0] = r * Math.cos(a);
       point[1] = r * Math.sin(a);
     }
@@ -12713,7 +12950,7 @@ if (typeof jQuery === 'undefined') {
       return "M" + s.p0 + arc(s.r, s.p1, s.a1 - s.a0) + (equals(s, t) ? curve(s.r, s.p1, s.r, s.p0) : curve(s.r, s.p1, t.r, t.p0) + arc(t.r, t.p1, t.a1 - t.a0) + curve(t.r, t.p1, s.r, s.p0)) + "Z";
     }
     function subgroup(self, f, d, i) {
-      var subgroup = f.call(self, d, i), r = radius.call(self, subgroup, i), a0 = startAngle.call(self, subgroup, i) + d3_svg_arcOffset, a1 = endAngle.call(self, subgroup, i) + d3_svg_arcOffset;
+      var subgroup = f.call(self, d, i), r = radius.call(self, subgroup, i), a0 = startAngle.call(self, subgroup, i) - halfπ, a1 = endAngle.call(self, subgroup, i) - halfπ;
       return {
         r: r,
         a0: a0,
@@ -12803,7 +13040,7 @@ if (typeof jQuery === 'undefined') {
   };
   function d3_svg_diagonalRadialProjection(projection) {
     return function() {
-      var d = projection.apply(this, arguments), r = d[0], a = d[1] + d3_svg_arcOffset;
+      var d = projection.apply(this, arguments), r = d[0], a = d[1] - halfπ;
       return [ r * Math.cos(a), r * Math.sin(a) ];
     };
   }
@@ -12859,8 +13096,39 @@ if (typeof jQuery === 'undefined') {
   });
   d3.svg.symbolTypes = d3_svg_symbols.keys();
   var d3_svg_symbolSqrt3 = Math.sqrt(3), d3_svg_symbolTan30 = Math.tan(30 * d3_radians);
-  function d3_transition(groups, id) {
+  d3_selectionPrototype.transition = function(name) {
+    var id = d3_transitionInheritId || ++d3_transitionId, ns = d3_transitionNamespace(name), subgroups = [], subgroup, node, transition = d3_transitionInherit || {
+      time: Date.now(),
+      ease: d3_ease_cubicInOut,
+      delay: 0,
+      duration: 250
+    };
+    for (var j = -1, m = this.length; ++j < m; ) {
+      subgroups.push(subgroup = []);
+      for (var group = this[j], i = -1, n = group.length; ++i < n; ) {
+        if (node = group[i]) d3_transitionNode(node, i, ns, id, transition);
+        subgroup.push(node);
+      }
+    }
+    return d3_transition(subgroups, ns, id);
+  };
+  d3_selectionPrototype.interrupt = function(name) {
+    return this.each(name == null ? d3_selection_interrupt : d3_selection_interruptNS(d3_transitionNamespace(name)));
+  };
+  var d3_selection_interrupt = d3_selection_interruptNS(d3_transitionNamespace());
+  function d3_selection_interruptNS(ns) {
+    return function() {
+      var lock, active;
+      if ((lock = this[ns]) && (active = lock[lock.active])) {
+        if (--lock.count) delete lock[lock.active]; else delete this[ns];
+        lock.active += .5;
+        active.event && active.event.interrupt.call(this, this.__data__, active.index);
+      }
+    };
+  }
+  function d3_transition(groups, ns, id) {
     d3_subclass(groups, d3_transitionPrototype);
+    groups.namespace = ns;
     groups.id = id;
     return groups;
   }
@@ -12869,44 +13137,44 @@ if (typeof jQuery === 'undefined') {
   d3_transitionPrototype.empty = d3_selectionPrototype.empty;
   d3_transitionPrototype.node = d3_selectionPrototype.node;
   d3_transitionPrototype.size = d3_selectionPrototype.size;
-  d3.transition = function(selection) {
-    return arguments.length ? d3_transitionInheritId ? selection.transition() : selection : d3_selectionRoot.transition();
+  d3.transition = function(selection, name) {
+    return selection && selection.transition ? d3_transitionInheritId ? selection.transition(name) : selection : d3.selection().transition(selection);
   };
   d3.transition.prototype = d3_transitionPrototype;
   d3_transitionPrototype.select = function(selector) {
-    var id = this.id, subgroups = [], subgroup, subnode, node;
+    var id = this.id, ns = this.namespace, subgroups = [], subgroup, subnode, node;
     selector = d3_selection_selector(selector);
     for (var j = -1, m = this.length; ++j < m; ) {
       subgroups.push(subgroup = []);
       for (var group = this[j], i = -1, n = group.length; ++i < n; ) {
         if ((node = group[i]) && (subnode = selector.call(node, node.__data__, i, j))) {
           if ("__data__" in node) subnode.__data__ = node.__data__;
-          d3_transitionNode(subnode, i, id, node.__transition__[id]);
+          d3_transitionNode(subnode, i, ns, id, node[ns][id]);
           subgroup.push(subnode);
         } else {
           subgroup.push(null);
         }
       }
     }
-    return d3_transition(subgroups, id);
+    return d3_transition(subgroups, ns, id);
   };
   d3_transitionPrototype.selectAll = function(selector) {
-    var id = this.id, subgroups = [], subgroup, subnodes, node, subnode, transition;
+    var id = this.id, ns = this.namespace, subgroups = [], subgroup, subnodes, node, subnode, transition;
     selector = d3_selection_selectorAll(selector);
     for (var j = -1, m = this.length; ++j < m; ) {
       for (var group = this[j], i = -1, n = group.length; ++i < n; ) {
         if (node = group[i]) {
-          transition = node.__transition__[id];
+          transition = node[ns][id];
           subnodes = selector.call(node, node.__data__, i, j);
           subgroups.push(subgroup = []);
           for (var k = -1, o = subnodes.length; ++k < o; ) {
-            if (subnode = subnodes[k]) d3_transitionNode(subnode, k, id, transition);
+            if (subnode = subnodes[k]) d3_transitionNode(subnode, k, ns, id, transition);
             subgroup.push(subnode);
           }
         }
       }
     }
-    return d3_transition(subgroups, id);
+    return d3_transition(subgroups, ns, id);
   };
   d3_transitionPrototype.filter = function(filter) {
     var subgroups = [], subgroup, group, node;
@@ -12919,23 +13187,23 @@ if (typeof jQuery === 'undefined') {
         }
       }
     }
-    return d3_transition(subgroups, this.id);
+    return d3_transition(subgroups, this.namespace, this.id);
   };
   d3_transitionPrototype.tween = function(name, tween) {
-    var id = this.id;
-    if (arguments.length < 2) return this.node().__transition__[id].tween.get(name);
+    var id = this.id, ns = this.namespace;
+    if (arguments.length < 2) return this.node()[ns][id].tween.get(name);
     return d3_selection_each(this, tween == null ? function(node) {
-      node.__transition__[id].tween.remove(name);
+      node[ns][id].tween.remove(name);
     } : function(node) {
-      node.__transition__[id].tween.set(name, tween);
+      node[ns][id].tween.set(name, tween);
     });
   };
   function d3_transition_tween(groups, name, value, tween) {
-    var id = groups.id;
+    var id = groups.id, ns = groups.namespace;
     return d3_selection_each(groups, typeof value === "function" ? function(node, i, j) {
-      node.__transition__[id].tween.set(name, tween(value.call(node, node.__data__, i, j)));
+      node[ns][id].tween.set(name, tween(value.call(node, node.__data__, i, j)));
     } : (value = tween(value), function(node) {
-      node.__transition__[id].tween.set(name, value);
+      node[ns][id].tween.set(name, value);
     }));
   }
   d3_transitionPrototype.attr = function(nameNS, value) {
@@ -12999,7 +13267,7 @@ if (typeof jQuery === 'undefined') {
     }
     function styleString(b) {
       return b == null ? styleNull : (b += "", function() {
-        var a = d3_window.getComputedStyle(this, null).getPropertyValue(name), i;
+        var a = d3_window(this).getComputedStyle(this, null).getPropertyValue(name), i;
         return a !== b && (i = d3_interpolate(a, b), function(t) {
           this.style.setProperty(name, i(t), priority);
         });
@@ -13010,7 +13278,7 @@ if (typeof jQuery === 'undefined') {
   d3_transitionPrototype.styleTween = function(name, tween, priority) {
     if (arguments.length < 3) priority = "";
     function styleTween(d, i) {
-      var f = tween.call(this, d, i, d3_window.getComputedStyle(this, null).getPropertyValue(name));
+      var f = tween.call(this, d, i, d3_window(this).getComputedStyle(this, null).getPropertyValue(name));
       return f && function(t) {
         this.style.setProperty(name, f(t), priority);
       };
@@ -13027,73 +13295,84 @@ if (typeof jQuery === 'undefined') {
     };
   }
   d3_transitionPrototype.remove = function() {
+    var ns = this.namespace;
     return this.each("end.transition", function() {
       var p;
-      if (this.__transition__.count < 2 && (p = this.parentNode)) p.removeChild(this);
+      if (this[ns].count < 2 && (p = this.parentNode)) p.removeChild(this);
     });
   };
   d3_transitionPrototype.ease = function(value) {
-    var id = this.id;
-    if (arguments.length < 1) return this.node().__transition__[id].ease;
+    var id = this.id, ns = this.namespace;
+    if (arguments.length < 1) return this.node()[ns][id].ease;
     if (typeof value !== "function") value = d3.ease.apply(d3, arguments);
     return d3_selection_each(this, function(node) {
-      node.__transition__[id].ease = value;
+      node[ns][id].ease = value;
     });
   };
   d3_transitionPrototype.delay = function(value) {
-    var id = this.id;
-    if (arguments.length < 1) return this.node().__transition__[id].delay;
+    var id = this.id, ns = this.namespace;
+    if (arguments.length < 1) return this.node()[ns][id].delay;
     return d3_selection_each(this, typeof value === "function" ? function(node, i, j) {
-      node.__transition__[id].delay = +value.call(node, node.__data__, i, j);
+      node[ns][id].delay = +value.call(node, node.__data__, i, j);
     } : (value = +value, function(node) {
-      node.__transition__[id].delay = value;
+      node[ns][id].delay = value;
     }));
   };
   d3_transitionPrototype.duration = function(value) {
-    var id = this.id;
-    if (arguments.length < 1) return this.node().__transition__[id].duration;
+    var id = this.id, ns = this.namespace;
+    if (arguments.length < 1) return this.node()[ns][id].duration;
     return d3_selection_each(this, typeof value === "function" ? function(node, i, j) {
-      node.__transition__[id].duration = Math.max(1, value.call(node, node.__data__, i, j));
+      node[ns][id].duration = Math.max(1, value.call(node, node.__data__, i, j));
     } : (value = Math.max(1, value), function(node) {
-      node.__transition__[id].duration = value;
+      node[ns][id].duration = value;
     }));
   };
   d3_transitionPrototype.each = function(type, listener) {
-    var id = this.id;
+    var id = this.id, ns = this.namespace;
     if (arguments.length < 2) {
       var inherit = d3_transitionInherit, inheritId = d3_transitionInheritId;
-      d3_transitionInheritId = id;
-      d3_selection_each(this, function(node, i, j) {
-        d3_transitionInherit = node.__transition__[id];
-        type.call(node, node.__data__, i, j);
-      });
-      d3_transitionInherit = inherit;
-      d3_transitionInheritId = inheritId;
+      try {
+        d3_transitionInheritId = id;
+        d3_selection_each(this, function(node, i, j) {
+          d3_transitionInherit = node[ns][id];
+          type.call(node, node.__data__, i, j);
+        });
+      } finally {
+        d3_transitionInherit = inherit;
+        d3_transitionInheritId = inheritId;
+      }
     } else {
       d3_selection_each(this, function(node) {
-        var transition = node.__transition__[id];
-        (transition.event || (transition.event = d3.dispatch("start", "end"))).on(type, listener);
+        var transition = node[ns][id];
+        (transition.event || (transition.event = d3.dispatch("start", "end", "interrupt"))).on(type, listener);
       });
     }
     return this;
   };
   d3_transitionPrototype.transition = function() {
-    var id0 = this.id, id1 = ++d3_transitionId, subgroups = [], subgroup, group, node, transition;
+    var id0 = this.id, id1 = ++d3_transitionId, ns = this.namespace, subgroups = [], subgroup, group, node, transition;
     for (var j = 0, m = this.length; j < m; j++) {
       subgroups.push(subgroup = []);
       for (var group = this[j], i = 0, n = group.length; i < n; i++) {
         if (node = group[i]) {
-          transition = Object.create(node.__transition__[id0]);
-          transition.delay += transition.duration;
-          d3_transitionNode(node, i, id1, transition);
+          transition = node[ns][id0];
+          d3_transitionNode(node, i, ns, id1, {
+            time: transition.time,
+            ease: transition.ease,
+            delay: transition.delay + transition.duration,
+            duration: transition.duration
+          });
         }
         subgroup.push(node);
       }
     }
-    return d3_transition(subgroups, id1);
+    return d3_transition(subgroups, ns, id1);
   };
-  function d3_transitionNode(node, i, id, inherit) {
-    var lock = node.__transition__ || (node.__transition__ = {
+  function d3_transitionNamespace(name) {
+    return name == null ? "__transition__" : "__transition_" + name + "__";
+  }
+  function d3_transitionNode(node, i, ns, id, inherit) {
+    var lock = node[ns] || (node[ns] = {
       active: 0,
       count: 0
     }), transition = lock[id];
@@ -13102,43 +13381,53 @@ if (typeof jQuery === 'undefined') {
       transition = lock[id] = {
         tween: new d3_Map(),
         time: time,
-        ease: inherit.ease,
         delay: inherit.delay,
-        duration: inherit.duration
+        duration: inherit.duration,
+        ease: inherit.ease,
+        index: i
       };
+      inherit = null;
       ++lock.count;
       d3.timer(function(elapsed) {
-        var d = node.__data__, ease = transition.ease, delay = transition.delay, duration = transition.duration, timer = d3_timer_active, tweened = [];
+        var delay = transition.delay, duration, ease, timer = d3_timer_active, tweened = [];
         timer.t = delay + time;
         if (delay <= elapsed) return start(elapsed - delay);
         timer.c = start;
         function start(elapsed) {
           if (lock.active > id) return stop();
+          var active = lock[lock.active];
+          if (active) {
+            --lock.count;
+            delete lock[lock.active];
+            active.event && active.event.interrupt.call(node, node.__data__, active.index);
+          }
           lock.active = id;
-          transition.event && transition.event.start.call(node, d, i);
+          transition.event && transition.event.start.call(node, node.__data__, i);
           transition.tween.forEach(function(key, value) {
-            if (value = value.call(node, d, i)) {
+            if (value = value.call(node, node.__data__, i)) {
               tweened.push(value);
             }
           });
+          ease = transition.ease;
+          duration = transition.duration;
           d3.timer(function() {
             timer.c = tick(elapsed || 1) ? d3_true : tick;
             return 1;
           }, 0, time);
         }
         function tick(elapsed) {
-          if (lock.active !== id) return stop();
+          if (lock.active !== id) return 1;
           var t = elapsed / duration, e = ease(t), n = tweened.length;
           while (n > 0) {
             tweened[--n].call(node, e);
           }
           if (t >= 1) {
-            transition.event && transition.event.end.call(node, d, i);
+            transition.event && transition.event.end.call(node, node.__data__, i);
             return stop();
           }
         }
         function stop() {
-          if (--lock.count) delete lock[id]; else delete node.__transition__;
+          if (--lock.count) delete lock[id]; else delete node[ns];
           return 1;
         }
       }, 0, time);
@@ -13355,8 +13644,8 @@ if (typeof jQuery === 'undefined') {
       g.selectAll(".extent,.e>rect,.w>rect").attr("height", yExtent[1] - yExtent[0]);
     }
     function brushstart() {
-      var target = this, eventTarget = d3.select(d3.event.target), event_ = event.of(target, arguments), g = d3.select(target), resizing = eventTarget.datum(), resizingX = !/^(n|s)$/.test(resizing) && x, resizingY = !/^(e|w)$/.test(resizing) && y, dragging = eventTarget.classed("extent"), dragRestore = d3_event_dragSuppress(), center, origin = d3.mouse(target), offset;
-      var w = d3.select(d3_window).on("keydown.brush", keydown).on("keyup.brush", keyup);
+      var target = this, eventTarget = d3.select(d3.event.target), event_ = event.of(target, arguments), g = d3.select(target), resizing = eventTarget.datum(), resizingX = !/^(n|s)$/.test(resizing) && x, resizingY = !/^(e|w)$/.test(resizing) && y, dragging = eventTarget.classed("extent"), dragRestore = d3_event_dragSuppress(target), center, origin = d3.mouse(target), offset;
+      var w = d3.select(d3_window(target)).on("keydown.brush", keydown).on("keyup.brush", keyup);
       if (d3.event.changedTouches) {
         w.on("touchmove.brush", brushmove).on("touchend.brush", brushend);
       } else {
@@ -22960,11 +23249,14 @@ function categoryAxis() {
         keepD3Style: true
     };
 
+    function isVertical(){
+        return ['right','left'].indexOf(config.axes[0].orient())>-1;
+    }
+
     function render(g) {
-
-        g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
-
-        g.append('g').attr('class', 'x axis').each(function () {
+        var orientOffset = (isVertical()) ? -config.axes[0].tickSize() : 0;
+        g = g.append('g').attr('transform', 'translate(' + (config.xOffset + orientOffset) + ',' + config.yOffset + ')');
+        g.append('g').attr('class', isVertical() ? 'y axis axis--independent' : 'x axis axis--independent').each(function () {
             var g = d3.select(this);
             labels.add(g, config);
         });
@@ -23010,6 +23302,12 @@ function categoryAxis() {
         return render;
     };
 
+    render.orient = function (string) {
+        if (!arguments.length) return config.axes[0].orient();
+        config.axes[0].orient(string);
+        return render;
+    };
+
     render.yOffset = function (int) {
         if (!arguments.length) return config.yOffset;
         config.yOffset = int;
@@ -23042,6 +23340,7 @@ function categoryAxis() {
             var unit = units[i];
             if (dates.formatGroups[unit]) {
                 var axis = d3.svg.axis()
+                    .orient(config.axes[0].orient())
                     .scale(scale)
                     .tickFormat(dates.formatGroups[unit])
                     .tickSize(config.tickSize, 0);
@@ -23058,7 +23357,7 @@ function categoryAxis() {
 
 module.exports = categoryAxis;
 
-},{"../util/chart-attribute-styles":25,"../util/dates.js":27,"../util/labels.js":29,"./../../../../d3/d3.js":4}],7:[function(require,module,exports){
+},{"../util/chart-attribute-styles":26,"../util/dates.js":28,"../util/labels.js":30,"./../../../../d3/d3.js":4}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var axis = {
     category: require('./category.js'),
@@ -23066,118 +23365,169 @@ var axis = {
     number: require('./number.js')
 };
 
+var PADDING = 4;
+
 function getDimension(dimension, selection) {
+    if (!selection.node()) return 0;
     return Math.ceil(selection.node().getBoundingClientRect()[dimension]);
 }
-function getWidth(selection) { return getDimension('width', selection); }
+function getWidth(selection)  { return getDimension('width', selection);  }
 function getHeight(selection) { return getDimension('height', selection); }
+function isVertical(orient)   { return orient == 'right' || orient == 'left'; }
 
-function ordinalScale(model, options) {
-    var plotWidth = model.chartWidth - (getWidth(options.svg) - model.chartWidth);
+function getRange(model, orientation)     {
+    var plotWidth = model.plotWidth = model.chartWidth - model.yLabelWidth;
+    var plotHeight = model.plotHeight =  model.chartHeight - model.xLabelHeight;
+    return (isVertical(orientation)) ? [0, plotHeight] : [0, plotWidth];
+}
+
+function ordinalScale(model, options, orientation) {
+    var range = getRange(model, orientation);
     return d3.scale.ordinal()
-        .domain(model.timeDomain)
-        .rangeRoundBands([0, plotWidth], 0, options.margin);
+        .domain(model.independentDomain)
+        .rangeRoundBands(range, 0, options.margin);
 }
 
-function timeScale(model) {
+function timeScale(model, options, orientation) {
+    var range = getRange(model, orientation);
     return d3.time.scale()
-        .domain(model.timeDomain)
-        .range([0, model.chartWidth]);
+        .domain(model.independentDomain)
+        .range(range);
 }
 
-function updateChartPosition(g, model){
-    var vLabelWidth = 0;
-    model.chartPosition.top += (getHeight(g.select('.y.axis')) - model.plotHeight);
-    if (model.numberAxisOrient === 'left') {
-        g.selectAll('.y.axis text').each(function () {
-            vLabelWidth = Math.max(vLabelWidth, getWidth(d3.select(this)));
-        });
-        model.chartPosition.left += vLabelWidth + 4;//NOTE magic number 4
+function linearScale(model, options, orientation) {
+    var range = getRange(model, orientation);
+    var domain = (isVertical(orientation)) ? model.dependentDomain.reverse() : model.dependentDomain;
+    return d3.scale.linear()
+        .range(range)
+        .domain(domain);
+}
+
+function setChartPosition(g, model){
+    var labelSpace = 0,
+        spacing = PADDING,
+        top = model.chartPosition.top,
+        left = model.chartPosition.left;
+    if (isVertical(model.independentAxisOrient)) {
+        spacing = model.tickSize + (PADDING * 2);
+    } else {
+        top += (getHeight(g.select('.y.axis')) - model.plotHeight);
     }
+    if ([model.dependentAxisOrient,model.independentAxisOrient].indexOf('top') >-1) {
+        g.selectAll('.x.axis text').each(function () {
+            labelSpace = Math.max(labelSpace, getHeight(d3.select(this)));
+        });
+        top += labelSpace;
+    }
+    if ([model.dependentAxisOrient,model.independentAxisOrient].indexOf('left') >-1) {
+        g.selectAll('.y.axis text').each(function () {
+            labelSpace = Math.max(labelSpace, getWidth(d3.select(this)));
+        });
+        left += labelSpace + spacing;
+    }
+    return { top: top, left: left};
 }
 
 function Create(svg, model) {
     this.model = model;
-    this.svg = svg;
+    this.chart = svg;
     this.margin = 0.2;
 }
 
 Create.prototype.hideTicks = function () {
-    var tickCount = this.svg.selectAll('.x.axis .primary line')[0].length;
-    var labelCount= this.svg.selectAll('.x.axis .primary text')[0].length;
+    var tickCount = this.chart.selectAll('.x.axis .primary line')[0].length;
+    var labelCount= this.chart.selectAll('.x.axis .primary text')[0].length;
     var labelsShownRatio = labelCount/tickCount;
-    var allPositiveValues = Math.min.apply(null, this.valueScale.domain()) >= 0;
+    var allPositiveValues = Math.min.apply(null, this.dependentAxisScale.domain()) >= 0;
     return labelsShownRatio===1 && allPositiveValues;
 };
 
-Create.prototype.repositionAxis = function () {
-    if (!this.independentScaleCreated || !this.dependentScaleCreated) return;
-    var model = this.model;
-    var xLabelHeight = getHeight(this.svg) - model.chartHeight;
-    var yLabelWidth = getWidth(this.svg) - model.chartWidth;
-    var plotHeight = model.plotHeight = model.chartHeight - xLabelHeight;
-    var plotWidth = model.plotWidth = model.chartWidth - yLabelWidth;
-    model.tickSize = (model.chartType == 'column' && this.hideTicks()) ? 0 : model.tickSize;
+Create.prototype.configureDependentScale = function (model) {
+    this.dependentAxis.tickFormat(model.numberAxisFormatter)
+        .simple(model.simpleValue)
+        .orient(model.dependentAxisOrient);
 
-    if (this.timeScale.rangeRoundBands) {
-        this.timeScale.rangeRoundBands([0, plotWidth], this.margin);
+    if (isVertical(model.dependentAxisOrient)) {
+        this.dependentAxis.tickSize(model.plotWidth)
+            .tickExtension(model.yLabelWidth);
     } else {
-        this.timeScale.range([this.timeScale.range()[0], plotWidth]);
+        this.dependentAxis.tickSize(model.plotHeight)
+        .yOffset(model.dependentAxisOrient =='bottom' ? model.plotHeight : 0);
+        //this.dependentAxis.noLabels(true);
     }
+    this.dependentAxis.scale(this.dependentAxisScale);
+    this.chart.call(this.dependentAxis);
+};
 
-    this.valueScale.range([this.valueScale.range()[0], plotHeight]);
-    this.timeAxis.yOffset(plotHeight).tickSize(model.tickSize).scale(this.timeScale, model.units);
-    this.vAxis.tickSize(plotWidth).tickExtension(yLabelWidth);
-    this.svg.selectAll('*').remove();
-    this.svg.call(this.vAxis);
-    this.svg.call(this.timeAxis);
-    updateChartPosition(this.svg, this.model);
-    this.svg.attr('transform', model.translate(model.chartPosition));
+Create.prototype.configureIndependentScale = function (model) {
+    this.independentAxis
+        .simple(model.simpleDate)
+        .tickSize(model.tickSize)
+        .orient(model.independentAxisOrient);
+    if (!isVertical(model.independentAxisOrient)) {
+        this.independentAxis.yOffset(model.plotHeight);	//position the axis at the bottom of the chart
+    }
+    this.independentAxis.scale(this.independentAxisScale, this.model.units);
+    this.chart.call(this.independentAxis);
+};
+
+Create.prototype.repositionAxis = function () {
+    var model = this.model;
+    var independentRange = getRange(model, model.independentAxisOrient);
+    var dependentRange = getRange(model, model.dependentAxisOrient);
+
+    if (this.independentAxisScale.rangeRoundBands) {
+        this.independentAxisScale.rangeRoundBands(independentRange, this.margin);
+    } else {
+        this.independentAxisScale.range(independentRange);
+    }
+    this.dependentAxisScale.range(dependentRange);
+
+    this.configureIndependentScale(model);
+    this.configureDependentScale(model);
 };
 
 Create.prototype.independentScale = function (scale) {
     var model = this.model;
     if(scale == 'ordinal'){
-        this.timeScale = ordinalScale(model, this);
-        this.timeAxis = axis.category().dataType(model.dataType);
+        this.independentAxisScale = ordinalScale(model, this, model.independentAxisOrient);
+        this.independentAxis = axis.category().dataType(model.dataType);
     } else {
-        this.timeScale = timeScale(model);
-        this.timeAxis = axis.date();
+        this.independentAxisScale = timeScale(model, this, model.independentAxisOrient);
+        this.independentAxis = axis.date();
     }
-    this.timeAxis
-        .simple(model.simpleDate)
-        .yOffset(model.chartHeight)	//position the axis at the bottom of the chart
-        .tickSize(model.tickSize)
-        .scale(this.timeScale, this.model.units);
-    this.svg.call(this.timeAxis);
-    this.independentScaleCreated = true;
-    this.repositionAxis();
+    this.configureIndependentScale(this.model);
 };
 
 Create.prototype.dependentScale = function (scale) {
     var model = this.model;
-    this.valueScale = d3.scale.linear()
-        .domain(model.valueDomain.reverse())
-        .range([0, model.chartHeight]);
-
+    this.dependentAxisScale = linearScale(model, this, model.dependentAxisOrient);
+    this.dependentAxis = axis.number();
     if (model.niceValue) {
-        this.valueScale.nice();
+        this.dependentAxisScale.nice();
     }
+    this.configureDependentScale(this.model);
+};
 
-    this.vAxis = axis.number()
-        .tickFormat(model.numberAxisFormatter)
-        .simple(model.simpleValue)
-        .tickSize(model.chartWidth)	//make the ticks the width of the chart
-        .scale(this.valueScale);
+Create.prototype.createAxes = function (axesSpec) {
+    var model = this.model;
+    var spacing = model.tickSize + (PADDING * 2);
+    this.independentScale(axesSpec.independent);
 
-    if (model.numberAxisOrient !== 'right' && model.numberAxisOrient !== 'left') {
-        this.vAxis.noLabels(true);
+    if (isVertical(model.dependentAxisOrient)) {
+        model.xLabelHeight = getHeight(this.chart) + spacing;
+        this.dependentScale(axesSpec.dependent); //create Y
+        model.yLabelWidth = getWidth(this.chart) - model.chartWidth;// measure Y
     } else {
-        this.vAxis.orient(model.numberAxisOrient);
+        model.yLabelWidth = getWidth(this.chart) + spacing;// measure Y
+        this.dependentScale(axesSpec.dependent);
+        model.xLabelHeight = getHeight(this.chart) - model.chartHeight;
     }
-    this.svg.call(this.vAxis);
-    this.dependentScaleCreated = true;
+    this.model.tickSize = (model.chartType == 'column' && this.hideTicks()) ? 0 : model.tickSize;
+    this.chart.selectAll('*').remove();
     this.repositionAxis();
+    model.chartPosition = setChartPosition(this.chart, model);
+    this.chart.attr('transform', model.translate(model.chartPosition));
 };
 
 module.exports = Create;
@@ -23212,7 +23562,7 @@ function dateAxis() {
 
         g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
 
-        g.append('g').attr('class', 'x axis').each(function () {
+        g.append('g').attr('class', 'x axis axis--independent').each(function () {
             labels.add(d3.select(this), config);
         });
 
@@ -23248,6 +23598,12 @@ function dateAxis() {
     render.lineHeight = function (int) {
         if (!arguments.length) return config.lineHeight;
         config.lineHeight = int;
+        return render;
+    };
+
+    render.orient = function (string) {
+        if (!arguments.length) return config.axes[0].orient();
+        config.axes[0].orient(string);
         return render;
     };
 
@@ -23291,7 +23647,7 @@ function dateAxis() {
 
 module.exports = dateAxis;
 
-},{"../util/dates.js":27,"../util/labels.js":29,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
+},{"../util/dates.js":28,"../util/labels.js":30,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var utils = require('../util/dates.js');
 
@@ -23366,7 +23722,7 @@ module.exports = {
     }
 };
 
-},{"../util/dates.js":27,"./../../../../d3/d3.js":4}],10:[function(require,module,exports){
+},{"../util/dates.js":28,"./../../../../d3/d3.js":4}],10:[function(require,module,exports){
 module.exports = {
     Create: require('./create.js'),
     Plot: require('./plot.js'),
@@ -23388,8 +23744,8 @@ var styler = require('../util/chart-attribute-styles');
 function numericAxis() {
     'use strict';
 
-    var ticksize = 5;
-    var a = d3.svg.axis().orient('left').tickSize(ticksize, 0);
+    var tickSize = 5;
+    var a = d3.svg.axis().orient('left').tickSize(tickSize, 0);
     var lineHeight = 16;
     var userTicks = [];
     var hardRules = [0];
@@ -23420,7 +23776,7 @@ function numericAxis() {
     };
 
     axis.tickSize = function (int) {
-        if (!arguments.length) return ticksize;
+        if (!arguments.length) return a.tickSize();
         a.tickSize(-int);
         return axis;
     };
@@ -23498,7 +23854,7 @@ function numericAxis() {
 
 module.exports = numericAxis;
 
-},{"../util/chart-attribute-styles":25,"./../../../../d3/d3.js":4,"./number.labels":12,"./number.scale":13}],12:[function(require,module,exports){
+},{"../util/chart-attribute-styles":26,"./../../../../d3/d3.js":4,"./number.labels":12,"./number.scale":13}],12:[function(require,module,exports){
 module.exports = {
 
     isVertical: function (axis) {
@@ -23506,11 +23862,11 @@ module.exports = {
     },
     arrangeTicks: function (g, axes, lineHeight, hardRules) {
         var textWidth = this.textWidth(g, axes.orient());
+        g.selectAll('.tick').classed('origin', function (d, i) {
+            return hardRules.indexOf(d) > -1;
+        });
         if (this.isVertical(axes)) {
             g.selectAll('text').attr('transform', 'translate( ' + textWidth + ', ' + -(lineHeight / 2) + ' )');
-            g.selectAll('.tick').classed('origin', function (d, i) {
-                return hardRules.indexOf(d) > -1;
-            });
         }
     },
     extendAxis: function (g, axes, extension) {
@@ -23548,7 +23904,7 @@ module.exports = {
     },
     render: function (g, config) {
         g.append('g')
-            .attr('class', (this.isVertical(config.axes)) ? 'y axis left' : 'x axis')
+            .attr('class', (this.isVertical(config.axes)) ? 'axis axis--dependent y left' : 'axis axis--dependent x')
             .append('g')
             .attr('class', 'primary')
             .call(config.axes);
@@ -23578,11 +23934,13 @@ module.exports = {
         return ticks;
     },
     tickIntervalBoundaries: function (ticks) {
-        var interval = 0;
+        var interval = 0, step;
         ticks.forEach(function (d, i) {
-            if (i < ticks.length - 1) {
-                interval = Math.max(ticks[i + 1] - d, interval);
-            }
+            if (i == ticks.length - 1)  return;
+            // there was an issue with float precission
+            // so we're ensuring the step is sound
+            step = +((ticks[i + 1] - d).toPrecision(12));
+            interval = Math.max(step, interval);
         });
         return interval;
     },
@@ -23590,10 +23948,13 @@ module.exports = {
         var count = this.tickCount(scale, pixelsPerTick);
         var ticks = scale.ticks(count);
         var interval = this.tickIntervalBoundaries(ticks);
-        scale.domain()[0] = Math.ceil(scale.domain()[0] / interval) * interval;
-        scale.domain()[1] = Math.floor(scale.domain()[1] / interval) * interval;
-        ticks.push(scale.domain()[1]);
-        ticks.push(scale.domain()[0]);
+        var pos = scale.domain()[0] > scale.domain()[1] ? 0 : 1;
+        var d1 = Math.ceil(scale.domain()[pos] / interval) * interval;
+        var d2 = Math.floor(scale.domain()[1-pos] / interval) * interval;
+        ticks[d1<=0 ? 'unshift' : 'push'](d1);
+        ticks[d2<=0 ? 'unshift' : 'push'](d2);
+        scale.domain()[pos] = d1;
+        scale.domain()[1-pos] = d2;
         return ticks;
     },
     simpleTicks: function (scale) {
@@ -23625,7 +23986,8 @@ module.exports = {
             customTicks = this.simpleTicks(scale);
         } else {
             customTicks = this.detailedTicks(scale, pixelsPerTick);
-            hardRules.push(scale.domain()[1]);
+            var pos = scale.domain()[0] > scale.domain()[1] ? 1 : 0;
+            hardRules.push(scale.domain()[pos]);
         }
         customTicks = this.removeDuplicateTicks(scale, customTicks);
         return customTicks;
@@ -23648,38 +24010,210 @@ function Plot(model, axes) {
 }
 
 Plot.prototype.columnHeight = function (value){
-    return Math.abs(this.axes.valueScale(value) - this.axes.valueScale(0));
+    return Math.abs(this.axes.dependentAxisScale(value) - this.axes.dependentAxisScale(0));
+};
+
+Plot.prototype.barWidth = function(value) {
+    return Math.abs(this.axes.dependentAxisScale(value) - this.axes.dependentAxisScale(0));
 };
 
 Plot.prototype.columnWidth = function (){
-    var columnWidthOnTimeScale = 20;  //todo: get proportional column width i.e. width to fit data = histogram!
-    var columnWidth = (this.axes.timeScale.rangeBand) ? this.axes.timeScale.rangeBand(): columnWidthOnTimeScale;
-    if(!this.model.stack){
-        columnWidth = columnWidth / this.model.y.series.length;
+    var size = 20;
+    if (this.axes.independentAxisScale.rangeBand) {
+        size = this.axes.independentAxisScale.rangeBand();
     }
-    return columnWidth;
+    if(!this.model.stack){
+        size = size / this.model.y.series.length;
+    }
+    return size;
 };
 
-Plot.prototype.x = function(key, seriesNumber){ //seriesNumber: grrr.
-    var timeScale = this.axes.timeScale(key);
-    var adjustX = (this.axes.timeScale.rangeBand && !this.model.stack) ? (this.axes.timeScale.rangeBand() / this.model.y.series.length) : 0;
-    return timeScale + (adjustX * seriesNumber);
+Plot.prototype.barHeight = function() {
+    var size = 20;
+    if (this.axes.independentAxisScale.rangeBand) {
+        size = this.axes.independentAxisScale.rangeBand();
+    }
+    if (!this.model.stack) {
+        size = size / this.model.y.series.length;
+    }
+    return size;
 };
 
-Plot.prototype.y = function(value, stack){
-    if (this.model.chartType == 'line') return this.axes.valueScale(value);
+Plot.prototype.x = function (){
+    if (['bottom','top'].indexOf(this.model.independentAxisOrient)>-1){
+        return this.xIndependent.apply(this, arguments);
+    } else {
+        return this.xDependent.apply(this, arguments);
+    }
+};
+
+Plot.prototype.y = function(){
+    if (['bottom','top'].indexOf(this.model.independentAxisOrient)>-1){
+        return this.yDependent.apply(this, arguments);
+    } else {
+        return this.yIndependent.apply(this, arguments);
+    }
+};
+
+Plot.prototype.xDependent = function(value, stack) {
+    if (this.model.chartType == 'line') return this.axes.dependentAxisScale(value);
+    var maxValue = Math.min(0, value);
+    if (this.model.stack) {
+        var xValue = stackSeries(this.model, value, stack);
+        var width = this.model.stacks[stack][this.model.stacks[stack].length-1];
+        maxValue = (xValue<0) ? xValue : xValue - width ;
+    }
+    return this.axes.dependentAxisScale(maxValue);
+};
+
+Plot.prototype.yDependent = function(value, stack) {
+    if (this.model.chartType == 'line') return this.axes.dependentAxisScale(value);
     var maxValue = Math.max(0, value);
     if (this.model.stack) {
         var yValue = stackSeries(this.model, value, stack);
         var height = this.model.stacks[stack][this.model.stacks[stack].length-1];
         maxValue = (yValue<0) ? yValue - height : Math.max(0, yValue);
     }
-    return this.axes.valueScale(maxValue);
+    return this.axes.dependentAxisScale(maxValue);
+};
+
+Plot.prototype.xIndependent = function(key, seriesNumber) {
+    var position = this.axes.independentAxisScale(key);
+    var adjust = 0;
+    if (this.axes.independentAxisScale.rangeBand && !this.model.stack) {
+        adjust = (this.axes.independentAxisScale.rangeBand() / this.model.y.series.length) ;
+    }
+    return position + (adjust * seriesNumber);
+};
+
+Plot.prototype.yIndependent = function(key, seriesNumber) {
+    var position = this.axes.independentAxisScale(key);
+    var adjust = 0;
+    if (this.axes.independentAxisScale.rangeBand && !this.model.stack) {
+        adjust = (this.axes.independentAxisScale.rangeBand() / this.model.y.series.length) ;
+    }
+    return position + (adjust * seriesNumber);
 };
 
 module.exports = Plot;
 
 },{"./../../../../d3/d3.js":4}],15:[function(require,module,exports){
+var axes = require('../axis');
+var DataModel = require('../util/data.model.js');
+var metadata = require('../util/metadata.js');
+var Dressing = require('../util/dressing.js');
+var styler = require('../util/chart-attribute-styles');
+
+function plotSeries(plotSVG, model, createdAxes, series, seriesNumber){
+	var data = formatData(model, series);
+    var plot = new axes.Plot(model, createdAxes);
+    var s = plotSVG.append('g').attr('class', 'series');
+
+    s.selectAll('rect')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', function (d){return 'bar '  + series.className + (d.value < 0 ? ' negative' : ' positive');})
+        .attr('data-value', function (d){return d.value;})
+        .attr('x',      function (d, i){ return plot.x(d.value, i); })
+        .attr('y',      function (d, i){ return plot.y(d.key, seriesNumber); })
+        .attr('height', function (d, i){ return plot.barHeight(d, i); })
+        .attr('width',  function (d, i){ return plot.barWidth(d.value, i); });
+
+    if (!model.stack) {
+        // add N/As for null values
+        s.selectAll('text.null-label')
+            .data(data._nulls)
+            .enter()
+            .append('text')
+            .attr('class', 'null-label')
+            .attr('x',  function (d, i) { return plot.x(d.value, i); })
+            .attr('y',  function (d, i) {
+                var yPos = plot.y(d.key, seriesNumber);
+                var halfHeight = plot.barHeight(d, i) / 2;
+                return yPos + halfHeight;
+            })
+            .attr('dx', '1em')
+            .attr('dy', '0.31em')
+            .text('n/a');
+    }
+
+    styler(plotSVG);
+
+    if (!model.stack) {
+        // make those labels who don't fit smaller
+        s.selectAll('text.null-label')
+            .each(function(d, i) {
+                var w = this.getBoundingClientRect();
+                if ((w.height + 2) >= plot.barHeight(d, i)) {
+                    this.innerHTML = '–';
+                }
+            });
+    }
+}
+
+function formatData(model, series) {
+
+    var nulls = [];
+    var data = model.data.map(function (d){
+        return{
+            key:d[model.x.series.key],
+            value: (Array.isArray(d.values)) ? d.values[0][series.key] : d[series.key]
+        };
+    }).filter(function (d) {
+        var isNull = !(d.value !== null && !isNaN(d.value));
+        if (isNull) nulls.push(d);
+        // if we're stacking - we transform nulls
+        // into zeros to avoid problems
+        if (model.stack && isNull) {
+            d.value = 0;
+            return true;
+        }
+        return !isNull;
+    });
+
+    data._nulls = nulls;
+
+    return data;
+}
+
+function barChart(g){
+	'use strict';
+
+	var model = new DataModel('bar', Object.create(g.data()[0]));
+	var svg = g.append('svg')
+		.attr({
+			'class': 'graphic bar-chart',
+			height: model.height,
+			width: model.width,
+			xmlns: 'http://www.w3.org/2000/svg',
+			version: '1.2'
+		});
+	metadata.create(svg, model);
+
+	var dressing = new Dressing(svg, model);
+    dressing.addHeader();
+    dressing.addFooter();
+
+	var chartSVG = svg.append('g').attr('class', 'chart');
+    chartSVG.attr('transform', model.translate(model.chartPosition));
+
+    model.tickSize = 0;
+    var independent = (model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time';
+    var creator = new axes.Create(chartSVG, model);
+    creator.createAxes({dependent:'number', independent: independent});
+
+	var plotSVG = chartSVG.append('g').attr('class', 'plot');
+    var i = 0;
+
+	for(i; i < model.y.series.length; i++){
+		plotSeries(plotSVG, model, creator, model.y.series[i], i);
+	}
+}
+
+module.exports = barChart;
+
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/metadata.js":33}],16:[function(require,module,exports){
 //var d3 = require('d3');
 
 function blankChart() {
@@ -23751,7 +24285,7 @@ function blankChart() {
 
 module.exports = blankChart;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var axes = require('../axis');
 var DataModel = require('../util/data.model.js');
 var metadata = require('../util/metadata.js');
@@ -23849,29 +24383,31 @@ function columnChart(g){
 	var chartSVG = svg.append('g').attr('class', 'chart');
     chartSVG.attr('transform', model.translate(model.chartPosition));
 
-	var create = new axes.Create(chartSVG, model);
-    create.dependentScale('number');
-    create.independentScale((model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time');
+    var independent = (model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time';
+	var creator = new axes.Create(chartSVG, model);
+
+    creator.createAxes({dependent:'number', independent: independent});
 
 	var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = 0;
 
 	for(i; i < model.y.series.length; i++){
-		plotSeries(plotSVG, model, create, model.y.series[i], i);
+		plotSeries(plotSVG, model, creator, model.y.series[i], i);
 	}
 }
 
 module.exports = columnChart;
 
-},{"../axis":10,"../util/chart-attribute-styles":25,"../util/data.model.js":26,"../util/dressing.js":28,"../util/metadata.js":32}],17:[function(require,module,exports){
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/metadata.js":33}],18:[function(require,module,exports){
 module.exports = {
     line: require('./line.js'),
     blank: require('./blank.js'),
     pie: require('./pie.js'),
-    column: require('./column.js')
+    column: require('./column.js'),
+    bar: require('./bar.js')
 };
 
-},{"./blank.js":15,"./column.js":16,"./line.js":18,"./pie.js":19}],18:[function(require,module,exports){
+},{"./bar.js":15,"./blank.js":16,"./column.js":17,"./line.js":19,"./pie.js":20}],19:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var axes = require('../axis');
 var interpolator = require('../util/line-interpolators.js');
@@ -23931,21 +24467,20 @@ function lineChart(g) {
     var chartSVG = svg.append('g').attr('class', 'chart');
     chartSVG.attr('transform', model.translate(model.chartPosition));
 
-    var create = new axes.Create(chartSVG, model);
-    create.dependentScale('number');
-    create.independentScale('time');
+    var creator = new axes.Create(chartSVG, model);
+    creator.createAxes({dependent:'number', independent: 'time'});
 
     var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = model.y.series.length;
 
     while (i--) {
-        plotSeries(plotSVG, model, create, model.y.series[i], i);
+        plotSeries(plotSVG, model, creator, model.y.series[i], i);
     }
 }
 
 module.exports = lineChart;
 
-},{"../axis":10,"../util/chart-attribute-styles":25,"../util/data.model.js":26,"../util/dressing.js":28,"../util/line-interpolators.js":30,"../util/metadata.js":32,"./../../../../d3/d3.js":4}],19:[function(require,module,exports){
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/line-interpolators.js":31,"../util/metadata.js":33,"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
 //var d3 = require('d3');
 
 function pieChart() {
@@ -24029,7 +24564,7 @@ function pieChart() {
 
 module.exports = pieChart;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //the ft logo there's probably an easier ay to do this...
 //var d3 = require('d3');
 
@@ -24063,7 +24598,7 @@ module.exports = ftLogo;
  h3.075L110.955,1.959z"/>
  */
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //var d3 = require('d3');
 var lineThickness = require('../util/line-thickness.js');
 var styler = require('../util/chart-attribute-styles');
@@ -24080,7 +24615,8 @@ function lineKey(options) {
 
     var charts = {
         'line' : addLineKeys,
-        'column' : addColumnKeys
+        'column' : addColumnKeys,
+        'bar' : addColumnKeys
     };
 
     var style = function (d) {
@@ -24172,7 +24708,7 @@ function lineKey(options) {
 
 module.exports = lineKey;
 
-},{"../util/chart-attribute-styles":25,"../util/line-thickness.js":31}],22:[function(require,module,exports){
+},{"../util/chart-attribute-styles":26,"../util/line-thickness.js":32}],23:[function(require,module,exports){
 /*jshint -W084 */
 //text area provides a wrapping text block of a given type
 var d3 = require("./../../../../d3/d3.js");
@@ -24272,7 +24808,7 @@ function textArea() {
 
 module.exports = textArea;
 
-},{"./../../../../d3/d3.js":4}],23:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],24:[function(require,module,exports){
 module.exports = {
     chart: require('./chart/index.js'),
 
@@ -24292,7 +24828,7 @@ module.exports = {
 
 };
 
-},{"./axis/index.js":10,"./chart/index.js":17,"./element/series-key.js":21,"./element/text-area.js":22,"./util/chart-attribute-styles.js":25,"./util/dates.js":27,"./util/version":34}],24:[function(require,module,exports){
+},{"./axis/index.js":10,"./chart/index.js":18,"./element/series-key.js":22,"./element/text-area.js":23,"./util/chart-attribute-styles.js":26,"./util/dates.js":28,"./util/version":35}],25:[function(require,module,exports){
 // More info:
 // http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
 
@@ -24363,7 +24899,7 @@ module.exports = {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 // because of the need to export and convert browser rendered SVGs
 // we need a simple way to attach styles as attributes if necessary,
 // so, heres a list of attributes and the selectors to which they should be applied
@@ -24389,26 +24925,26 @@ function applyAttributes(g, keepD3Styles) {
                 'fill': 'none'
             }
         }, {
-            'selector': '.y.axis path.domain, .secondary path.domain, .secondary .tick line',
+            'selector': '.axis--dependent path.domain, .secondary path.domain, .secondary .tick line',
             'attributes': {
                 'stroke': 'none'
             }
         },
 
         {
-            'selector': '.y.axis .tick line',
+            'selector': '.axis--dependent .tick line',
             'attributes': {
                 'stroke-dasharray': '2 2'
             }
         },
         {
-            'selector': '.y.axis .origin line',
+            'selector': '.axis--dependent .origin line',
             'attributes': {
                 'stroke': '#333',
                 'stroke-dasharray': 'none'
             }
         }, {
-            'selector': '.y.axis .origin.tick line',
+            'selector': '.axis--dependent .origin.tick line',
             'attributes': {
                 'stroke': '#333',
                 'stroke-dasharray': 'none'
@@ -24441,7 +24977,7 @@ function applyAttributes(g, keepD3Styles) {
                 'text-anchor': 'end'
             }
         }, {
-            'selector': '.x.axis .primary path.domain',
+            'selector': '.axis--independent .primary path.domain',
             'attributes': {
                 'stroke': '#757470'
             }
@@ -24497,42 +25033,42 @@ function applyAttributes(g, keepD3Styles) {
         },
         //Columns
         {
-            'selector': '.column, .key__column',
+            'selector': '.column, .key__column, .bar, .key__bar',
             'attributes': {
                 'stroke': 'none'
             }
         }, {
-            'selector': '.column--series1',
+            'selector': '.column--series1, .bar--series1',
             'attributes': {
                 'fill': '#af516c'
             }
         }, {
-            'selector': '.column--series2',
+            'selector': '.column--series2, .bar--series2',
             'attributes': {
                 'fill': '#ecafaf'
             }
         }, {
-            'selector': '.column--series3',
+            'selector': '.column--series3, .bar--series3',
             'attributes': {
                 'fill': '#d7706c'
             }
         }, {
-            'selector': '.column--series4',
+            'selector': '.column--series4, .bar--series4',
             'attributes': {
                 'fill': '#76acb8'
             }
         }, {
-            'selector': '.column--series5',
+            'selector': '.column--series5, .bar--series5',
             'attributes': {
                 'fill': '#81d0e6'
             }
         }, {
-            'selector': '.column--series6',
+            'selector': '.column--series6, .bar--series6',
             'attributes': {
                 'fill': '#4086b6'
             }
         }, {
-            'selector': '.column--series7',
+            'selector': '.column--series7, .bar--series7',
             'attributes': {
                 'fill': '#b8b1a9'
             }
@@ -24599,7 +25135,7 @@ function applyAttributes(g, keepD3Styles) {
 
 module.exports = applyAttributes;
 
-},{"./../../../../d3/d3.js":4}],26:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],27:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var lineThickness = require('../util/line-thickness.js');
 var ratios = require('../util/aspect-ratios.js');
@@ -24652,11 +25188,14 @@ function setExtents(model){
 	return extents;
 }
 
-function timeDomain(model, chartType) {
-    if (model.timeDomain) { return model.timeDomain;  }
+function independentDomain(model, chartType) {
+    if (model.independentDomain) { return model.independentDomain;  }
 
-    if ((model.groupData || model.dataType === 'categorical') && chartType === 'column'){
-        model.data = (model.groupData && model.dataType !=='categorical') ? groupDates(model, model.units) : model.data;
+    var isCategorical = model.dataType === 'categorical';
+    var isBarOrColumn = ['column', 'bar'].indexOf(chartType) >= 0;
+
+    if ((model.groupData || isCategorical) && isBarOrColumn){
+        model.data = (model.groupData && !isCategorical) ? groupDates(model, model.units) : model.data;
         return model.data.map(function (d) {
             return d[model.x.series.key];
         });
@@ -24682,8 +25221,8 @@ function sumStackedValues(model){
     return extents;
 }
 
-function valueDomain(model){
-    if(model.valueDomain){ return model.valueDomain; }
+function dependentDomain(model){
+    if(model.dependentDomain){ return model.dependentDomain; }
 
     var extents = (model.stack) ? sumStackedValues(model) : setExtents(model);
     var domain = d3.extent(extents);
@@ -24769,7 +25308,8 @@ function needsGrouping(units){
 function Model(chartType, opts) {
     var classes = {
         line: ['line--series1', 'line--series2', 'line--series3', 'line--series4', 'line--series5', 'line--series6', 'line--series7', 'accent'],
-        column: ['column--series1', 'column--series2', 'column--series3', 'column--series4', 'column--series5', 'column--series6', 'column--series7', 'accent']
+        column: ['column--series1', 'column--series2', 'column--series3', 'column--series4', 'column--series5', 'column--series6', 'column--series7', 'accent'],
+        bar: ['bar--series1', 'bar--series2', 'bar--series3', 'bar--series4', 'bar--series5', 'bar--series6', 'bar--series7', 'accent']
     };
     var m = {
         //layout stuff
@@ -24790,9 +25330,12 @@ function Model(chartType, opts) {
         niceValue: true,
         hideSource: false,
         stack: false,
-        numberAxisOrient: 'left',
+        dependentAxisOrient: 'left',
+        independentAxisOrient: 'bottom',
         margin: 2,
         lineThickness: undefined,
+        yLabelWidth: 0,
+        xLabelHeight: 0,
         x: {
             series: '&'
         },
@@ -24824,8 +25367,8 @@ function Model(chartType, opts) {
 	m.translate = translate(0);
 	m.data = verifyData(m);
     m.groupData = needsGrouping(m.units);
-    m.timeDomain = timeDomain(m, chartType);
-	m.valueDomain = valueDomain(m);
+    m.independentDomain = independentDomain(m, chartType);
+	m.dependentDomain = dependentDomain(m);
 	m.lineStrokeWidth = lineThickness(m.lineThickness);
 	m.key = setKey(m);
 
@@ -24837,7 +25380,7 @@ Model.prototype.error = function (err) {
 };
 module.exports = Model;
 
-},{"../util/aspect-ratios.js":24,"../util/dates.js":27,"../util/line-thickness.js":31,"../util/series-options.js":33,"./../../../../d3/d3.js":4}],27:[function(require,module,exports){
+},{"../util/aspect-ratios.js":25,"../util/dates.js":28,"../util/line-thickness.js":32,"../util/series-options.js":34,"./../../../../d3/d3.js":4}],28:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 
 var formatter = {
@@ -24976,7 +25519,7 @@ module.exports = {
     unitGenerator: unitGenerator
 };
 
-},{"./../../../../d3/d3.js":4}],28:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],29:[function(require,module,exports){
 var textArea = require('../element/text-area.js');
 var seriesKey = require('../element/series-key.js');
 var ftLogo = require('../element/logo.js');
@@ -25156,13 +25699,13 @@ Dressing.prototype.setHeight = function () {
 Dressing.prototype.setPosition = function () {
     this.model.chartPosition = {
         top: this.headerHeight + this.halfLineStrokeWidth,
-        left: (this.model.numberAxisOrient === 'left' ? 0 : this.halfLineStrokeWidth)
+        left: (this.model.dependentAxisOrient === 'left' ? 0 : this.halfLineStrokeWidth)
     };
 };
 
 module.exports = Dressing;
 
-},{"../element/logo.js":20,"../element/series-key.js":21,"../element/text-area.js":22}],29:[function(require,module,exports){
+},{"../element/logo.js":21,"../element/series-key.js":22,"../element/text-area.js":23}],30:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var dates = require('../util/dates');
 var styler = require('./chart-attribute-styles');
@@ -25197,7 +25740,7 @@ module.exports = {
         });
 
         //remove text-anchor attribute from year positions
-        g.selectAll('.primary text').attr({
+        g.selectAll('.x.axis .primary text').attr({
             x: null,
             y: null,
             dy: 15 + config.tickSize
@@ -25338,7 +25881,7 @@ module.exports = {
     }
 };
 
-},{"../util/dates":27,"./../../../../d3/d3.js":4,"./chart-attribute-styles":25}],30:[function(require,module,exports){
+},{"../util/dates":28,"./../../../../d3/d3.js":4,"./chart-attribute-styles":26}],31:[function(require,module,exports){
 //a place to define custom line interpolators
 
 var d3 = require("./../../../../d3/d3.js");
@@ -25372,7 +25915,7 @@ module.exports = {
     gappedLine: gappedLineInterpolator
 };
 
-},{"./../../../../d3/d3.js":4}],31:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],32:[function(require,module,exports){
 var thicknesses = {
     small: 2,
     medium: 4,
@@ -25400,7 +25943,7 @@ module.exports = function (value) {
     }
 };
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 //example:
 //http://codinginparadise.org/projects/svgweb-staging/tests/htmlObjectHarness/basic-metadata-example-01-b.html
 var svgSchema = 'http://www.w3.org/2000/svg';
@@ -25451,7 +25994,7 @@ module.exports = {
     create: create
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 function isTruthy(value) {
     return !!value;
 }
@@ -25497,9 +26040,9 @@ module.exports = {
     normalise: normalise
 };
 
-},{}],34:[function(require,module,exports){
-module.exports = "0.3.4";
 },{}],35:[function(require,module,exports){
+module.exports = "0.4.0";
+},{}],36:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -27049,7 +27592,7 @@ module.exports = "0.3.4";
   }
 }.call(this));
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -27074,14 +27617,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -27669,7 +28212,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":37,"inherits":36}],39:[function(require,module,exports){
+},{"./support/isBuffer":38,"inherits":37}],40:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -27716,7 +28259,7 @@ Handlebars.noConflict = function() {
 Handlebars['default'] = Handlebars;
 
 exports["default"] = Handlebars;
-},{"./handlebars/base":40,"./handlebars/exception":41,"./handlebars/runtime":42,"./handlebars/safe-string":43,"./handlebars/utils":44}],40:[function(require,module,exports){
+},{"./handlebars/base":41,"./handlebars/exception":42,"./handlebars/runtime":43,"./handlebars/safe-string":44,"./handlebars/utils":45}],41:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -27960,7 +28503,7 @@ var createFrame = function(object) {
   return frame;
 };
 exports.createFrame = createFrame;
-},{"./exception":41,"./utils":44}],41:[function(require,module,exports){
+},{"./exception":42,"./utils":45}],42:[function(require,module,exports){
 "use strict";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -27992,7 +28535,7 @@ function Exception(message, node) {
 Exception.prototype = new Error();
 
 exports["default"] = Exception;
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -28213,7 +28756,7 @@ exports.noop = noop;function initData(context, data) {
   }
   return data;
 }
-},{"./base":40,"./exception":41,"./utils":44}],43:[function(require,module,exports){
+},{"./base":41,"./exception":42,"./utils":45}],44:[function(require,module,exports){
 "use strict";
 // Build out our basic SafeString type
 function SafeString(string) {
@@ -28225,7 +28768,7 @@ SafeString.prototype.toString = SafeString.prototype.toHTML = function() {
 };
 
 exports["default"] = SafeString;
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 /*jshint -W004 */
 var escape = {
@@ -28327,15 +28870,15 @@ exports.blockParams = blockParams;function appendContextPath(contextPath, id) {
 }
 
 exports.appendContextPath = appendContextPath;
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime').default;
 
-},{"./dist/cjs/handlebars.runtime":39}],46:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":40}],47:[function(require,module,exports){
 module.exports = require("handlebars/runtime")["default"];
 
-},{"handlebars/runtime":45}],47:[function(require,module,exports){
+},{"handlebars/runtime":46}],48:[function(require,module,exports){
 var Datatypes = module.exports = {
     CATEGORICAL: 'categorical',
     NUMERIC: 'numeric',
@@ -28353,7 +28896,7 @@ var Datatypes = module.exports = {
     }
 };
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Axis = require('../models/Axis.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -28444,7 +28987,7 @@ var DependantAxis = Axis.extend({
 
 module.exports = DependantAxis;
 
-},{"../models/Axis.js":67,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./Datatypes.js":47}],49:[function(require,module,exports){
+},{"../models/Axis.js":68,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./Datatypes.js":48}],50:[function(require,module,exports){
 var Axis = require('../models/Axis.js');
 var DataTypes = require('./Datatypes.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -28513,7 +29056,7 @@ var IndependantAxis = Axis.extend({
 
 module.exports = IndependantAxis;
 
-},{"../models/Axis.js":67,"../models/Column.js":69,"./../../../bower_components/underscore/underscore.js":35,"./Datatypes.js":47}],50:[function(require,module,exports){
+},{"../models/Axis.js":68,"../models/Column.js":71,"./../../../bower_components/underscore/underscore.js":36,"./Datatypes.js":48}],51:[function(require,module,exports){
 module.exports = {
     // works out best set of ticks to display
     AUTO: 'auto',
@@ -28531,7 +29074,7 @@ module.exports = {
     ARRAY: 'array',
 };
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
@@ -28540,7 +29083,7 @@ module.exports = new Backbone.Collection([
     {width: 186, height: null, variationName: 'small web inline'}
 ]);
 
-},{"./../core/backbone.js":54}],52:[function(require,module,exports){
+},{"./../core/backbone.js":55}],53:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -28649,7 +29192,7 @@ var CollectionView = Backbone.View.extend({
 
 module.exports = CollectionView;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":54}],53:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36,"./backbone.js":55}],54:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -28721,7 +29264,7 @@ var RegionView = Backbone.View.extend({
 
 module.exports = RegionView;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./backbone.js":54}],54:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36,"./backbone.js":55}],55:[function(require,module,exports){
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var Backbone = require("./../../../bower_components/backbone/backbone.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -28745,7 +29288,7 @@ handlers.forEach(function (handler) {
 
 module.exports = Backbone;
 
-},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":35,"./stickit-handlers/btn-group-radio.js":55}],55:[function(require,module,exports){
+},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":36,"./stickit-handlers/btn-group-radio.js":56}],56:[function(require,module,exports){
 var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
 
 module.exports = {
@@ -28794,7 +29337,7 @@ module.exports = {
     }
 };
 
-},{"./../../../../bower_components/jquery/dist/jquery.js":5}],56:[function(require,module,exports){
+},{"./../../../../bower_components/jquery/dist/jquery.js":5}],57:[function(require,module,exports){
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
@@ -28826,7 +29369,7 @@ module.exports = function download(name, svg, types, bgColor, callback) {
     });
 };
 
-},{"./svgDataURI.js":57,"./utils.js":58}],57:[function(require,module,exports){
+},{"./svgDataURI.js":58,"./utils.js":59}],58:[function(require,module,exports){
 var utils = require('./utils.js');
 
 
@@ -28988,7 +29531,7 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
 
 };
 
-},{"./utils.js":58}],58:[function(require,module,exports){
+},{"./utils.js":59}],59:[function(require,module,exports){
 /* globals unescape, MouseEvent, XMLSerializer */
 exports.createFilename = function createFilename(name, ext) {
     ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
@@ -29093,7 +29636,7 @@ exports.toDataURI = function toDataURI(data, type, encoding) {
 };
 
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
 _.templateSettings = {
@@ -29107,7 +29650,7 @@ module.exports = {
     BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
 };
 
-},{"./../../../bower_components/underscore/underscore.js":35}],60:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36}],61:[function(require,module,exports){
 var DataTypes = require('./../charting/Datatypes.js');
 var Axis = require('./../models/Axis.js');
 var Column = require('./../models/Column.js');
@@ -29179,7 +29722,7 @@ function describeColumns(file){
 
 module.exports = describeColumns;
 
-},{"./../charting/Datatypes.js":47,"./../models/Axis.js":67,"./../models/Column.js":69}],61:[function(require,module,exports){
+},{"./../charting/Datatypes.js":48,"./../models/Axis.js":68,"./../models/Column.js":71}],62:[function(require,module,exports){
 var DateParts = require('./predictDateParts.js');
 
 var types = {
@@ -29304,7 +29847,7 @@ var predictedDateFormat = function (value) {
 
 module.exports = predictedDateFormat;
 
-},{"./predictDateParts.js":62}],62:[function(require,module,exports){
+},{"./predictDateParts.js":63}],63:[function(require,module,exports){
 require('./../polyfill/bind');
 
 var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
@@ -29554,7 +30097,7 @@ DateParts.prototype.Part = function(d) {
 
 module.exports = DateParts;
 
-},{"./../polyfill/bind":77}],63:[function(require,module,exports){
+},{"./../polyfill/bind":79}],64:[function(require,module,exports){
 
 var predictedDateFormat = require('./predictDateFormat.js');
 
@@ -29653,7 +30196,7 @@ function findPopularDateFormat(file, typeInfo){
 
 module.exports = findPopularDateFormat;
 
-},{"./predictDateFormat.js":61}],64:[function(require,module,exports){
+},{"./predictDateFormat.js":62}],65:[function(require,module,exports){
 
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var d3 = require("./../../../bower_components/d3/d3.js");
@@ -29841,7 +30384,7 @@ ValidateFile.prototype.logError = function(bool, message){
 
 module.exports = ValidateFile;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":35,"./validateFileDataTypes.js":65,"./validateFilePipeline.js":66}],65:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":36,"./validateFileDataTypes.js":66,"./validateFilePipeline.js":67}],66:[function(require,module,exports){
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1234])/i;
 var aYearALongWayInTheFuture = 3000;
 
@@ -29920,7 +30463,7 @@ var sniffDataType = function (value, colNum) {
 
 module.exports = sniffDataType;
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 module.exports = {
     isValid : function(str) {
         return str.substring(0, 2) === '&\t';
@@ -29957,7 +30500,7 @@ module.exports = {
     }
 };
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -29983,7 +30526,29 @@ var Axis = Backbone.Model.extend({
 
 module.exports = Axis;
 
-},{"../charting/Datatypes.js":47,"./../core/backbone.js":54}],68:[function(require,module,exports){
+},{"../charting/Datatypes.js":48,"./../core/backbone.js":55}],69:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+var _ = require("./../../../bower_components/underscore/underscore.js");
+
+var BarControls = Backbone.Model.extend({
+
+    defaults:{
+        flipXAxis: false,
+        stack: false
+    },
+
+    overrideConfig: function(config){
+        config.dependentAxisOrient = this.attributes.flipXAxis ? 'bottom' : 'top';
+        config.stack = this.attributes.stack;
+        return config;
+    }
+
+});
+
+
+module.exports = BarControls;
+
+},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],70:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DependantAxis = require('../charting/DependantAxis.js');
 var IndependantAxis = require('../charting/IndependantAxis.js');
@@ -30092,7 +30657,7 @@ var Chart = Backbone.Model.extend({
 
 module.exports = Chart;
 
-},{"../charting/DependantAxis.js":48,"../charting/IndependantAxis.js":49,"./../core/backbone.js":54,"./Axis.js":67,"./Dataset.js":71}],69:[function(require,module,exports){
+},{"../charting/DependantAxis.js":49,"../charting/IndependantAxis.js":50,"./../core/backbone.js":55,"./Axis.js":68,"./Dataset.js":73}],71:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Axis = require('./Axis.js');
 
@@ -30107,28 +30672,17 @@ module.exports = Backbone.Model.extend({
 
 });
 
-},{"./../core/backbone.js":54,"./Axis.js":67}],70:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./Axis.js":68}],72:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
-
-function setDateGroupings(grouping){
-    var dateGroupings = {
-        'monthly': ['monthly', 'yearly'],
-        'quarterly': ['quarterly', 'yearly'],
-        'yearly': ['yearly']
-    };
-    return dateGroupings[grouping];
-}
 
 var ColumnControls = Backbone.Model.extend({
 
     defaults:{
-        //groupDates: false
         stack: false
     },
 
     overrideConfig: function(config){
-        //config.groupDates = setDateGroupings(this.attributes.groupDates);
         config.stack = this.attributes.stack;
         return config;
     }
@@ -30138,7 +30692,7 @@ var ColumnControls = Backbone.Model.extend({
 
 module.exports = ColumnControls;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54}],71:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],73:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 module.exports = Backbone.Model.extend({
@@ -30147,7 +30701,7 @@ module.exports = Backbone.Model.extend({
     }
 });
 
-},{"./../core/backbone":54}],72:[function(require,module,exports){
+},{"./../core/backbone":55}],74:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var Chart = require('./Chart.js');
@@ -30184,7 +30738,7 @@ var Graphic = Backbone.Model.extend({
 
 module.exports = Graphic;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./Chart.js":68}],73:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./Chart.js":70}],75:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 var GraphicType = Backbone.Model.extend({
@@ -30203,7 +30757,7 @@ var GraphicType = Backbone.Model.extend({
 
 module.exports = GraphicType;
 
-},{"./../core/backbone":54}],74:[function(require,module,exports){
+},{"./../core/backbone":55}],76:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 function getKeyLabel(d) {
@@ -30242,6 +30796,8 @@ var GraphicVariation = Backbone.Model.extend({
 
         var g = this.graphic.toJSON();
 
+        var typeName = this.graphicType.get('typeName');
+
         var config = {
 
             width: this.variation.get('width'),
@@ -30252,7 +30808,8 @@ var GraphicVariation = Backbone.Model.extend({
             source: g.source,
             hideSource: g.noSource,
             footnote: g.footnote,
-
+            dependentAxisOrient: (typeName === 'Bar') ? 'bottom' : 'left',
+            independentAxisOrient: (typeName === 'Bar') ? 'left' : 'bottom',
             units: this.graphic.chart.xAxis.get('units'),
             data: data,
             dateParser: this.graphic.chart.xAxis.get('dateFormat'),
@@ -30299,7 +30856,7 @@ var GraphicVariation = Backbone.Model.extend({
 
 module.exports = GraphicVariation;
 
-},{"./../core/backbone.js":54}],75:[function(require,module,exports){
+},{"./../core/backbone.js":55}],77:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var TickStyle = require('../charting/TickStyle.js');
@@ -30316,7 +30873,7 @@ var LineControls = Backbone.Model.extend({
     },
 
     overrideConfig: function (config) {
-        config.numberAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
+        config.dependentAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
         config.y.flip = this.attributes.flipYAxis;
         config.niceValue = this.attributes.nice;
@@ -30329,7 +30886,7 @@ var LineControls = Backbone.Model.extend({
 
 module.exports = LineControls;
 
-},{"../charting/TickStyle.js":50,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54}],76:[function(require,module,exports){
+},{"../charting/TickStyle.js":51,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],78:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 var Backbone = require('./../core/backbone.js');
 var DataTypes = require('./../charting/Datatypes.js');
@@ -30566,7 +31123,7 @@ var DataImport = Backbone.Model.extend({
 
 module.exports = DataImport;
 
-},{"../import/describeColumns.js":60,"../import/setPopularDateFormat.js":63,"../import/validateFile.js":64,"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../transform/index.js":93,"./Axis.js":67}],77:[function(require,module,exports){
+},{"../import/describeColumns.js":61,"../import/setPopularDateFormat.js":64,"../import/validateFile.js":65,"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../transform/index.js":96,"./Axis.js":68}],79:[function(require,module,exports){
 if (!Function.prototype.bind) {
     Function.prototype.bind = function (oThis) {
         if (typeof this !== 'function') {
@@ -30591,14 +31148,14 @@ if (!Function.prototype.bind) {
     };
 }
 
-},{}],78:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],79:[function(require,module,exports){
+},{"hbsfy/runtime":47}],81:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30617,7 +31174,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"dataType\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],80:[function(require,module,exports){
+},{"hbsfy/runtime":47}],82:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30636,21 +31193,21 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],81:[function(require,module,exports){
+},{"hbsfy/runtime":47}],83:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],82:[function(require,module,exports){
+},{"hbsfy/runtime":47}],84:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div><!-- Graphic Type Control --></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],83:[function(require,module,exports){
+},{"hbsfy/runtime":47}],85:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30669,21 +31226,21 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "\n</h2>\n<div class=\"variations-container\" data-region=\"variations\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],84:[function(require,module,exports){
+},{"hbsfy/runtime":47}],86:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"graphic-container\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],85:[function(require,module,exports){
+},{"hbsfy/runtime":47}],87:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],86:[function(require,module,exports){
+},{"hbsfy/runtime":47}],88:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -30694,21 +31251,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],87:[function(require,module,exports){
+},{"hbsfy/runtime":47}],89:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],88:[function(require,module,exports){
+},{"hbsfy/runtime":47}],90:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"dataType\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],89:[function(require,module,exports){
+},{"hbsfy/runtime":47}],91:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -30750,7 +31307,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</span>\n</span>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],90:[function(require,module,exports){
+},{"hbsfy/runtime":47}],92:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -30767,21 +31324,28 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "px</td>\n                </tr>\n                </tbody>\n            </table>\n        </div>\n    </div>\n    <div class=\"panel panel-default\">\n        <div class=\"panel-heading\">Chart Controls</div>\n        <div class=\"panel-body\" data-region=\"graphic-type-controls\"></div>\n    </div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n        <button role=\"button\" type=\"button\" name=\"hide\" class=\"btn btn-lg btn-block btn-default\">Hide</button>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],91:[function(require,module,exports){
+},{"hbsfy/runtime":47}],93:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var HandlebarsCompiler = require('hbsfy/runtime');
+module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipXAxis\">X axis on the bottom\n    </label>\n</div>\n";
+},"useData":true});
+
+},{"hbsfy/runtime":47}],94:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n<!--</label>-->\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],92:[function(require,module,exports){
+},{"hbsfy/runtime":47}],95:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":46}],93:[function(require,module,exports){
+},{"hbsfy/runtime":47}],96:[function(require,module,exports){
 module.exports = {
     number: require('./number.js'),
     time: require('./time.js'),
@@ -30789,7 +31353,7 @@ module.exports = {
     table: require('./table.js')
 };
 
-},{"./number.js":94,"./series.js":96,"./table.js":97,"./time.js":98}],94:[function(require,module,exports){
+},{"./number.js":97,"./series.js":99,"./table.js":100,"./time.js":101}],97:[function(require,module,exports){
 var currencySymbol = /^(\$|€|¥|£)/;
 var allCommas = /\,/g;
 var percent = /(\%)$/;
@@ -30828,7 +31392,7 @@ function createNumberTransformer(options) {
     return transformNumber;
 }
 
-},{}],95:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 
 module.exports = function buildQuarterParser(format) {
@@ -30861,7 +31425,7 @@ module.exports = function buildQuarterParser(format) {
 
 };
 
-},{"./../../../bower_components/d3/d3.js":4}],96:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4}],99:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
@@ -30879,7 +31443,7 @@ function series(array, property, transformer, customLogic) {
     }
 }
 
-},{}],97:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 var Datatypes = require('../charting/Datatypes.js');
 var series = require('./series.js');
 
@@ -30923,7 +31487,7 @@ function transformTable(data, columns, transform, type, customLogic) {
     }
 }
 
-},{"../charting/Datatypes.js":47,"./series.js":96}],98:[function(require,module,exports){
+},{"../charting/Datatypes.js":48,"./series.js":99}],101:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 var quarterParser = require('./quarterParser');
 
@@ -30995,7 +31559,7 @@ function createDateParser(format) {
     }
 }
 
-},{"./../../../bower_components/d3/d3.js":4,"./quarterParser":95}],99:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./quarterParser":98}],102:[function(require,module,exports){
 /* global gapi, ng, auth2 */
 var tracking = require('./../utils/tracking.js');
 
@@ -31037,7 +31601,7 @@ Authentication.prototype.onSignIn = function (googleUser) {
 
 module.exports = Authentication;
 
-},{"./../utils/tracking.js":100}],100:[function(require,module,exports){
+},{"./../utils/tracking.js":103}],103:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
     if (document.domain === 'localhost') {
@@ -31083,7 +31647,7 @@ Tracking.prototype.user = function (container, email) {
 
 module.exports = new Tracking();
 
-},{}],101:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -31114,7 +31678,31 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":54,"./../templates/axis-label.hbs":78}],102:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./../templates/axis-label.hbs":80}],105:[function(require,module,exports){
+var Backbone = require('./../core/backbone.js');
+
+var BarControls = Backbone.View.extend({
+
+    className: 'view-graphic-type-controls',
+
+    template: require('./../templates/type-controls-bar.hbs'),
+
+    bindings: {
+        '[name="stack"]': 'stack', //make this into stack
+        '[name="flipXAxis"]': 'flipXAxis'
+    },
+
+    render: function () {
+        this.el.innerHTML = this.template();
+        this.stickit(this.model.controls);
+        return this;
+    }
+
+});
+
+module.exports = BarControls;
+
+},{"./../core/backbone.js":55,"./../templates/type-controls-bar.hbs":93}],106:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ColumnControls = Backbone.View.extend({
@@ -31137,7 +31725,7 @@ var ColumnControls = Backbone.View.extend({
 
 module.exports = ColumnControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-column.hbs":91}],103:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./../templates/type-controls-column.hbs":94}],107:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -31170,7 +31758,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/datatype.hbs":80}],104:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./../templates/datatype.hbs":82}],108:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -31243,7 +31831,7 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":54}],105:[function(require,module,exports){
+},{"./../core/backbone.js":55}],109:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Datatypes = require('../charting/Datatypes.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31326,7 +31914,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/axis.hbs":79,"./Datatype.js":103,"./Highlight.js":110,"./SeriesControls.js":116}],106:[function(require,module,exports){
+},{"../charting/Datatypes.js":48,"./../core/RegionView.js":54,"./../templates/axis.hbs":81,"./Datatype.js":107,"./Highlight.js":114,"./SeriesControls.js":120}],110:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
@@ -31426,7 +32014,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-controls.hbs":81,"./../utils/tracking.js":100,"./DependantAxisControls.js":105,"./IndependentAxisControls.js":112}],107:[function(require,module,exports){
+},{"./../core/RegionView.js":54,"./../core/backbone.js":55,"./../templates/graphic-controls.hbs":83,"./../utils/tracking.js":103,"./DependantAxisControls.js":109,"./IndependentAxisControls.js":116}],111:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -31444,7 +32032,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":54,"./../templates/graphic-type-controls.hbs":82}],108:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./../templates/graphic-type-controls.hbs":84}],112:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('../models/GraphicVariation.js');
@@ -31503,7 +32091,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"../models/GraphicVariation.js":74,"./../core/CollectionView.js":52,"./../core/RegionView.js":53,"./../core/backbone.js":54,"./../templates/graphic-type.hbs":83,"./GraphicVariation.js":109}],109:[function(require,module,exports){
+},{"../models/GraphicVariation.js":76,"./../core/CollectionView.js":53,"./../core/RegionView.js":54,"./../core/backbone.js":55,"./../templates/graphic-type.hbs":85,"./GraphicVariation.js":113}],113:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var oCharts = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart;
@@ -31512,7 +32100,8 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 
 var chartTypes = {
     'Line' : oCharts.line,
-    'Column' : oCharts.column
+    'Column' : oCharts.column,
+    'Bar' : oCharts.bar
 };
 
 //todo: variation -- to variant
@@ -31602,7 +32191,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/backbone.js":54,"./../templates/graphic.hbs":84}],110:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./../templates/graphic.hbs":86}],114:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -31638,7 +32227,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"../charting/Datatypes.js":47,"./../core/backbone.js":54,"./../templates/highlight.hbs":85}],111:[function(require,module,exports){
+},{"../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../templates/highlight.hbs":87}],115:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./../models/import.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -31839,7 +32428,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":54,"./../models/import.js":76,"./../templates/import-warning.hbs":86,"./../templates/import.hbs":87,"./../utils/tracking.js":100}],112:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":55,"./../models/import.js":78,"./../templates/import-warning.hbs":88,"./../templates/import.hbs":89,"./../utils/tracking.js":103}],116:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./AxisLabel.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31936,7 +32525,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"../charting/Datatypes.js":47,"./../core/RegionView.js":53,"./../templates/independant-axis-control.hbs":88,"./AxisLabel.js":101,"./Datatype.js":103,"./DateFormat.js":104,"./Highlight.js":110}],113:[function(require,module,exports){
+},{"../charting/Datatypes.js":48,"./../core/RegionView.js":54,"./../templates/independant-axis-control.hbs":90,"./AxisLabel.js":104,"./Datatype.js":107,"./DateFormat.js":108,"./Highlight.js":114}],117:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -31981,7 +32570,7 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":54,"./../help/index.js":59}],114:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./../help/index.js":60}],118:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var LineControls = Backbone.View.extend({
@@ -32007,7 +32596,7 @@ var LineControls = Backbone.View.extend({
 
 module.exports = LineControls;
 
-},{"./../core/backbone.js":54,"./../templates/type-controls-line.hbs":92}],115:[function(require,module,exports){
+},{"./../core/backbone.js":55,"./../templates/type-controls-line.hbs":95}],119:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
@@ -32015,12 +32604,14 @@ var RegionView = require('./../core/RegionView.js');
 var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
 var ViewLineControls = require('./LineControls.js');
 var ViewColumnControls = require('./ColumnControls.js');
+var ViewBarControls = require('./BarControls.js');
 var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
 
 var controls = {
     'Line' : ViewLineControls,
-    'Column' : ViewColumnControls
+    'Column' : ViewColumnControls,
+    'Bar' : ViewBarControls
 };
 
 var ViewSelectedVariation = RegionView.extend({
@@ -32132,7 +32723,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../../bower_components/underscore/underscore.js":35,"./../core/RegionView.js":53,"./../export/download.js":56,"./../templates/selected-variation.hbs":90,"./../utils/tracking.js":100,"./ColumnControls.js":102,"./GraphicTypeControls.js":107,"./LineControls.js":114,"util":38}],116:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":36,"./../core/RegionView.js":54,"./../export/download.js":57,"./../templates/selected-variation.hbs":92,"./../utils/tracking.js":103,"./BarControls.js":105,"./ColumnControls.js":106,"./GraphicTypeControls.js":111,"./LineControls.js":118,"util":39}],120:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./SeriesList.js');
 
@@ -32173,7 +32764,7 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":53,"./SeriesList.js":117}],117:[function(require,module,exports){
+},{"./../core/RegionView.js":54,"./SeriesList.js":121}],121:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -32459,7 +33050,7 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"../models/Axis.js":67,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":52,"./../core/backbone.js":54,"./../templates/ordered-column.hbs":89}],"nightingale":[function(require,module,exports){
+},{"../models/Axis.js":68,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":53,"./../core/backbone.js":55,"./../templates/ordered-column.hbs":91}],"nightingale":[function(require,module,exports){
 var Backbone = require('./core/backbone');
 var Graphic = require('./models/Graphic.js');
 var ViewGraphicControls = require('./views/GraphicControls.js');
@@ -32472,6 +33063,7 @@ var ViewSelectedVariation = require('./views/SelectedVariation.js');
 var Variations = require('./charting/Variations.js');
 var LineControls = require('./models/LineControls.js');
 var ColumnControls = require('./models/ColumnControls.js');
+var BarControls = require('./models/BarControls.js');
 var transform = require('./transform/index.js');
 var Datatypes = require('./charting/Datatypes.js');
 var fontFix = require('./export/svgDataURI.js').fontFix;
@@ -32504,6 +33096,13 @@ function init() {
         }, {
             graphic: graphic,
             controls: new ColumnControls(),
+            variations: Variations
+        }),
+        new GraphicType({
+            typeName: 'Bar'
+        }, {
+            graphic: graphic,
+            controls: new BarControls(),
             variations: Variations
         })
     ]);
@@ -32676,4 +33275,4 @@ function nightingale() {
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":23,"./../../bower_components/underscore/underscore.js":35,"./charting/Datatypes.js":47,"./charting/Variations.js":51,"./core/backbone":54,"./export/svgDataURI.js":57,"./models/ColumnControls.js":70,"./models/Graphic.js":72,"./models/GraphicType.js":73,"./models/LineControls.js":75,"./models/import.js":76,"./transform/index.js":93,"./utils/authentication.js":99,"./views/GraphicControls.js":106,"./views/GraphicTypes.js":108,"./views/ImportData.js":111,"./views/InlineHelp.js":113,"./views/SelectedVariation.js":115}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../bower_components/underscore/underscore.js":36,"./charting/Datatypes.js":48,"./charting/Variations.js":52,"./core/backbone":55,"./export/svgDataURI.js":58,"./models/BarControls.js":69,"./models/ColumnControls.js":72,"./models/Graphic.js":74,"./models/GraphicType.js":75,"./models/LineControls.js":77,"./models/import.js":78,"./transform/index.js":96,"./utils/authentication.js":102,"./views/GraphicControls.js":110,"./views/GraphicTypes.js":112,"./views/ImportData.js":115,"./views/InlineHelp.js":117,"./views/SelectedVariation.js":119}]},{},["nightingale"]);

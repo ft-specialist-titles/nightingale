@@ -4865,12 +4865,6 @@ button.close {
   fill: rgba(0, 0, 0, 0.5);
   stroke: none; }
 
-.y.axis .domain {
-  stroke: none; }
-
-.secondary .domain, .secondary .tick {
-  stroke: none; }
-
 .primary .tick text {
   font-size: 12px; }
 
@@ -5125,6 +5119,8 @@ svg .chart-title:hover, svg .chart-subtitle:hover, svg .chart-source:hover, svg 
 
 .view-graphic-variation-collection {
   display: block; }
+  .view-graphic-variation-collection:nth-child(n+3) h2 {
+    visibility: hidden; }
   .view-graphic-variation-collection h2 {
     margin-left: 15px;
     border-top: 4px solid #D0D0D0; }
