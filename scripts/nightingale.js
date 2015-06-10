@@ -25449,7 +25449,9 @@ var formatter = {
     },
 
     daily: function (d, i) {
-        return d3.time.format('%d')(d);
+        var str = d3.time.format('%e')(d);
+        if (str[0] === ' ') str = str.substring(1);
+        return str;
     },
 
     hours: function (d, i) {
@@ -25804,7 +25806,7 @@ module.exports = {
             this.removeWeekly(g, axis, options);
         }
         if (config.units[0] == 'daily'){
-            this.removeDaily(g, axis, options);
+            // in this case we don't remove daily ticks
         }
         if (config.units[0] == 'monthly'){
             this.removeMonths(g, axis, options, config);
@@ -26086,7 +26088,7 @@ module.exports = {
 };
 
 },{}],35:[function(require,module,exports){
-module.exports = "0.4.1";
+module.exports = "0.4.2";
 },{}],36:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
