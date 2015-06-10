@@ -575,7 +575,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":36}],2:[function(require,module,exports){
+},{"./../backbone/backbone.js":2,"./../underscore/underscore.js":37}],2:[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2185,7 +2185,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }));
 
-},{"./../underscore/underscore.js":36}],3:[function(require,module,exports){
+},{"./../underscore/underscore.js":37}],3:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.4 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -23357,7 +23357,7 @@ function categoryAxis() {
 
 module.exports = categoryAxis;
 
-},{"../util/chart-attribute-styles":26,"../util/dates.js":28,"../util/labels.js":30,"./../../../../d3/d3.js":4}],7:[function(require,module,exports){
+},{"../util/chart-attribute-styles":26,"../util/dates.js":29,"../util/labels.js":31,"./../../../../d3/d3.js":4}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var axis = {
     category: require('./category.js'),
@@ -23650,7 +23650,7 @@ function dateAxis() {
 
 module.exports = dateAxis;
 
-},{"../util/dates.js":28,"../util/labels.js":30,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
+},{"../util/dates.js":29,"../util/labels.js":31,"./../../../../d3/d3.js":4,"./date.scale.js":9}],9:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var utils = require('../util/dates.js');
 
@@ -23729,7 +23729,7 @@ module.exports = {
     }
 };
 
-},{"../util/dates.js":28,"./../../../../d3/d3.js":4}],10:[function(require,module,exports){
+},{"../util/dates.js":29,"./../../../../d3/d3.js":4}],10:[function(require,module,exports){
 module.exports = {
     Create: require('./create.js'),
     Plot: require('./plot.js'),
@@ -24220,7 +24220,7 @@ function barChart(g){
 
 module.exports = barChart;
 
-},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/metadata.js":33}],16:[function(require,module,exports){
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":28,"../util/dressing.js":30,"../util/metadata.js":34}],16:[function(require,module,exports){
 //var d3 = require('d3');
 
 function blankChart() {
@@ -24405,7 +24405,7 @@ function columnChart(g){
 
 module.exports = columnChart;
 
-},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/metadata.js":33}],18:[function(require,module,exports){
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":28,"../util/dressing.js":30,"../util/metadata.js":34}],18:[function(require,module,exports){
 module.exports = {
     line: require('./line.js'),
     blank: require('./blank.js'),
@@ -24487,7 +24487,7 @@ function lineChart(g) {
 
 module.exports = lineChart;
 
-},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":27,"../util/dressing.js":29,"../util/line-interpolators.js":31,"../util/metadata.js":33,"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
+},{"../axis":10,"../util/chart-attribute-styles":26,"../util/data.model.js":28,"../util/dressing.js":30,"../util/line-interpolators.js":32,"../util/metadata.js":34,"./../../../../d3/d3.js":4}],20:[function(require,module,exports){
 //var d3 = require('d3');
 
 function pieChart() {
@@ -24716,7 +24716,7 @@ function lineKey(options) {
 
 module.exports = lineKey;
 
-},{"../util/chart-attribute-styles":26,"../util/line-thickness.js":32}],23:[function(require,module,exports){
+},{"../util/chart-attribute-styles":26,"../util/line-thickness.js":33}],23:[function(require,module,exports){
 /*jshint -W084 */
 //text area provides a wrapping text block of a given type
 var d3 = require("./../../../../d3/d3.js");
@@ -24836,7 +24836,7 @@ module.exports = {
 
 };
 
-},{"./axis/index.js":10,"./chart/index.js":18,"./element/series-key.js":22,"./element/text-area.js":23,"./util/chart-attribute-styles.js":26,"./util/dates.js":28,"./util/version":35}],25:[function(require,module,exports){
+},{"./axis/index.js":10,"./chart/index.js":18,"./element/series-key.js":22,"./element/text-area.js":23,"./util/chart-attribute-styles.js":26,"./util/dates.js":29,"./util/version":36}],25:[function(require,module,exports){
 // More info:
 // http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
 
@@ -24913,6 +24913,7 @@ module.exports = {
 // so, heres a list of attributes and the selectors to which they should be applied
 
 var d3 = require("./../../../../d3/d3.js");
+var colours = require('./colours');
 
 function applyAttributes(g, keepD3Styles) {
     var styleList = [
@@ -25001,42 +25002,37 @@ function applyAttributes(g, keepD3Styles) {
         }, {
             'selector': '.line--series1',
             'attributes': {
-                'stroke': '#af516c'
+                'stroke': colours.line[0]
             }
         }, {
             'selector': '.line--series2',
             'attributes': {
-                'stroke': '#ecafaf'
+                'stroke': colours.line[1]
             }
         }, {
             'selector': '.line--series3',
             'attributes': {
-                'stroke': '#d7706c'
+                'stroke': colours.line[2]
             }
         }, {
             'selector': '.line--series4',
             'attributes': {
-                'stroke': '#76acb8'
+                'stroke': colours.line[3]
             }
         }, {
             'selector': '.line--series5',
             'attributes': {
-                'stroke': '#81d0e6'
+                'stroke': colours.line[4]
             }
         }, {
             'selector': '.line--series6',
             'attributes': {
-                'stroke': '#4086b6'
+                'stroke': colours.line[5]
             }
         }, {
             'selector': '.line--series7',
             'attributes': {
-                'stroke': '#b8b1a9'
-            }
-        }, {
-            'selector': 'path.accent, line.accent',
-            'attributes': {
-                'stroke': 'rgb(184,177,169)'
+                'stroke': colours.line[6]
             }
         },
         //Columns
@@ -25048,42 +25044,42 @@ function applyAttributes(g, keepD3Styles) {
         }, {
             'selector': '.column--series1, .bar--series1',
             'attributes': {
-                'fill': '#af516c'
+                'fill': colours.area[0]
             }
         }, {
             'selector': '.column--series2, .bar--series2',
             'attributes': {
-                'fill': '#ecafaf'
+                'fill': colours.area[1]
             }
         }, {
             'selector': '.column--series3, .bar--series3',
             'attributes': {
-                'fill': '#d7706c'
+                'fill': colours.area[2]
             }
         }, {
             'selector': '.column--series4, .bar--series4',
             'attributes': {
-                'fill': '#76acb8'
+                'fill': colours.area[3]
             }
         }, {
             'selector': '.column--series5, .bar--series5',
             'attributes': {
-                'fill': '#81d0e6'
+                'fill': colours.area[4]
             }
         }, {
             'selector': '.column--series6, .bar--series6',
             'attributes': {
-                'fill': '#4086b6'
+                'fill': colours.area[5]
             }
         }, {
             'selector': '.column--series7, .bar--series7',
             'attributes': {
-                'fill': '#b8b1a9'
+                'fill': colours.area[6]
             }
         }, {
-            'selector': 'path.accent, line.accent',
+            'selector': 'path.accent, line.accent, rect.accent',
             'attributes': {
-                'stroke': 'rgb(184,177,169)'
+                'stroke': colours.accent
             }
         }, {
             'selector': '.series text.null-label',
@@ -25143,7 +25139,30 @@ function applyAttributes(g, keepD3Styles) {
 
 module.exports = applyAttributes;
 
-},{"./../../../../d3/d3.js":4}],27:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4,"./colours":27}],27:[function(require,module,exports){
+module.exports = {
+  line: [
+    '#af516c',
+    '#ecafaf',
+    '#d7706c',
+    '#76acb8',
+    '#7fd8f5',
+    '#3d7ab3',
+    '#b8b1a9'
+  ],
+  area: [
+    '#bb6d82',
+    '#ecafaf',
+    '#d7706c',
+    '#cb9f8c',
+    '#b07979',
+    '#ccc2c2',
+    '#8f7d95',
+    '#b8b1a9'
+  ],
+  accent: '#9e2f50'
+};
+},{}],28:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var lineThickness = require('../util/line-thickness.js');
 var ratios = require('../util/aspect-ratios.js');
@@ -25229,7 +25248,7 @@ function sumStackedValues(model){
     return extents;
 }
 
-function dependentDomain(model){
+function dependentDomain(model, chartType){
     if(model.dependentDomain){ return model.dependentDomain; }
 
     var extents = (model.stack) ? sumStackedValues(model) : setExtents(model);
@@ -25237,6 +25256,12 @@ function dependentDomain(model){
     if(!model.falseOrigin && domain[0] > 0){
         domain[0] = 0;
     }
+
+    var isBarOrColumn = ['column', 'bar'].indexOf(chartType) >= 0;
+    if (isBarOrColumn && domain[1] < 0) {
+        domain[1] = 0;
+    }
+
     return domain;
 }
 
@@ -25377,7 +25402,7 @@ function Model(chartType, opts) {
 	m.data = verifyData(m);
     m.groupData = needsGrouping(m.units);
     m.independentDomain = independentDomain(m, chartType);
-	m.dependentDomain = dependentDomain(m);
+	m.dependentDomain = dependentDomain(m, chartType);
 	m.lineStrokeWidth = lineThickness(m.lineThickness);
 	m.key = setKey(m);
 
@@ -25389,7 +25414,7 @@ Model.prototype.error = function (err) {
 };
 module.exports = Model;
 
-},{"../util/aspect-ratios.js":25,"../util/dates.js":28,"../util/line-thickness.js":32,"../util/series-options.js":34,"./../../../../d3/d3.js":4}],28:[function(require,module,exports){
+},{"../util/aspect-ratios.js":25,"../util/dates.js":29,"../util/line-thickness.js":33,"../util/series-options.js":35,"./../../../../d3/d3.js":4}],29:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 
 var formatter = {
@@ -25548,7 +25573,7 @@ module.exports = {
     unitGenerator: unitGenerator
 };
 
-},{"./../../../../d3/d3.js":4}],29:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],30:[function(require,module,exports){
 var textArea = require('../element/text-area.js');
 var seriesKey = require('../element/series-key.js');
 var ftLogo = require('../element/logo.js');
@@ -25734,7 +25759,7 @@ Dressing.prototype.setPosition = function () {
 
 module.exports = Dressing;
 
-},{"../element/logo.js":21,"../element/series-key.js":22,"../element/text-area.js":23}],30:[function(require,module,exports){
+},{"../element/logo.js":21,"../element/series-key.js":22,"../element/text-area.js":23}],31:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var dates = require('../util/dates');
 var styler = require('./chart-attribute-styles');
@@ -25928,7 +25953,7 @@ module.exports = {
     }
 };
 
-},{"../util/dates":28,"./../../../../d3/d3.js":4,"./chart-attribute-styles":26}],31:[function(require,module,exports){
+},{"../util/dates":29,"./../../../../d3/d3.js":4,"./chart-attribute-styles":26}],32:[function(require,module,exports){
 //a place to define custom line interpolators
 
 var d3 = require("./../../../../d3/d3.js");
@@ -25962,7 +25987,7 @@ module.exports = {
     gappedLine: gappedLineInterpolator
 };
 
-},{"./../../../../d3/d3.js":4}],32:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4}],33:[function(require,module,exports){
 var thicknesses = {
     small: 2,
     medium: 4,
@@ -25990,7 +26015,7 @@ module.exports = function (value) {
     }
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 //example:
 //http://codinginparadise.org/projects/svgweb-staging/tests/htmlObjectHarness/basic-metadata-example-01-b.html
 var svgSchema = 'http://www.w3.org/2000/svg';
@@ -26041,7 +26066,7 @@ module.exports = {
     create: create
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 function isTruthy(value) {
     return !!value;
 }
@@ -26087,9 +26112,9 @@ module.exports = {
     normalise: normalise
 };
 
-},{}],35:[function(require,module,exports){
-module.exports = "0.4.2";
 },{}],36:[function(require,module,exports){
+module.exports = "0.4.3";
+},{}],37:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -27639,7 +27664,7 @@ module.exports = "0.4.2";
   }
 }.call(this));
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -27664,14 +27689,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28259,7 +28284,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":38,"inherits":37}],40:[function(require,module,exports){
+},{"./support/isBuffer":39,"inherits":38}],41:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -28306,7 +28331,7 @@ Handlebars.noConflict = function() {
 Handlebars['default'] = Handlebars;
 
 exports["default"] = Handlebars;
-},{"./handlebars/base":41,"./handlebars/exception":42,"./handlebars/runtime":43,"./handlebars/safe-string":44,"./handlebars/utils":45}],41:[function(require,module,exports){
+},{"./handlebars/base":42,"./handlebars/exception":43,"./handlebars/runtime":44,"./handlebars/safe-string":45,"./handlebars/utils":46}],42:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -28550,7 +28575,7 @@ var createFrame = function(object) {
   return frame;
 };
 exports.createFrame = createFrame;
-},{"./exception":42,"./utils":45}],42:[function(require,module,exports){
+},{"./exception":43,"./utils":46}],43:[function(require,module,exports){
 "use strict";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -28582,7 +28607,7 @@ function Exception(message, node) {
 Exception.prototype = new Error();
 
 exports["default"] = Exception;
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -28803,7 +28828,7 @@ exports.noop = noop;function initData(context, data) {
   }
   return data;
 }
-},{"./base":41,"./exception":42,"./utils":45}],44:[function(require,module,exports){
+},{"./base":42,"./exception":43,"./utils":46}],45:[function(require,module,exports){
 "use strict";
 // Build out our basic SafeString type
 function SafeString(string) {
@@ -28815,7 +28840,7 @@ SafeString.prototype.toString = SafeString.prototype.toHTML = function() {
 };
 
 exports["default"] = SafeString;
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 /*jshint -W004 */
 var escape = {
@@ -28917,15 +28942,15 @@ exports.blockParams = blockParams;function appendContextPath(contextPath, id) {
 }
 
 exports.appendContextPath = appendContextPath;
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime').default;
 
-},{"./dist/cjs/handlebars.runtime":40}],47:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":41}],48:[function(require,module,exports){
 module.exports = require("handlebars/runtime")["default"];
 
-},{"handlebars/runtime":46}],48:[function(require,module,exports){
+},{"handlebars/runtime":47}],49:[function(require,module,exports){
 var Datatypes = module.exports = {
     CATEGORICAL: 'categorical',
     NUMERIC: 'numeric',
@@ -28943,7 +28968,7 @@ var Datatypes = module.exports = {
     }
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Axis = require('../models/Axis.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -29034,7 +29059,7 @@ var DependantAxis = Axis.extend({
 
 module.exports = DependantAxis;
 
-},{"../models/Axis.js":68,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./Datatypes.js":48}],50:[function(require,module,exports){
+},{"../models/Axis.js":69,"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56,"./Datatypes.js":49}],51:[function(require,module,exports){
 var Axis = require('../models/Axis.js');
 var DataTypes = require('./Datatypes.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -29103,7 +29128,7 @@ var IndependantAxis = Axis.extend({
 
 module.exports = IndependantAxis;
 
-},{"../models/Axis.js":68,"../models/Column.js":71,"./../../../bower_components/underscore/underscore.js":36,"./Datatypes.js":48}],51:[function(require,module,exports){
+},{"../models/Axis.js":69,"../models/Column.js":72,"./../../../bower_components/underscore/underscore.js":37,"./Datatypes.js":49}],52:[function(require,module,exports){
 module.exports = {
     // works out best set of ticks to display
     AUTO: 'auto',
@@ -29121,7 +29146,7 @@ module.exports = {
     ARRAY: 'array',
 };
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
@@ -29130,7 +29155,7 @@ module.exports = new Backbone.Collection([
     {width: 186, height: null, variationName: 'small web inline'}
 ]);
 
-},{"./../core/backbone.js":55}],53:[function(require,module,exports){
+},{"./../core/backbone.js":56}],54:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -29239,7 +29264,7 @@ var CollectionView = Backbone.View.extend({
 
 module.exports = CollectionView;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./backbone.js":55}],54:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./backbone.js":56}],55:[function(require,module,exports){
 var Backbone = require('./backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -29311,7 +29336,7 @@ var RegionView = Backbone.View.extend({
 
 module.exports = RegionView;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./backbone.js":55}],55:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./backbone.js":56}],56:[function(require,module,exports){
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var Backbone = require("./../../../bower_components/backbone/backbone.js");
 var _ = require("./../../../bower_components/underscore/underscore.js");
@@ -29335,7 +29360,7 @@ handlers.forEach(function (handler) {
 
 module.exports = Backbone;
 
-},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":36,"./stickit-handlers/btn-group-radio.js":56}],56:[function(require,module,exports){
+},{"./../../../bower_components/backbone.stickit/backbone.stickit.js":1,"./../../../bower_components/backbone/backbone.js":2,"./../../../bower_components/bootstrap-sass/assets/javascripts/bootstrap.js":3,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/underscore/underscore.js":37,"./stickit-handlers/btn-group-radio.js":57}],57:[function(require,module,exports){
 var $ = require("./../../../../bower_components/jquery/dist/jquery.js");
 
 module.exports = {
@@ -29384,7 +29409,7 @@ module.exports = {
     }
 };
 
-},{"./../../../../bower_components/jquery/dist/jquery.js":5}],57:[function(require,module,exports){
+},{"./../../../../bower_components/jquery/dist/jquery.js":5}],58:[function(require,module,exports){
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
@@ -29416,7 +29441,7 @@ module.exports = function download(name, svg, types, bgColor, callback) {
     });
 };
 
-},{"./svgDataURI.js":58,"./utils.js":59}],58:[function(require,module,exports){
+},{"./svgDataURI.js":59,"./utils.js":60}],59:[function(require,module,exports){
 var utils = require('./utils.js');
 
 
@@ -29578,7 +29603,7 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
 
 };
 
-},{"./utils.js":59}],59:[function(require,module,exports){
+},{"./utils.js":60}],60:[function(require,module,exports){
 /* globals unescape, MouseEvent, XMLSerializer */
 exports.createFilename = function createFilename(name, ext) {
     ext = '.' + (ext || 'txt').trim().replace(/(^\.+|\s.|\.+$)/g, '').toLowerCase();
@@ -29683,7 +29708,7 @@ exports.toDataURI = function toDataURI(data, type, encoding) {
 };
 
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
 _.templateSettings = {
@@ -29697,7 +29722,7 @@ module.exports = {
     BAR_SERIES: _.template('<p>Bar/area data series&nbsp;{{ index }}</p>')
 };
 
-},{"./../../../bower_components/underscore/underscore.js":36}],61:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37}],62:[function(require,module,exports){
 var DataTypes = require('./../charting/Datatypes.js');
 var Axis = require('./../models/Axis.js');
 var Column = require('./../models/Column.js');
@@ -29769,7 +29794,7 @@ function describeColumns(file){
 
 module.exports = describeColumns;
 
-},{"./../charting/Datatypes.js":48,"./../models/Axis.js":68,"./../models/Column.js":71}],62:[function(require,module,exports){
+},{"./../charting/Datatypes.js":49,"./../models/Axis.js":69,"./../models/Column.js":72}],63:[function(require,module,exports){
 var DateParts = require('./predictDateParts.js');
 
 var types = {
@@ -29894,7 +29919,7 @@ var predictedDateFormat = function (value) {
 
 module.exports = predictedDateFormat;
 
-},{"./predictDateParts.js":63}],63:[function(require,module,exports){
+},{"./predictDateParts.js":64}],64:[function(require,module,exports){
 require('./../polyfill/bind');
 
 var shortDays = /^(mon|tue|wed|thu|fri|sat|sun)$/i;
@@ -30144,7 +30169,7 @@ DateParts.prototype.Part = function(d) {
 
 module.exports = DateParts;
 
-},{"./../polyfill/bind":79}],64:[function(require,module,exports){
+},{"./../polyfill/bind":80}],65:[function(require,module,exports){
 
 var predictedDateFormat = require('./predictDateFormat.js');
 
@@ -30243,7 +30268,7 @@ function findPopularDateFormat(file, typeInfo){
 
 module.exports = findPopularDateFormat;
 
-},{"./predictDateFormat.js":62}],65:[function(require,module,exports){
+},{"./predictDateFormat.js":63}],66:[function(require,module,exports){
 
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var d3 = require("./../../../bower_components/d3/d3.js");
@@ -30431,7 +30456,7 @@ ValidateFile.prototype.logError = function(bool, message){
 
 module.exports = ValidateFile;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":36,"./validateFileDataTypes.js":66,"./validateFilePipeline.js":67}],66:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/underscore/underscore.js":37,"./validateFileDataTypes.js":67,"./validateFilePipeline.js":68}],67:[function(require,module,exports){
 var partDateExp = /^(\d{2}am|\d{2}pm|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1234])/i;
 var aYearALongWayInTheFuture = 3000;
 
@@ -30510,7 +30535,7 @@ var sniffDataType = function (value, colNum) {
 
 module.exports = sniffDataType;
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = {
     isValid : function(str) {
         return str.substring(0, 2) === '&\t';
@@ -30547,7 +30572,7 @@ module.exports = {
     }
 };
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -30573,7 +30598,7 @@ var Axis = Backbone.Model.extend({
 
 module.exports = Axis;
 
-},{"../charting/Datatypes.js":48,"./../core/backbone.js":55}],69:[function(require,module,exports){
+},{"../charting/Datatypes.js":49,"./../core/backbone.js":56}],70:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30595,7 +30620,7 @@ var BarControls = Backbone.Model.extend({
 
 module.exports = BarControls;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],70:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56}],71:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DependantAxis = require('../charting/DependantAxis.js');
 var IndependantAxis = require('../charting/IndependantAxis.js');
@@ -30704,7 +30729,7 @@ var Chart = Backbone.Model.extend({
 
 module.exports = Chart;
 
-},{"../charting/DependantAxis.js":49,"../charting/IndependantAxis.js":50,"./../core/backbone.js":55,"./Axis.js":68,"./Dataset.js":73}],71:[function(require,module,exports){
+},{"../charting/DependantAxis.js":50,"../charting/IndependantAxis.js":51,"./../core/backbone.js":56,"./Axis.js":69,"./Dataset.js":74}],72:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Axis = require('./Axis.js');
 
@@ -30719,7 +30744,7 @@ module.exports = Backbone.Model.extend({
 
 });
 
-},{"./../core/backbone.js":55,"./Axis.js":68}],72:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./Axis.js":69}],73:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -30739,7 +30764,7 @@ var ColumnControls = Backbone.Model.extend({
 
 module.exports = ColumnControls;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],73:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56}],74:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 module.exports = Backbone.Model.extend({
@@ -30748,7 +30773,7 @@ module.exports = Backbone.Model.extend({
     }
 });
 
-},{"./../core/backbone":55}],74:[function(require,module,exports){
+},{"./../core/backbone":56}],75:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var Chart = require('./Chart.js');
@@ -30785,7 +30810,7 @@ var Graphic = Backbone.Model.extend({
 
 module.exports = Graphic;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./Chart.js":70}],75:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56,"./Chart.js":71}],76:[function(require,module,exports){
 var Backbone = require('./../core/backbone');
 
 var GraphicType = Backbone.Model.extend({
@@ -30804,7 +30829,7 @@ var GraphicType = Backbone.Model.extend({
 
 module.exports = GraphicType;
 
-},{"./../core/backbone":55}],76:[function(require,module,exports){
+},{"./../core/backbone":56}],77:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 function getKeyLabel(d) {
@@ -30903,7 +30928,7 @@ var GraphicVariation = Backbone.Model.extend({
 
 module.exports = GraphicVariation;
 
-},{"./../core/backbone.js":55}],77:[function(require,module,exports){
+},{"./../core/backbone.js":56}],78:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var TickStyle = require('../charting/TickStyle.js');
@@ -30933,7 +30958,7 @@ var LineControls = Backbone.Model.extend({
 
 module.exports = LineControls;
 
-},{"../charting/TickStyle.js":51,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55}],78:[function(require,module,exports){
+},{"../charting/TickStyle.js":52,"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56}],79:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 var Backbone = require('./../core/backbone.js');
 var DataTypes = require('./../charting/Datatypes.js');
@@ -31193,7 +31218,7 @@ var DataImport = Backbone.Model.extend({
 
 module.exports = DataImport;
 
-},{"../import/describeColumns.js":61,"../import/setPopularDateFormat.js":64,"../import/validateFile.js":65,"./../../../bower_components/d3/d3.js":4,"./../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../transform/index.js":96,"./Axis.js":68}],79:[function(require,module,exports){
+},{"../import/describeColumns.js":62,"../import/setPopularDateFormat.js":65,"../import/validateFile.js":66,"./../../../bower_components/d3/d3.js":4,"./../charting/Datatypes.js":49,"./../core/backbone.js":56,"./../transform/index.js":97,"./Axis.js":69}],80:[function(require,module,exports){
 if (!Function.prototype.bind) {
     Function.prototype.bind = function (oThis) {
         if (typeof this !== 'function') {
@@ -31218,14 +31243,14 @@ if (!Function.prototype.bind) {
     };
 }
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<label>Label</label>\n<input name=\"label\" class=\"form-control\"/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],81:[function(require,module,exports){
+},{"hbsfy/runtime":48}],82:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31244,7 +31269,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <!--\n            <div class=\"form-group\">\n              <label>Label</label>\n              <input name=\"label\" class=\"form-control\" />\n            </div>\n            <div data-region=\"dataType\" class=\"form-group\"></div>\n          -->\n            <div class=\"axis-panel-section form-group\" data-section-name=\"series\">\n                <label>Series</label>\n\n                <div data-region=\"series\"></div>\n            </div>\n            <!--\n            <div class=\"axis-panel-section form-group\" data-section-name=\"label-format\">\n              <label>Format</label>\n              <div class=\"row\">\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"prefix\" class=\"form-control\" placeholder=\"prefix\" >\n                </div>\n                <div class=\"col-xs-3\">\n                  <input type=\"text\" name=\"suffix\" class=\"form-control\" placeholder=\"suffix\">\n                </div>\n              </div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n              <label>Highlight</label>\n              <div data-region=\"highlight\"></div>\n            </div>\n            <div class=\"axis-panel-section form-group\" data-section-name=\"forecast\">\n              <label>Forecast</label>\n              <select class=\"form-control\">\n                <option>Pick a date</option>\n              </select>\n              <span class=\"help-block\">When does the forecast begin?</span>\n            </div>\n                -->\n        </form>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],82:[function(require,module,exports){
+},{"hbsfy/runtime":48}],83:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31263,21 +31288,21 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],83:[function(require,module,exports){
+},{"hbsfy/runtime":48}],84:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Description\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],84:[function(require,module,exports){
+},{"hbsfy/runtime":48}],85:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div><!-- Graphic Type Control --></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],85:[function(require,module,exports){
+},{"hbsfy/runtime":48}],86:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31296,21 +31321,21 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "\n</h2>\n<div class=\"variations-container\" data-region=\"variations\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],86:[function(require,module,exports){
+},{"hbsfy/runtime":48}],87:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"graphic-container\"></div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],87:[function(require,module,exports){
+},{"hbsfy/runtime":48}],88:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div data-section-name=\"categorical\">\n    <select class=\"form-control\">\n        <option>Select a categories from the series</option>\n    </select>\n</div>\n<div data-section-name=\"numeric\">\n    <select class=\"form-control\">\n        <option>None</option>\n    </select>\n</div>\n<div data-section-name=\"time\">\n    <select class=\"form-control\">\n        <option>Select a date from the series</option>\n    </select>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],88:[function(require,module,exports){
+},{"hbsfy/runtime":48}],89:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -31321,21 +31346,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "</p>\n\n    <p>\n        <button name=\"ignore-warning\" type=\"button\" class=\"btn btn-warning\">Ok, use the data anyway.</button>\n    </p>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],89:[function(require,module,exports){
+},{"hbsfy/runtime":48}],90:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n    </div>\n    <!--\n    <div class=\"text-center\">\n        <label class=\"text-muted\" style=\"font-size:12px;font-weight:normal;margin:0;vertical-align:middle;\">Just testing? Use a training dataset:</label>\n        <div class=\"btn-group\">\n          <button type=\"button\" class=\"btn btn-link btn-xs\" style=\"padding-left:0;padding-right:0;color:#666;\">GDP per capita dsdsa</button>\n          <button type=\"button\" class=\"btn btn-link btn-xs dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n            <span class=\"sr-only\">Toggle Dropdown</span>\n          </button>\n          <ul class=\"dropdown-menu\" role=\"menu\">\n            <li><a href=\"#\">GDP per capita</a></li>\n            <li><a href=\"#\">Something else</a></li>\n          </ul>\n        </div>\n      </div>\n      -->\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],90:[function(require,module,exports){
+},{"hbsfy/runtime":48}],91:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"axis-panel panel panel-default\">\n    <div class=\"panel-heading\">Independent axis (X)</div>\n    <div class=\"panel-body\">\n        <div class=\"form-group\">\n            <label>Column (in the imported data table)</label>\n            <select name=\"columns\" class=\"form-control pull\"></select>\n        </div>\n        <div class=\"form-group\" data-region=\"dataType\"></div>\n        <div class=\"form-group\" data-region=\"dateFormat\"></div>\n        <!--\n        <div class=\"form-group\" data-region=\"label\"></div>\n        <div class=\"axis-panel-section form-group\" data-section-name=\"highlight\">\n          <label>Highlight</label>\n          <div data-region=\"highlight\"></div>\n        </div>\n      -->\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],91:[function(require,module,exports){
+},{"hbsfy/runtime":48}],92:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
@@ -31377,7 +31402,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
     + "</span>\n</span>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],92:[function(require,module,exports){
+},{"hbsfy/runtime":48}],93:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
@@ -31394,28 +31419,28 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
     + "px</td>\n                </tr>\n                </tbody>\n            </table>\n        </div>\n    </div>\n    <div class=\"panel panel-default\">\n        <div class=\"panel-heading\">Chart Controls</div>\n        <div class=\"panel-body\" data-region=\"graphic-type-controls\"></div>\n    </div>\n    <div class=\"view-export-controls\">\n        <button role=\"button\" type=\"button\" name=\"save\" class=\"btn btn-lg btn-block btn-primary\">Save image</button>\n        <button role=\"button\" type=\"button\" name=\"hide\" class=\"btn btn-lg btn-block btn-default\">Hide</button>\n    </div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],93:[function(require,module,exports){
+},{"hbsfy/runtime":48}],94:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipXAxis\">X axis on the bottom\n    </label>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],94:[function(require,module,exports){
+},{"hbsfy/runtime":48}],95:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n<!--</label>-->\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],95:[function(require,module,exports){
+},{"hbsfy/runtime":48}],96:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipYAxis\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":47}],96:[function(require,module,exports){
+},{"hbsfy/runtime":48}],97:[function(require,module,exports){
 module.exports = {
     number: require('./number.js'),
     time: require('./time.js'),
@@ -31423,7 +31448,7 @@ module.exports = {
     table: require('./table.js')
 };
 
-},{"./number.js":97,"./series.js":99,"./table.js":100,"./time.js":101}],97:[function(require,module,exports){
+},{"./number.js":98,"./series.js":100,"./table.js":101,"./time.js":102}],98:[function(require,module,exports){
 var currencySymbol = /^(\$|€|¥|£)/;
 var allCommas = /\,/g;
 var percent = /(\%)$/;
@@ -31462,7 +31487,7 @@ function createNumberTransformer(options) {
     return transformNumber;
 }
 
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 
 module.exports = function buildQuarterParser(format) {
@@ -31495,7 +31520,7 @@ module.exports = function buildQuarterParser(format) {
 
 };
 
-},{"./../../../bower_components/d3/d3.js":4}],99:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4}],100:[function(require,module,exports){
 module.exports = series;
 
 function series(array, property, transformer, customLogic) {
@@ -31513,7 +31538,7 @@ function series(array, property, transformer, customLogic) {
     }
 }
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 var Datatypes = require('../charting/Datatypes.js');
 var series = require('./series.js');
 
@@ -31557,7 +31582,7 @@ function transformTable(data, columns, transform, type, customLogic) {
     }
 }
 
-},{"../charting/Datatypes.js":48,"./series.js":99}],101:[function(require,module,exports){
+},{"../charting/Datatypes.js":49,"./series.js":100}],102:[function(require,module,exports){
 var d3 = require("./../../../bower_components/d3/d3.js");
 var quarterParser = require('./quarterParser');
 
@@ -31629,7 +31654,7 @@ function createDateParser(format) {
     }
 }
 
-},{"./../../../bower_components/d3/d3.js":4,"./quarterParser":98}],102:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./quarterParser":99}],103:[function(require,module,exports){
 /* global gapi, ng, auth2 */
 var tracking = require('./../utils/tracking.js');
 
@@ -31671,7 +31696,7 @@ Authentication.prototype.onSignIn = function (googleUser) {
 
 module.exports = Authentication;
 
-},{"./../utils/tracking.js":103}],103:[function(require,module,exports){
+},{"./../utils/tracking.js":104}],104:[function(require,module,exports){
 /* global ga*/
 var Tracking = function () {
     if (document.domain === 'localhost') {
@@ -31717,7 +31742,7 @@ Tracking.prototype.user = function (container, email) {
 
 module.exports = new Tracking();
 
-},{}],104:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewAxisLabel = Backbone.View.extend({
@@ -31748,7 +31773,7 @@ var ViewAxisLabel = Backbone.View.extend({
 
 module.exports = ViewAxisLabel;
 
-},{"./../core/backbone.js":55,"./../templates/axis-label.hbs":80}],105:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../templates/axis-label.hbs":81}],106:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var BarControls = Backbone.View.extend({
@@ -31772,7 +31797,7 @@ var BarControls = Backbone.View.extend({
 
 module.exports = BarControls;
 
-},{"./../core/backbone.js":55,"./../templates/type-controls-bar.hbs":93}],106:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../templates/type-controls-bar.hbs":94}],107:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ColumnControls = Backbone.View.extend({
@@ -31795,7 +31820,7 @@ var ColumnControls = Backbone.View.extend({
 
 module.exports = ColumnControls;
 
-},{"./../core/backbone.js":55,"./../templates/type-controls-column.hbs":94}],107:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../templates/type-controls-column.hbs":95}],108:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var _ = require("./../../../bower_components/underscore/underscore.js");
 
@@ -31828,7 +31853,7 @@ var ViewDatatype = Backbone.View.extend({
 
 module.exports = ViewDatatype;
 
-},{"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./../templates/datatype.hbs":82}],108:[function(require,module,exports){
+},{"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56,"./../templates/datatype.hbs":83}],109:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var formats = new Backbone.Collection([
@@ -31901,7 +31926,7 @@ var ViewDateFormat = Backbone.View.extend({
 
 module.exports = ViewDateFormat;
 
-},{"./../core/backbone.js":55}],109:[function(require,module,exports){
+},{"./../core/backbone.js":56}],110:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Datatypes = require('../charting/Datatypes.js');
 var ViewDatatype = require('./Datatype.js');
@@ -31984,7 +32009,7 @@ var ViewDependantAxisControls = RegionView.extend({
 
 module.exports = ViewDependantAxisControls;
 
-},{"../charting/Datatypes.js":48,"./../core/RegionView.js":54,"./../templates/axis.hbs":81,"./Datatype.js":107,"./Highlight.js":114,"./SeriesControls.js":120}],110:[function(require,module,exports){
+},{"../charting/Datatypes.js":49,"./../core/RegionView.js":55,"./../templates/axis.hbs":82,"./Datatype.js":108,"./Highlight.js":115,"./SeriesControls.js":121}],111:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var Backbone = require('./../core/backbone.js');
 var ViewIndependantAxisControls = require('./IndependentAxisControls.js');
@@ -32084,7 +32109,7 @@ var ViewGraphicControls = RegionView.extend({
 
 module.exports = ViewGraphicControls;
 
-},{"./../core/RegionView.js":54,"./../core/backbone.js":55,"./../templates/graphic-controls.hbs":83,"./../utils/tracking.js":103,"./DependantAxisControls.js":109,"./IndependentAxisControls.js":116}],111:[function(require,module,exports){
+},{"./../core/RegionView.js":55,"./../core/backbone.js":56,"./../templates/graphic-controls.hbs":84,"./../utils/tracking.js":104,"./DependantAxisControls.js":110,"./IndependentAxisControls.js":117}],112:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var ViewGraphicTypeControls = Backbone.View.extend({
@@ -32102,7 +32127,7 @@ var ViewGraphicTypeControls = Backbone.View.extend({
 
 module.exports = ViewGraphicTypeControls;
 
-},{"./../core/backbone.js":55,"./../templates/graphic-type-controls.hbs":84}],112:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../templates/graphic-type-controls.hbs":85}],113:[function(require,module,exports){
 var CollectionView = require('./../core/CollectionView.js');
 var RegionView = require('./../core/RegionView.js');
 var GraphicVariation = require('../models/GraphicVariation.js');
@@ -32161,7 +32186,7 @@ var ViewGraphicTypes = CollectionView.extend({
 
 module.exports = ViewGraphicTypes;
 
-},{"../models/GraphicVariation.js":76,"./../core/CollectionView.js":53,"./../core/RegionView.js":54,"./../core/backbone.js":55,"./../templates/graphic-type.hbs":85,"./GraphicVariation.js":113}],113:[function(require,module,exports){
+},{"../models/GraphicVariation.js":77,"./../core/CollectionView.js":54,"./../core/RegionView.js":55,"./../core/backbone.js":56,"./../templates/graphic-type.hbs":86,"./GraphicVariation.js":114}],114:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 var oCharts = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").chart;
@@ -32261,7 +32286,7 @@ var ViewGraphicVariation = Backbone.View.extend({
 
 module.exports = ViewGraphicVariation;
 
-},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":36,"./../core/backbone.js":55,"./../templates/graphic.hbs":86}],114:[function(require,module,exports){
+},{"./../../../bower_components/d3/d3.js":4,"./../../../bower_components/jquery/dist/jquery.js":5,"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":37,"./../core/backbone.js":56,"./../templates/graphic.hbs":87}],115:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Datatypes = require('../charting/Datatypes.js');
 
@@ -32297,7 +32322,7 @@ var ViewHighlight = Backbone.View.extend({
 
 module.exports = ViewHighlight;
 
-},{"../charting/Datatypes.js":48,"./../core/backbone.js":55,"./../templates/highlight.hbs":87}],115:[function(require,module,exports){
+},{"../charting/Datatypes.js":49,"./../core/backbone.js":56,"./../templates/highlight.hbs":88}],116:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var DataImport = require('./../models/import.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -32498,7 +32523,7 @@ var warningMessageTemplate = require('./../templates/import-warning.hbs');
 
 module.exports = ViewImportData;
 
-},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":55,"./../models/import.js":78,"./../templates/import-warning.hbs":88,"./../templates/import.hbs":89,"./../utils/tracking.js":103}],116:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/backbone.js":56,"./../models/import.js":79,"./../templates/import-warning.hbs":89,"./../templates/import.hbs":90,"./../utils/tracking.js":104}],117:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewAxisLabel = require('./AxisLabel.js');
 var ViewDatatype = require('./Datatype.js');
@@ -32595,7 +32620,7 @@ var ViewIndependantAxisControls = RegionView.extend({
 
 module.exports = ViewIndependantAxisControls;
 
-},{"../charting/Datatypes.js":48,"./../core/RegionView.js":54,"./../templates/independant-axis-control.hbs":90,"./AxisLabel.js":104,"./Datatype.js":107,"./DateFormat.js":108,"./Highlight.js":114}],117:[function(require,module,exports){
+},{"../charting/Datatypes.js":49,"./../core/RegionView.js":55,"./../templates/independant-axis-control.hbs":91,"./AxisLabel.js":105,"./Datatype.js":108,"./DateFormat.js":109,"./Highlight.js":115}],118:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var Help = require('./../help/index.js');
 
@@ -32640,7 +32665,7 @@ module.exports = ViewInlineHelp;
 
 
 
-},{"./../core/backbone.js":55,"./../help/index.js":60}],118:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../help/index.js":61}],119:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 
 var LineControls = Backbone.View.extend({
@@ -32666,7 +32691,7 @@ var LineControls = Backbone.View.extend({
 
 module.exports = LineControls;
 
-},{"./../core/backbone.js":55,"./../templates/type-controls-line.hbs":95}],119:[function(require,module,exports){
+},{"./../core/backbone.js":56,"./../templates/type-controls-line.hbs":96}],120:[function(require,module,exports){
 var _ = require("./../../../bower_components/underscore/underscore.js");
 var util = require('util');
 var attributeStyler = require("./../../../bower_components/o-charts/src/scripts/o-charts.js").util.attributeStyler;
@@ -32793,7 +32818,7 @@ module.exports = ViewSelectedVariation;
 // document.addEventListener('click', closeDropdown, true);
 
 
-},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":36,"./../core/RegionView.js":54,"./../export/download.js":57,"./../templates/selected-variation.hbs":92,"./../utils/tracking.js":103,"./BarControls.js":105,"./ColumnControls.js":106,"./GraphicTypeControls.js":111,"./LineControls.js":118,"util":39}],120:[function(require,module,exports){
+},{"./../../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../../bower_components/underscore/underscore.js":37,"./../core/RegionView.js":55,"./../export/download.js":58,"./../templates/selected-variation.hbs":93,"./../utils/tracking.js":104,"./BarControls.js":106,"./ColumnControls.js":107,"./GraphicTypeControls.js":112,"./LineControls.js":119,"util":40}],121:[function(require,module,exports){
 var RegionView = require('./../core/RegionView.js');
 var ViewSeriesList = require('./SeriesList.js');
 
@@ -32834,7 +32859,7 @@ var ViewSeriesControls = RegionView.extend({
 
 module.exports = ViewSeriesControls;
 
-},{"./../core/RegionView.js":54,"./SeriesList.js":121}],121:[function(require,module,exports){
+},{"./../core/RegionView.js":55,"./SeriesList.js":122}],122:[function(require,module,exports){
 var Backbone = require('./../core/backbone.js');
 var CollectionView = require('./../core/CollectionView.js');
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
@@ -33120,7 +33145,7 @@ var ViewSeriesList = CollectionView.extend({
 
 module.exports = ViewSeriesList;
 
-},{"../models/Axis.js":68,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":53,"./../core/backbone.js":55,"./../templates/ordered-column.hbs":91}],"nightingale":[function(require,module,exports){
+},{"../models/Axis.js":69,"./../../../bower_components/jquery/dist/jquery.js":5,"./../core/CollectionView.js":54,"./../core/backbone.js":56,"./../templates/ordered-column.hbs":92}],"nightingale":[function(require,module,exports){
 var Backbone = require('./core/backbone');
 var Graphic = require('./models/Graphic.js');
 var ViewGraphicControls = require('./views/GraphicControls.js');
@@ -33348,4 +33373,4 @@ function nightingale() {
 
 module.exports = window.nightingale = nightingale;
 
-},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../bower_components/underscore/underscore.js":36,"./charting/Datatypes.js":48,"./charting/Variations.js":52,"./core/backbone":55,"./export/svgDataURI.js":58,"./models/BarControls.js":69,"./models/ColumnControls.js":72,"./models/Graphic.js":74,"./models/GraphicType.js":75,"./models/LineControls.js":77,"./models/import.js":78,"./transform/index.js":96,"./utils/authentication.js":102,"./views/GraphicControls.js":110,"./views/GraphicTypes.js":112,"./views/ImportData.js":115,"./views/InlineHelp.js":117,"./views/SelectedVariation.js":119}]},{},["nightingale"]);
+},{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../bower_components/underscore/underscore.js":37,"./charting/Datatypes.js":49,"./charting/Variations.js":53,"./core/backbone":56,"./export/svgDataURI.js":59,"./models/BarControls.js":70,"./models/ColumnControls.js":73,"./models/Graphic.js":75,"./models/GraphicType.js":76,"./models/LineControls.js":78,"./models/import.js":79,"./transform/index.js":97,"./utils/authentication.js":103,"./views/GraphicControls.js":111,"./views/GraphicTypes.js":113,"./views/ImportData.js":116,"./views/InlineHelp.js":118,"./views/SelectedVariation.js":120}]},{},["nightingale"]);
