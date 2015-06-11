@@ -4,13 +4,14 @@
   "description": "Chart making tool for journalists",
   "main": "src/scripts/nightingale.js",
   "scripts": {
+      "copy": "caddy copy",
       "build": "caddy build",
       "bump": "caddy bump",
       "release": "npm test && caddy release",
       "report": "caddy serve test/coverage/chrome/",
-      "start": "caddy build -dev && caddy serve",
+      "start": "caddy copy && caddy build -dev && caddy serve",
       "tdd": "caddy test tdd",
-      "test": "jshint src && caddy build && caddy test"
+      "test": "jshint src && caddy copy && caddy build && caddy test"
   },
   "repository": {
     "type": "git",
