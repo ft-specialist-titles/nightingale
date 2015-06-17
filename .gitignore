@@ -10,3 +10,4 @@ npm-debug.log
 *.iml
 *.xml
 test/smoke/**/*.png
+test/functional/**/*.png

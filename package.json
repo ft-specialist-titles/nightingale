@@ -12,7 +12,8 @@
     "report": "caddy serve test/coverage/chrome/",
     "start": "caddy copy && caddy build -dev && caddy serve",
     "tdd": "caddy test tdd",
-    "test": "jshint src && caddy copy && caddy build && caddy test",
+    "test": "jshint src && caddy copy && caddy build && caddy test && npm run functional",
+    "functional": "casperjs test test/functional/ & npm start",
     "smoke-test": "casperjs test test/smoke/"
   },
   "repository": {
