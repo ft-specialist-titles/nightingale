@@ -1,6 +1,6 @@
 
-var folderDate = require('./testResources/folder-date.js');
-var folderToLog = './test/smoke/testResources/' + folderDate;
+var folderDate = require('./../utils/folder-date.js');
+var folderToLog = './test/smoke/evidence/' + folderDate;
 var urlToFind = 'http://nightingale.ft.com/';
 
 casper.options.viewportSize = {width: 1366, height: 768};
