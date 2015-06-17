@@ -1,15 +1,21 @@
 
 var folderDate = require('./../utils/folder-date.js');
-var folderToLog = './test/smoke/evidence/' + folderDate;
-var urlToFind = 'http://nightingale.ft.com/';
+var folderToLog = './test/functional/evidence/' + folderDate;
+var urlToFind = 'http://localhost:3000/';
 
 casper.options.viewportSize = {width: 1366, height: 768};
 casper.options.logLevel = 'debug';
 casper.options.verbose = false;
 
-// Casper: go to webpage and assert that it's live
+// Casper: boot up and wait for npm start to initialise
 casper.start(urlToFind, function bootUpCasper() {
-    this.echo(">> Starting smoke tests");
+    this.wait(15000, function(){
+    });
+});
+
+// Casper: go to webpage and asser that it's live
+casper.thenOpen(urlToFind, function findUrl() {
+    this.echo(">> Starting functional tests");
     this.test.assertHttpStatus(200, 'website is live');
 });
 
@@ -18,7 +24,6 @@ casper.then(function testBasicDetails() {
     this.test.assert(this.getCurrentUrl() === urlToFind, 'url is ' + urlToFind);
     this.test.assert(this.getTitle() === '', 'title is blank');
 });
-
 
 // Casper: wait for google sign in button to appear
 casper.waitForSelector(".abcRioButtonContentWrapper", function waitForGoogleSignIn() {
@@ -62,7 +67,7 @@ casper.withPopup(/ServiceLogin/, function handleScreenshot() {
 
 // Casper: perform end of test
 casper.then(function breakDown() {
-    this.echo(">> Smoke tests finished");
+    this.echo(">> Functional tests finished");
     this.exit();
 });
 
