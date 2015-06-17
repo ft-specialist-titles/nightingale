@@ -4,7 +4,6 @@ module.exports = {
     pkg: pkg,
     paths: {
         source: "./src",
-        "demo": false,
         "target": './_site'
     },
     tasks: {
@@ -35,8 +34,5 @@ module.exports = {
         //{ file :'./node_modules/handlebars/runtime.js', expose: 'handlebars'}
         //]
     },
-    karma:{
-        unit: './test/karma.unit.js', // string or false. Karma config file with coverage setup.
-        unitCoverage: './test/coverage/summary.json'// code coverage summary for unit tests
-    }
+    karma: ['./test/karma.unit.js']
 };
