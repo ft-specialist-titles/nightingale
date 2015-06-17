@@ -31811,38 +31811,53 @@ var tracking = require('./../utils/tracking.js');
 
 var Authentication = function (cb) {
     this.cb = cb;
+    this.loginContainer = document.getElementById("login-container");
+    this.appConatiner = document.getElementById("layout");
+
+    if (document.domain === 'localhost') {
+        this.startApp();
+    } else {
+        var gapiScript = document.createElement('script');
+        gapiScript.src = "https://apis.google.com/js/platform.js?onload=nightingaleAuth";
+        document.body.appendChild(gapiScript);
+        window.nightingaleAuth = this.gapi;
+        window.auth = this;
+    }
 };
 
-Authentication.prototype.renderButton = function () {
-    var self = this;
+Authentication.prototype.gapi = function(){
+    var self = window.auth || this;
+    self.loginContainer.classList.add('block');
     if (!document.getElementById('my-signin2')) return;
     gapi.signin2.render('my-signin2', {
         'width': 200,
         'height': 50,
         'longtitle': false,
         'theme': 'dark',
-        'onsuccess': function (gu) {
-            self.onSignIn(gu);
-        }
+        'onsuccess': self.onsuccess.bind(self)
     });
 };
 
-Authentication.prototype.onSignIn = function (googleUser) {
+Authentication.prototype.onsuccess = function (googleUser) {
     var profile = googleUser.getBasicProfile();
     var regexp = /^.*\@ft\.com$/gi;
     var email = profile.getEmail();
     if (email.match(regexp)) {
-        var container = document.getElementById("login-container");
-        tracking.user(container, email);
-        container.remove();
-        this.cb && typeof this.cb === 'function' && this.cb();
+        tracking.user(this.loginContainer, email);
+        this.startApp();
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
         gapi.auth2.getAuthInstance().disconnect();
         gapi.auth2.getAuthInstance().signOut();
-        document.getElementById("login-alert").setAttribute('style','display:block');
+        document.getElementById("login-alert").classList.add('block');
     }
+};
+
+Authentication.prototype.startApp = function () {
+    this.loginContainer.classList.remove('block');
+    this.appConatiner.classList.add('block');
+    this.cb && typeof this.cb === 'function' && this.cb();
 };
 
 module.exports = Authentication;
@@ -33515,13 +33530,12 @@ function init() {
 }
 
 function nightingale() {
-    var auth = new Authentication(init);
-    auth.renderButton();
-    return {
-        oChartsVersion: require("./../../bower_components/o-charts/src/scripts/o-charts.js").version
+    window.nightingale = {
+        oChartsVersion: require("./../../bower_components/o-charts/src/scripts/o-charts.js").version,
+        init: new Authentication(init)
     };
 }
 
-module.exports = window.nightingale = nightingale;
+module.exports = nightingale;
 
 },{"./../../bower_components/jquery/dist/jquery.js":5,"./../../bower_components/o-charts/src/scripts/o-charts.js":24,"./../../bower_components/underscore/underscore.js":37,"./charting/Datatypes.js":50,"./charting/Variations.js":54,"./core/backbone":57,"./export/svgDataURI.js":60,"./models/BarControls.js":71,"./models/ColumnControls.js":74,"./models/Graphic.js":76,"./models/GraphicType.js":77,"./models/LineControls.js":79,"./models/import.js":80,"./transform/index.js":98,"./utils/authentication.js":104,"./views/GraphicControls.js":112,"./views/GraphicTypes.js":114,"./views/ImportData.js":117,"./views/InlineHelp.js":119,"./views/SelectedVariation.js":121}]},{},["nightingale"]);
