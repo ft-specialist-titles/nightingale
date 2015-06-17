@@ -216,11 +216,10 @@ function init() {
 }
 
 function nightingale() {
-    var auth = new Authentication(init);
-    auth.renderButton();
-    return {
-        oChartsVersion: require('o-charts').version
+    window.nightingale = {
+        oChartsVersion: require('o-charts').version,
+        init: new Authentication(init)
     };
 }
 
-module.exports = window.nightingale = nightingale;
+module.exports = nightingale;
