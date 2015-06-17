@@ -29,7 +29,7 @@
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
     "brfs": "^1.4.0",
-      "web-caddy": "^2.0.0-rc.3"
+      "web-caddy": "^2.0.0-rc.4"
   },
   "browserify": {
     "transform": [
