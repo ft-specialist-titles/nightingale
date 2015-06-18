@@ -27,9 +27,10 @@ casper.then(function testBasicDetails() {
 
 // Casper: wait for google sign in button to appear
 casper.waitForSelector(".abcRioButtonContentWrapper", function waitForGoogleSignIn() {
-    this.capture(folderToLog + 'liveWebsite.png');
+    this.capture(folderToLog + 'splashPage.png');
 }, function onTimeout() {
     console.error('the google sign in never correctly loaded');
+    this.capture(folderToLog + 'splashPageError.png');
 }, 10000);
 
 // Casper: check that all containers exist
@@ -51,23 +52,13 @@ casper.then(function confirmAllElements() {
 // Casper: click google sign in
 casper.then(function clickGoogleSignIn() {
     this.mouse.click(200, 300);
-    //this.click('#my-signin2 > div > div');
+    this.capture(folderToLog + 'importPage.png');
 });
-
-// Casper: wait for google sign in popup
-casper.waitForPopup(/ServiceLogin/, function findNewPopup(){
-    this.test.assertEquals(this.popups.length, 1, 'google sign in caused a popup successfully');
-});
-
-// Casper: confirm google sign in popup
-casper.withPopup(/ServiceLogin/, function handleScreenshot() {
-    this.capture(folderToLog + 'googleSignInPopup.png');
-    this.test.assert(this.getTitle() === 'Sign in - Google Accounts', 'google sign in popup title is as expected');
-});
-
 // Casper: perform end of test
 casper.then(function breakDown() {
-    this.echo(">> Functional tests finished");
+    this.echo("==================================\n" +
+        ">> Moving on to import-data.js script\n" +
+        "==================================");
     this.exit();
 });
 

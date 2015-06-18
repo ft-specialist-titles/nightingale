@@ -25,6 +25,7 @@ casper.waitForSelector(".abcRioButtonContentWrapper", function waitForGoogleSign
     this.capture(folderToLog + 'liveWebsite.png');
 }, function onTimeout() {
     console.error('the google sign in never correctly loaded');
+    this.capture(folderToLog + 'liveWebsiteError.png');
 }, 10000);
 
 // Casper: check that all containers exist
