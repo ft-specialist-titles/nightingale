@@ -12,6 +12,7 @@ deployment:
     branch: master
     commands:
       - ./node_modules/web-caddy/bin/caddy release
+      - npm run smoke-test
 machine:
   node:
     version: v0.10.33

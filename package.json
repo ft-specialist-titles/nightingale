@@ -4,14 +4,16 @@
   "description": "Chart making tool for journalists",
   "main": "src/scripts/nightingale.js",
   "scripts": {
-      "copy": "caddy copy",
-      "build": "caddy build",
-      "bump": "caddy bump",
-      "release": "npm test && caddy release",
-      "report": "caddy serve test/coverage/chrome/",
-      "start": "caddy copy && caddy build -dev && caddy serve",
-      "tdd": "caddy test tdd",
-      "test": "jshint src && caddy copy && caddy build && caddy test"
+    "serve": "caddy serve",
+    "copy": "caddy copy",
+    "build": "caddy build",
+    "bump": "caddy bump",
+    "release": "npm test && caddy release",
+    "report": "caddy serve test/coverage/chrome/",
+    "start": "caddy copy && caddy build -dev && caddy serve",
+    "tdd": "caddy test tdd",
+    "test": "jshint src && caddy copy && caddy build && caddy test",
+    "smoke-test": "casperjs test test/smoke/"
   },
   "repository": {
     "type": "git",
@@ -23,11 +25,12 @@
     "brfs": "^1.4.0",
     "browserify-istanbul": "^0.2.1",
     "browserify-shim": "^3.8.3",
+    "casperjs": "^1.1.0-beta3",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
     "jshint": "^2.6.3",
-    "web-caddy": "^2.0.0-rc.3"
+    "web-caddy": "^2.0.0-rc.5"
   },
   "browserify": {
     "transform": [

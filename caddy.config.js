@@ -10,8 +10,8 @@ module.exports = {
         copy: ['images', 'fonts', 'server-config'],
         build: ['sass', 'mustache', 'browserify'], //plus 'requirejs', 'jade'
         test: 'karma', // or false. mocha not yet available.
-        release: ['git', 'gh-pages'],//['bower'], // ['git', 'gh-pages','s3', 'bower'] or false.
-        serve: 'staticApp', // `staticApp` or `nodeApp`
+        release: ['gh-pages'],//['bower'], // ['git', 'gh-pages','s3', 'bower'] or false.
+        serve: 'staticApp' // `staticApp` or `nodeApp`
     },
     browserify: {
         insertGlobals : true,
@@ -23,7 +23,7 @@ module.exports = {
             './node_modules/hbsfy/runtime.js',
             './bower_components/bootstrap-sass/assets/javascripts/bootstrap.js',
             './bower_components/d3/d3.js'
-        ],
+        ]
         //vendorBundle: [
         //{ file :'./bower_components/underscore/underscore.js', expose: 'underscore'},
         //{ file :'./bower_components/backbone/backbone.js', expose: 'backbone'},
