@@ -31,7 +31,7 @@
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
     "jshint": "^2.6.3",
-    "web-caddy": "^2.0.0-rc.4"
+    "web-caddy": "^2.0.0-rc.5"
   },
   "browserify": {
     "transform": [
