@@ -13,7 +13,7 @@
     "start": "caddy copy && caddy build -dev && caddy serve",
     "tdd": "caddy test tdd",
     "test": "jshint src && caddy copy && caddy build && caddy test && npm run functional",
-    "functional": "casperjs test test/functional/ & npm start",
+    "functional": "caddy serve & casperjs test test/functional/",
     "smoke-test": "casperjs test test/smoke/"
   },
   "repository": {
