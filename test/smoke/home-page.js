@@ -1,6 +1,6 @@
 
-var folderDate = require('./testResources/folder-date.js');
-var folderToLog = './test/smoke/testResources/' + folderDate;
+var folderDate = require('./../utils/folder-date.js');
+var folderToLog = './test/smoke/evidence/' + folderDate;
 var urlToFind = 'http://nightingale.ft.com/';
 
 casper.options.viewportSize = {width: 1366, height: 768};
@@ -9,7 +9,7 @@ casper.options.verbose = false;
 
 // Casper: go to webpage and assert that it's live
 casper.start(urlToFind, function bootUpCasper() {
-    this.echo(">> Starting tests");
+    this.echo(">> Starting smoke tests");
     this.test.assertHttpStatus(200, 'website is live');
 });
 
@@ -25,6 +25,7 @@ casper.waitForSelector(".abcRioButtonContentWrapper", function waitForGoogleSign
     this.capture(folderToLog + 'liveWebsite.png');
 }, function onTimeout() {
     console.error('the google sign in never correctly loaded');
+    this.capture(folderToLog + 'liveWebsiteError.png');
 }, 10000);
 
 // Casper: check that all containers exist
@@ -62,7 +63,7 @@ casper.withPopup(/ServiceLogin/, function handleScreenshot() {
 
 // Casper: perform end of test
 casper.then(function breakDown() {
-    this.echo(">> Test run finished");
+    this.echo(">> Smoke tests finished");
     this.exit();
 });
 
