@@ -12,20 +12,19 @@ Nightingale  [![Circle CI](https://circleci.com/gh/Financial-Times/nightingale/t
 * Click the chart that you want for your article
 * Click the big blue button to download the image
 
+For help and suport send the team an [email](mailto:help.nightingale@ft.com) or add an issue on [github](https://github.com/Financial-Times/nightingale/issues/new).
+
 ## Limitiations
 
-* We have only implemented basic time series charts (line and columns) so far.
 * PNG is the main image format for now as that's the best our publishing systems offer. SVG is a hidden feature at the moment (alt+click the blue download button) because it's only useful to a small handful of people -- it's better to keep the UI simple and obvious, rather than offering lots of download options.
-* The background colour is fixed as pink. This is forced limitation for now and we'll remove it once other things improve. It 's mainly due to this pink being the best preference for *all* use cases. 
+* The background colour is fixed as pink. This is a forced limitation for now and we'll remove it once other things improve. It 's mainly due to this pink being the best preference for *all* use cases. 
 * Requires the latest version of Chrome, Firefox or IE. We are never going to support older browsers.
 
 ## Contribute to Nightingale
 
-As an end-user feel free to send the development team an [email](mailto:help.nightingale@ft.com) or add an issue on [github](https://github.com/Financial-Times/nightingale/issues/new).
+[See the contributing docs >](CONTRIBUTING.md).
 
-As a Developer, [Read More >](CONTRIBUTING.md).
-
-Things we've used to make this:
+## Things we've used to make this
 
 * [D3](https://github.com/mbostock/d3/wiki/API-Reference)
 * [Backbone](http://backbonejs.org/) (plus jQuery and underscore)
