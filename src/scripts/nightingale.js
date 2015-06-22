@@ -208,9 +208,26 @@ function init() {
     document.body.appendChild(fontFix());
 
     // REFACTOR: move this into a separate application
+    var fs = require('fs');
+    var samplePipeline;
+
     if (document.location.hash === '#test') {
-        var fs = require('fs');
-        var samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
+        samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
+        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+    }
+
+    if(document.location.hash === '#testType1') {
+        samplePipeline = fs.readFileSync(__dirname + '/sampledata/intraday.txt', 'utf8');
+        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+    }
+
+    if(document.location.hash === '#testType2') {
+        samplePipeline = fs.readFileSync(__dirname + '/sampledata/categories.tsv', 'utf8');
+        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+    }
+
+    if(document.location.hash === '#testType3') {
+        samplePipeline = fs.readFileSync(__dirname + '/sampledata/monthly-ten-years.tsv', 'utf8');
         importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
     }
 }

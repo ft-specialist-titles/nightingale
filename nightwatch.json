@@ -1,5 +1,5 @@
 {
-    "src_folders" : ["test"],
+    "src_folders" : ["test/smoke", "test/functional"],
     "output_folder" : "report",
     "custom_commands_path" : "",
     "custom_assertions_path" : "",
@@ -8,12 +8,12 @@
 
     "selenium" : {
         "start_process" : true,
-        "server_path" : "./test/resources/selenium-server-standalone-2.46.0.jar",
+        "server_path" : "test/bin/selenium-server-standalone-2.46.0.jar",
         "log_path" : false,
         "host" : "127.0.0.1",
         "port" : 4444,
         "cli_args" : {
-            "webdriver.chrome.driver" : "./test/resources/chromedriver.exe",
+            "webdriver.chrome.driver" : "/usr/local/bin/chromedriver",
             "webdriver.ie.driver" : ""
         }
     },
@@ -26,12 +26,21 @@
             "silent": true,
             "screenshots" : {
                 "enabled" : true,
-                "path" : "./test/resources/screenshots/"
+                "path" : "./test/screenshots"
             },
             "desiredCapabilities": {
                 "browserName": "chrome",
                 "javascriptEnabled": true,
-                "acceptSslCerts": true
+                "acceptSslCerts": true,
+                "chromeOptions" : {
+                  "args" : ["start-maximized", "test-type"]
+                }
+            }
+        },
+
+        "win32" : {
+            "cli_args" : {
+                "webdriver.chrome.driver" : "/usr/local/bin/chromedriver.exe"
             }
         },
 

@@ -10,11 +10,19 @@ To build the Nightingale locally, you'll need to install:
  * [NodeJS](http://nodejs.org/)
  * [Bower](http://bower.io/)
 
-## pre-requisits
+## pre-requisites
 
 if behind a proxy run, setup git to use https:
 
  `git config --global url."https://".insteadOf git://`
+
+acquire a local copy of selenium server standalone and place it into
+
+ `nightingale/test/bin/selenium-server-standalone-2.46.0.jar`
+
+from the following URL:
+
+ `http://goo.gl/cvntq5`
 
 ## Workflow
 

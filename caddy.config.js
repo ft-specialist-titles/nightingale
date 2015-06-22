@@ -7,7 +7,7 @@ module.exports = {
         "target": './_site'
     },
     tasks: {
-        copy: ['images', 'fonts', 'server-config'],
+        copy: ['images', 'fonts', '/*{CNAME,.htaccess,robots.txt,manifest.json}'], //last entry used to be 'server-config'
         build: ['sass', 'mustache', 'browserify'], //plus 'requirejs', 'jade'
         test: 'karma', // or false. mocha not yet available.
         release: ['gh-pages'],//['bower'], // ['git', 'gh-pages','s3', 'bower'] or false.
