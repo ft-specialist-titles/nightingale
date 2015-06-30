@@ -13,8 +13,8 @@
     "start": "caddy copy && caddy build -dev && caddy serve",
     "tdd": "caddy test tdd",
     "test": "jshint src && caddy copy && caddy build && caddy test && npm run functional",
-    "functional": "caddy serve & casperjs test test/functional/",
-    "smoke-test": "casperjs test test/smoke/"
+    "functional": "caddy serve & sleep 5 && node nightwatch.js --g test/functional",
+    "smoke-test": "node nightwatch.js --g test/smoke"
   },
   "repository": {
     "type": "git",
@@ -26,11 +26,11 @@
     "brfs": "^1.4.0",
     "browserify-istanbul": "^0.2.1",
     "browserify-shim": "^3.8.3",
-    "casperjs": "^1.1.0-beta3",
     "debowerify": "^1.2.0",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
     "jshint": "^2.6.3",
+    "nightwatch": "^0.7.0",
     "web-caddy": "^2.0.0-rc.5"
   },
   "browserify": {
