@@ -5,16 +5,17 @@
   "main": "src/scripts/nightingale.js",
   "scripts": {
     "serve": "caddy serve",
+    "clean": "caddy clean",
     "copy": "caddy copy",
     "build": "caddy build",
     "bump": "caddy bump",
     "release": "npm test && caddy release",
     "report": "caddy serve test/coverage/chrome/",
-    "start": "caddy copy && caddy build -dev && caddy serve",
+    "start": "caddy clean && caddy copy && caddy build -dev && caddy serve",
     "tdd": "caddy test tdd",
-    "test": "jshint src && caddy copy && caddy build && caddy test && npm run functional",
     "functional": "caddy serve & sleep 5 && node nightwatch.js --g test/functional",
-    "smoke-test": "node nightwatch.js --g test/smoke"
+    "smoke-test": "node nightwatch.js --g test/smoke",
+    "test": "jshint src && caddy clean && caddy copy && caddy build && caddy test && npm run functional"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,7 @@
     "hbsfy": "^2.2.1",
     "jshint": "^2.6.3",
     "nightwatch": "^0.7.0",
-    "web-caddy": "^2.0.0-rc.5"
+    "web-caddy": "^2.0.0"
   },
   "browserify": {
     "transform": [
