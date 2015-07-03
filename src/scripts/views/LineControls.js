@@ -9,7 +9,8 @@ var LineControls = Backbone.View.extend({
     bindings: {
         '[name="startFromZero"]': 'startFromZero',
         '[name="thinLines"]': 'thinLines',
-        '[name="flipYAxis"]': 'flipYAxis',
+        '[name="dependentAxisOrient"]': 'dependentAxisOrient',
+        '[name="dependentAxisReversed"]': 'dependentAxisReversed',
         '[name="nice"]': 'nice'
     },
 

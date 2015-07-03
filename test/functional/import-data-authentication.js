@@ -97,26 +97,26 @@ module.exports = {
 
     'Holding Data, Playing with Right-Hand Elements': function (browser) {
         assertAxisFlipped(browser, 3);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(2) > label > input[type="checkbox"]');
+        browser.click('#selection input[name="dependentAxisOrient"]');
         assertAxisFlipped(browser, -3);
         // note: left hand side not flipped because the overlay interferes with automation checking - NIGHTWATCH BUG
 
         assertValuesRounded(browser, 0.5);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(3) > label > input[type="checkbox"]');
+        browser.click('#selection input[name=nice]');
         assertValuesRounded(browser, 0);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(3) > label > input[type="checkbox"]');
+        browser.click('#selection input[name=nice]');
 
         assertValuesRounded(browser, 0.5);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(1) > label > input[type="checkbox"]');
+        browser.click('#selection input[name="startFromZero"]');
         assertValuesRounded(browser, 0);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(1) > label > input[type="checkbox"]');
+        browser.click('#selection input[name="startFromZero"]');
 
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(2) > label > input[type="checkbox"]');
+        browser.click('#selection input[name="dependentAxisOrient"]');
 
         assertLineThicknessInChart(browser, 4);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(4) > label > input[type="checkbox"]');
+        browser.click('#selection input[name=thinLines]');
         assertLineThicknessInChart(browser, 2);
-        browser.click('#selection > div > div > div:nth-child(2) > div.panel-body > div > div:nth-child(4) > label > input[type="checkbox"]');
+        browser.click('#selection input[name=thinLines]');
     },
 
     after : function(browser) {

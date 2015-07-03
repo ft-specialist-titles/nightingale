@@ -2,16 +2,15 @@ var pkg = require('./package.json');
 
 module.exports = {
     pkg: pkg,
-    paths: {
-        source: "./src",
-        "target": './_site'
-    },
+    buildPaths: [
+        { source: "./src",  "target": './_site' , minify:true}
+    ],
     tasks: {
-        copy: ['images', 'fonts', '/*{CNAME,.htaccess,robots.txt,manifest.json}'], //last entry used to be 'server-config'
-        build: ['sass', 'mustache', 'browserify'], //plus 'requirejs', 'jade'
-        test: 'karma', // or false. mocha not yet available.
-        release: ['gh-pages'],//['bower'], // ['git', 'gh-pages','s3', 'bower'] or false.
-        serve: 'staticApp' // `staticApp` or `nodeApp`
+        copy: ['{images,CNAME}'],
+        build: ['sass', 'mustache', 'browserify'],
+        test: 'karma',
+        release: ['gh-pages'],
+        serve: 'staticApp'
     },
     browserify: {
         insertGlobals : true,

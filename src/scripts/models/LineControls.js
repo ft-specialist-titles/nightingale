@@ -6,7 +6,8 @@ var LineControls = Backbone.Model.extend({
 
     defaults: {
         thinLines: false,
-        flipYAxis: false,
+        dependentAxisOrient: false,
+        dependentAxisReversed: false,
         startFromZero: false,
         nice: false,
         tickStyleX: TickStyle.AUTO,
@@ -14,9 +15,9 @@ var LineControls = Backbone.Model.extend({
     },
 
     overrideConfig: function (config) {
-        config.dependentAxisOrient = this.attributes.flipYAxis ? 'left' : 'right';
+        config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
-        config.y.flip = this.attributes.flipYAxis;
+        config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
         config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
         return config;
