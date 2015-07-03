@@ -61,7 +61,7 @@ function init() {
     chartsEl.appendChild(charts.render().el);
 
     var viewSelectedVariation;
-    Backbone.on('selectVariation', function (variation) {
+    Backbone.on('selectVariation', function (variation, el) {
         if (viewSelectedVariation) {
             if (viewSelectedVariation.model === variation) {
                 return;
@@ -69,6 +69,11 @@ function init() {
                 viewSelectedVariation.remove();
             }
         }
+
+        [].forEach.call(document.body.querySelectorAll('.graphic-container.selected'), function(el){
+            el.classList.remove('selected');
+        });
+        el.parentNode.classList.add('selected');
 
         if (!variation || !variation.get('svg')) {
             return;
