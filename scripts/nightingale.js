@@ -32013,9 +32013,9 @@ Tracking.prototype.trackPage = function (pageName) {
     });
 };
 
-Tracking.prototype.trackEvent = function (eventName) {
+Tracking.prototype.trackEvent = function (chartType, chartSize, imageFormat) {
     if (!this.track) return;
-    ga('send', 'event', 'button', 'click', eventName);
+    ga('send', 'event', chartType, chartSize, imageFormat);
 };
 
 Tracking.prototype.user = function (container, email) {
@@ -33073,7 +33073,7 @@ var ViewSelectedVariation = RegionView.extend({
             // prevent doubleclick
             setTimeout(removeDisabledState, 200);
         });
-        tracking.trackEvent('saveImage-' + format);
+        tracking.trackEvent(d.graphicType.typeName + ' Chart', d.svg.width + 'x' + d.svg.height, 'saveImage-' + format);
     },
 
     hide: function() {
