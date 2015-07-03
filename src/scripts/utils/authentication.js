@@ -36,7 +36,7 @@ Authentication.prototype.onsuccess = function (googleUser) {
     var email = profile.getEmail();
     if (email.match(regexp)) {
         tracking.user(this.loginContainer, email);
-        this.startApp();
+        this.startApp(email);
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
@@ -46,10 +46,10 @@ Authentication.prototype.onsuccess = function (googleUser) {
     }
 };
 
-Authentication.prototype.startApp = function () {
+Authentication.prototype.startApp = function (email) {
     this.loginContainer.classList.remove('block');
     this.appConatiner.classList.add('block');
-    this.cb && typeof this.cb === 'function' && this.cb();
+    this.cb && typeof this.cb === 'function' && this.cb(email);
 };
 
 module.exports = Authentication;
