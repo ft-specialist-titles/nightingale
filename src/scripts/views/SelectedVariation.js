@@ -93,7 +93,7 @@ var ViewSelectedVariation = RegionView.extend({
             // prevent doubleclick
             setTimeout(removeDisabledState, 200);
         });
-        tracking.trackEvent('saveImage-' + format);
+        tracking.trackEvent(d.graphicType.typeName + ' Chart', d.svg.width + 'x' + d.svg.height, 'saveImage-' + format);
     },
 
     hide: function() {
