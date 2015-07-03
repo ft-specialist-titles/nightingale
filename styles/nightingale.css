@@ -6348,6 +6348,9 @@ svg .chart-footnote:hover {
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container:hover {
           border-color: rgba(0, 0, 0, 0.7);
           cursor: pointer; }
+        .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container.selected {
+          border-color: rgba(0, 0, 125, 0.7);
+          cursor: pointer; }
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container.error {
           border-color: #d43f3a; }
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container .graphic {
