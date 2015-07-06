@@ -6,7 +6,7 @@ function assertElementInChart (browser, type, expectedText){
     browser.pause(1750); //todo: add 'waitFor' rather than arbitrary pause
     for (var i = 0; i <3; i++) {
         for (var j in chartNames) {
-            browser.assert.containsText('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-' + type + ' > g > text', expectedText)
+            browser.assert.containsText('.' + chartNames[j] + ' svg g.chart-' + type + ' text', expectedText)
         }
     }
 }
@@ -15,7 +15,7 @@ function assertElementInChart (browser, type, expectedText){
 function assertLineThicknessInChart (browser, expectedThickness){
     browser.pause(500);
     for (var j in chartNames) {
-        browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g.plot > path')
+        browser.expect.element('.' + chartNames[j] + ' svg g.plot path')
             .attribute('stroke-width')
             .equals(expectedThickness);
     }
@@ -25,11 +25,11 @@ function assertAxisFlipped (browser, expectedX){
     browser.pause(500);
     for (var j in chartNames) {
         if (chartNames[j] == 'small'){
-            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(4) > text')
+            browser.expect.element('.' + chartNames[j] + ' svg g.axis.y .tick:nth-child(4) text')
                 .attribute('x')
                 .equals(expectedX);
         } else {
-            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(6) > text')
+            browser.expect.element('.' + chartNames[j] + ' svg g.axis.y .tick:nth-child(6) text')
                 .attribute('x')
                 .equals(expectedX)
         }
@@ -40,7 +40,7 @@ function assertValuesRounded (browser, expectedBaseline){
     browser.pause(500);
     for (var j in chartNames) {
         if (chartNames[j] != 'small'){
-            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g.tick.origin')
+            browser.expect.element('.' + chartNames[j] + ' svg .axis.x .tick.origin')
                 .text.equals(expectedBaseline);
         }
     }
@@ -85,13 +85,13 @@ module.exports = {
         expectedText = '£30 Financial Times, Thomson Reuters Datastream, Bloomberg, World Bank, IMF, ONS, Eurostat, US Census Bureau, US Bureau of Labor Statistics';
         for (var i = 0; i < 8; i++) {
             browser
-                .click('#controls > div.view-graphic-controls > div.axis-panel.panel.panel-default > div.panel-body > form > div:nth-child(4) > p > button:nth-child(' + (i + 1) + ')');
+                .click('#controls button.popular-source:nth-child(' + (i + 1) + ')');
 
         }
         browser.pause(1750);
         for (var i = 0; i <3; i++) {
             for (var j in chartNames) {
-                browser.getText('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-source > g > text', function(result){
+                browser.getText('.' + chartNames[j] + ' svg  g.chart-source text', function(result){
                     browser.assert.equal(result.value.replace(/ /g, ''), 'Source:' + expectedText.replace(/ /g, ''));
                 });
             }

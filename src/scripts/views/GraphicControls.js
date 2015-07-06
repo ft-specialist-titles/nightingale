@@ -17,6 +17,7 @@ var ViewGraphicControls = RegionView.extend({
     className: 'view-graphic-controls',
 
     bindings: {
+        '[name="theme"]': 'theme',
         '[name="title"]': 'title',
         '[name="subtitle"]': 'subtitle',
         '[name="footnote"]': 'footnote',
@@ -24,6 +25,7 @@ var ViewGraphicControls = RegionView.extend({
     },
 
     events: {
+        'change [name="theme"]': 'updateTheme',
         'click [name="suggest-subtitle"]': 'subtitleSuggestion',
         'click [name="discard"]': 'discard',
         'click .popular-source': 'usePopularSource'
@@ -48,6 +50,13 @@ var ViewGraphicControls = RegionView.extend({
                 dataImport: this.dataImport
             });
         }
+    },
+
+    updateTheme: function(event){
+        var theme = event.target.value;
+        this.model.set('theme', theme);
+        document.documentElement.classList.remove('theme--ft','theme--video','theme--print');
+        document.documentElement.classList.add('theme--' + theme);
     },
 
     usePopularSource: function (event) {

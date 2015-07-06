@@ -67,11 +67,27 @@ html, body {
     .panel-body {
         padding: 10px 0 20px 0;
     }
-    .col-50{
+    .col-50, .col-40, .col-60{
         width: 50%;
         float: left;
+    }
+    .col-40{
+        width: 40%;
+    }
+    .col-60{
+        width: 60%;
     }
 }
 .view-export-controls .panel-body{
     padding-top: 0;
+}
+
+[data-help="MASTER"]{
+    background-color: #4781aa;
+    border-radius: 16px;
+    color: white;
+    padding: 1px 6px;
+    font-family: serif;
+    font-weight: bold;
+    margin-left: 3px;
 }

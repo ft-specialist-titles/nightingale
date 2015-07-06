@@ -42,7 +42,7 @@ var GraphicVariation = Backbone.Model.extend({
 
             width: this.variation.get('width'),
             height: this.variation.get('height'),
-            theme: this.variation.get('theme'),
+            theme: g.theme || 'ft',
             title: g.title,
             subtitle: g.subtitle,
             source: g.source,

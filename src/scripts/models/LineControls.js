@@ -1,6 +1,13 @@
 var Backbone = require('./../core/backbone.js');
 var _ = require('underscore');
-var TickStyle = require('../charting/TickStyle.js');
+
+var TICK_STYLE = {
+    AUTO: 'auto',// works out best set of ticks to display
+    NICE: 'nice',// end of the domain round up/down to nearest unit
+    SIMPLE: 'simple',// only 2 ticks (at each end of the domain). no rounding
+    AMOUNT: 'amount',// an amount of ticks to be display
+    ARRAY: 'array'//  uses array of values for ticks
+};
 
 var LineControls = Backbone.Model.extend({
 
@@ -13,8 +20,8 @@ var LineControls = Backbone.Model.extend({
         hoverKey: false,
         intraDay: false,
         nice: false,
-        tickStyleX: TickStyle.AUTO,
-        tickStyleY: TickStyle.AUTO
+        tickStyleX: TICK_STYLE.AUTO,
+        tickStyleY: TICK_STYLE.AUTO
     },
 
     overrideConfig: function (config) {

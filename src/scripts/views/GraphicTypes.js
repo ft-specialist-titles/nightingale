@@ -19,6 +19,7 @@ var ViewGraphicTypes = CollectionView.extend({
         createView: function (variation, index) {
 
             var gv = new GraphicVariation({}, {
+                theme: this.model.theme,
                 graphic: this.model.graphic,
                 variation: variation,
                 graphicType: this.model

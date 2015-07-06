@@ -1,9 +1,27 @@
 <div class="axis-panel panel panel-default">
-    <div class="panel-heading">Description
+
+
+    <div class="panel-heading">Appearance
         <button type="button" class="pull-right btn btn-xs btn-danger" name="discard">
             Discard data
         </button>
     </div>
+    <div class="panel-body">
+        <label class="radio control-label">Theme: </label>
+        <div class="btn-group  btn-toggle" data-toggle="buttons">
+            <label class="btn btn-default active">
+                <input type="radio" name="theme" value="ft" checked>FT
+            </label>
+            <label class="btn btn-default ">
+                <input type="radio" name="theme" value="video" >Video
+            </label>
+            <label class="btn btn-default " data-feature="print">
+                <input type="radio" name="theme" value="print" >Print
+            </label>
+        </div>
+    </div>
+
+    <div class="panel-heading">Description</div>
     <div class="panel-body">
         <form role="form">
             <div class="form-group">

@@ -80,10 +80,6 @@ svg {
             &.large {
                 width: 100%;
             }
-            &.video-ratio {
-                width:0!important; height: 0!important;
-                overflow: hidden;
-            }
 
             .graphic-container {
                 border: 3px solid transparent;
@@ -107,4 +103,14 @@ svg {
             }
         }
     }
+}
+
+.theme--print .ft-theme ,
+.theme--print .video-theme ,
+.theme--video .ft-theme ,
+.theme--video .print-theme ,
+.theme--ft .print-theme ,
+.theme--ft .video-theme {
+    width:0!important; height: 0!important;
+    overflow: hidden;
 }

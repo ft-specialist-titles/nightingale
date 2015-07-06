@@ -74,13 +74,14 @@ var ViewSelectedVariation = RegionView.extend({
         // TODO: check it's possible to make the image.
         //         - dont allow the user to download a chart with validation errors
         //         - dont allow a user to download an empty image
-
+        var width = (resolution === 'master') ? 2048 : d.svg.width;
+        var height = (resolution === 'master') ? 1152 : d.svg.height;
         var filename = util.format('%s-%s-%s-%sx%s',
             (d.graphic.title ? d.graphic.title.replace(/\s/g, '_') : 'Untitled'),
             d.graphicType.typeName.toLowerCase() + '_chart',
             d.variation.variationName,
-            d.svg.width,
-            d.svg.height
+            width,
+            height
         ).replace(/\s/g, '');
 
         // TODO: allow transparent and specified colour backgrounds
@@ -93,7 +94,7 @@ var ViewSelectedVariation = RegionView.extend({
             // prevent doubleclick
             setTimeout(removeDisabledState, 200);
         });
-        tracking.trackEvent(d.graphicType.typeName + ' Chart', d.svg.width + 'x' + d.svg.height, 'saveImage-' + format);
+        tracking.trackEvent(d.graphicType.typeName + ' ' + d.theme + ' Chart', width + 'x' + height, 'saveImage-' + format);
     },
 
     hide: function() {

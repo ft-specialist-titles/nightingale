@@ -1,44 +1,4 @@
 var utils = require('./utils.js');
-var fs = require('fs');
-
-var bentonFontDataURI = fs.readFileSync(__dirname + '/BentonSans.txt', 'utf8').trim();
-var svgSchema = 'http://www.w3.org/2000/svg';
-
-function svgStyleElement(stylesheet) {
-    return '<style type="text/css"><![CDATA[' + stylesheet + ']]></style>';
-}
-
-function fontFace(name, fontDataURI) {
-    return '@font-face{font-family: "' + name + '";src: url("' + fontDataURI + '") format("woff"), local(\'' + name + '\');font-style: normal;font-weight: normal;}';
-}
-
-
-exports.fontFix = function () {
-    var svg = document.createElementNS(svgSchema, 'svg');
-
-    svg.setAttribute('version', '1.1');
-    svg.setAttribute('width', 11);
-    svg.setAttribute('height', 11);
-    svg.style.position = 'fixed';
-    svg.style.top = '-20px';
-
-    var fontface = fontFace('BentonSans', bentonFontDataURI);
-    var style = svgStyleElement(fontface);
-
-    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
-    var text = document.createElementNS(svgSchema, 'text');
-    text.setAttributeNS(null, 'font-family', 'BentonSans');
-    text.setAttributeNS(null, 'font-weight', 'normal');
-    text.setAttributeNS(null, 'font-style', 'normal');
-    text.setAttributeNS(null, 'font-size', 11);
-    text.setAttributeNS(null, 'x', 0);
-    text.setAttributeNS(null, 'y', 11);
-    text.textContent = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,;*';
-
-    svg.appendChild(text);
-
-    return svg;
-};
 
 var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg, opts) {
 
@@ -50,7 +10,7 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
     var viewBox = [0, 0, svg.getAttribute('width'), svg.getAttribute('height')];
     if (opts.resolution === 'master'){
         var selector = 'svg.' + svg.getAttribute('class').replace(/ /g,'.');
-        var videoRatioSVG = document.querySelector('.video-ratio ' + selector);
+        var videoRatioSVG = document.querySelector('.video-theme ' + selector);
         svg = videoRatioSVG.cloneNode(true);
         viewBox = [-8, -8, 616, 354];
         svg.setAttribute('width', 2048);
@@ -59,24 +19,13 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
         svg = svg.cloneNode(true);
     }
     svg.setAttribute('version', '1.1');
-
-    var fontface = fontFace('BentonSans', bentonFontDataURI);
-    var style = svgStyleElement(fontface);
-
-    svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
-    svg.setAttribute('viewBox', viewBox.join(' '));
-    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
-    if (!transparent) {
-        var rect = document.createElementNS(svgSchema, 'rect');
-        rect.id = 'backgroundFill';
-        rect.setAttribute('x', (viewBox[0] * 2));
-        rect.setAttribute('y', viewBox[1]);
-        rect.setAttribute('width', viewBox[2] + (viewBox[0] * -2));
-        rect.setAttribute('height', viewBox[3]);
-        rect.setAttribute('fill', opts.bgColor);
-        svg.insertBefore(rect, svg.firstChild);
+    var preloadedfonts = document.querySelector('#o-charts__webfonts');
+    if (preloadedfonts){
+        svg.insertAdjacentHTML('afterbegin', preloadedfonts.innerHTML);
     }
 
+    svg.setAttribute('viewBox', viewBox.join(' '));
+    var transparent = !opts.bgColor || opts.bgColor === 'transparent';
     var xmlSrc = utils.svgToString(svg);
 
     // 2. Ensure the SVG can make a picture.
@@ -156,13 +105,5 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
 
     var src = elementToDataURI(svg, opts);
     image.src = src;
-
-    // var o = document.createElement('object');
-    // o.setAttribute('type', 'image/svg+xml');
-    // o.setAttribute('data', src);
-    // o.style.position = 'fixed';
-    // o.style.zIndex = 5;
-    // document.body.appendChild(o);
-    // drawIntoContext(o, 200, 200);
 
 };

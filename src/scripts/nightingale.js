@@ -1,3 +1,4 @@
+/* globals location */
 var Backbone = require('./core/backbone');
 var Graphic = require('./models/Graphic.js');
 var ViewGraphicControls = require('./views/GraphicControls.js');
@@ -13,20 +14,36 @@ var ColumnControls = require('./models/ColumnControls.js');
 var BarControls = require('./models/BarControls.js');
 var transform = require('./transform/index.js');
 var DataTypes = require('./charting/Datatypes.js');
-var fontFix = require('./export/svgDataURI.js').fontFix;
 var Authentication = require('./utils/authentication.js');
 
+var oCharts = require('o-charts');
 var _ = require('underscore');
 var $ = require('jquery');
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function enableFeatures(){
+    [].forEach.call(document.querySelectorAll('[data-feature]'), function(el){
+        if (getParameterByName('feature') !== el.getAttribute('data-feature')){
+            el.remove();
+        }
+    });
+}
+
 function init(email) {
 
+    var theme = 'ft';
     var graphic = new Graphic();
     var importData = new DataImport();
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     window.email = email || 'anonymous';
-
+    document.documentElement.classList.add('theme--' + theme);
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
     // REFACTOR THIS into it's own custom collection
@@ -34,6 +51,7 @@ function init(email) {
         new GraphicType({
             typeName: 'Line'
         }, {
+            theme: theme,
             graphic: graphic,
             // GraphicType should internally decide which type
             // of controls suits it
@@ -43,6 +61,7 @@ function init(email) {
         new GraphicType({
             typeName: 'Column'
         }, {
+            theme: theme,
             graphic: graphic,
             controls: new ColumnControls(),
             variations: Variations
@@ -50,6 +69,7 @@ function init(email) {
         new GraphicType({
             typeName: 'Bar'
         }, {
+            theme: theme,
             graphic: graphic,
             controls: new BarControls(),
             variations: Variations
@@ -210,10 +230,6 @@ function init(email) {
 
     ViewInlineHelp.init();
 
-    // FIXME: this is a quick fix to the font rendering issue on the png exports
-    //        find out why we need this and if there's a better way to fix.
-    document.body.appendChild(fontFix());
-
     // REFACTOR: move this into a separate application
     var fs = require('fs');
     var testSets = [
@@ -242,13 +258,13 @@ function init(email) {
     document.querySelector('button[name="demo-data"]').addEventListener('click', function() {
         importData.set({dataAsString: testSets[0], type: 'text/plain'}, {validate: true});
     });
-
+    enableFeatures();
 }
 
 function nightingale() {
     window.nightingale = {
-        oChartsVersion: require('o-charts').version,
-        init: new Authentication(init)
+        oChartsVersion: oCharts.version,
+        init: oCharts.addFont(['MetricWebSemiBold','MetricWeb','BentonSans']).then(new Authentication(init))
     };
 }
 

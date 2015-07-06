@@ -1,32 +1,28 @@
-{{#if displayControls}}
-    <div class="col-50">
-        <label class="radio control-label">Format:</label>
+<div class="col-40">
+    <label class="radio control-label">Format:</label>
+    <div class="btn-group  btn-toggle" data-toggle="buttons">
+        <label class="btn btn-default active">
+            <input type="radio" name="save-format" value="png" checked>PNG
+        </label>
+        <label class="btn btn-default ">
+            <input type="radio" name="save-format" value="svg">SVG
+        </label>
+    </div>
+</div>
+
+{{#if hasMaster }}
+    <div class="col-60">
+        <label class="radio control-label">Resolution: </label>
         <div class="btn-group  btn-toggle" data-toggle="buttons">
             <label class="btn btn-default active">
-                <input type="radio" name="save-format" value="png" checked>PNG
+                <input type="radio" name="save-resolution" value="standard" checked>Standard
             </label>
-            <label class="btn btn-default ">
-                <input type="radio" name="save-format" value="svg">SVG
+            <label class="btn btn-default " >
+                <input type="radio" name="save-resolution" value="master" >Master
+                <span data-placement="top" data-help="MASTER">i</span>
             </label>
         </div>
     </div>
-
-    {{#if hasMaster }}
-        <div class="col-50">
-            <label class="radio control-label">Resolution: </label>
-            <div class="btn-group  btn-toggle" data-toggle="buttons">
-                <label class="btn btn-default active">
-                    <input type="radio" name="save-resolution" value="standard" checked>Standard
-                </label>
-                <label class="btn btn-default ">
-                    <input type="radio" name="save-resolution" value="master" >Master
-                </label>
-            </div>
-        </div>
-    {{else}}
-        <input type="radio" name="save-resolution" value="standard" checked style="display:none">
-    {{/if}}
 {{else}}
-    <input type="radio" name="save-format" value="png" checked style="display:none">
     <input type="radio" name="save-resolution" value="standard" checked style="display:none">
 {{/if}}
