@@ -23,15 +23,15 @@ module.exports = {
     'Confirm All Elements' : function (browser) {
         browser
             .assert.containsText('#login-overlay', 'Nightingale')
-            .assert.containsText('#login-overlay > p', 'requires a login with your FT credentials')
-            .assert.containsText('#trouble > p:nth-child(1) > a', 'Trouble signing in?')
-            .assert.attributeContains('#login-container > div.feedback-details > a', 'href', 'help.nightingale@ft.com')
-            .assert.attributeContains('#trouble > p:nth-child(1) > a', 'href', '#trouble')
+            .assert.containsText('#login-overlay p', 'requires a login with your FT credentials')
+            .assert.containsText('#trouble a', 'Trouble signing in?')
+            .assert.attributeContains('#login-container a', 'href', 'help.nightingale@ft.com')
+            .assert.attributeContains('#trouble a', 'href', '#trouble')
     },
 
     'Login to Google' : function (browser) {
         browser
-            .click('#my-signin2 > div > div')
+            .click('#my-signin2 div[class="abcRioButtonContentWrapper"]')
             .pause(500);
         browser.window_handles(function(result){
             browser.switchWindow(result.value[1])
