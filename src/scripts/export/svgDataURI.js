@@ -47,24 +47,32 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
 
     // we're about to modify the SVG with export hacks
     // and background color etc so we need to make a copy
-    svg = svg.cloneNode(true);
-
+    var viewBox = [0, 0, svg.getAttribute('width'), svg.getAttribute('height')];
+    if (opts.resolution === 'master'){
+        var selector = 'svg.' + svg.getAttribute('class').replace(/ /g,'.');
+        var videoRatioSVG = document.querySelector('.video-ratio ' + selector);
+        svg = videoRatioSVG.cloneNode(true);
+        viewBox = [-8, -8, 616, 354];
+        svg.setAttribute('width', 2048);
+        svg.setAttribute('height', 1152);
+    } else {
+        svg = svg.cloneNode(true);
+    }
     svg.setAttribute('version', '1.1');
 
     var fontface = fontFace('BentonSans', bentonFontDataURI);
     var style = svgStyleElement(fontface);
 
     svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
-
+    svg.setAttribute('viewBox', viewBox.join(' '));
     var transparent = !opts.bgColor || opts.bgColor === 'transparent';
-
     if (!transparent) {
         var rect = document.createElementNS(svgSchema, 'rect');
         rect.id = 'backgroundFill';
-        rect.setAttribute('x', 0);
-        rect.setAttribute('y', 0);
-        rect.setAttribute('width', svg.getAttribute('width'));
-        rect.setAttribute('height', svg.getAttribute('height'));
+        rect.setAttribute('x', (viewBox[0] * 2));
+        rect.setAttribute('y', viewBox[1]);
+        rect.setAttribute('width', viewBox[2] + (viewBox[0] * -2));
+        rect.setAttribute('height', viewBox[3]);
         rect.setAttribute('fill', opts.bgColor);
         svg.insertBefore(rect, svg.firstChild);
     }
@@ -146,7 +154,7 @@ exports.elementToImageDataURI = function elementToImageDataURI(svg, opts, callba
     image.style.display = 'none';
     document.body.appendChild(image);
 
-    var src = elementToDataURI(svg, {bgColor: opts.bgColor});
+    var src = elementToDataURI(svg, opts);
     image.src = src;
 
     // var o = document.createElement('object');

@@ -12,8 +12,7 @@ var Graphic = Backbone.Model.extend({
         title: 'Untitled chart',
         subtitle: '',
         source: '',
-        footnote: '',
-        noSource: false
+        footnote: ''
     },
 
     subtitleSuggestion: function (save) {

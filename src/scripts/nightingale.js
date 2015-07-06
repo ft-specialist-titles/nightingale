@@ -98,7 +98,6 @@ function init(email) {
     function reorderChartStyle(model) {
         var chartStyle = model.get('recommendedChartStyle');
         // and sort our chart types based on that.
-
         types.forEach(function(t) {
             if (t.get('typeName') === chartStyle) {
                 t.set('suitabilityRanking', - 100, {silent : true});
