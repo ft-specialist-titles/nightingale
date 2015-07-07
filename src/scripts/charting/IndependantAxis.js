@@ -29,7 +29,8 @@ var IndependantAxis = Axis.extend({
 
     defaults: _.extend({}, Axis.prototype.defaults, {
         name: Axis.X,
-        dataType: defaultDatatype
+        dataType: defaultDatatype,
+        hasColumn: false
     }),
 
     useColumn: function (column) {
@@ -37,6 +38,7 @@ var IndependantAxis = Axis.extend({
         if (!column) {
             this._column = null;
             this.set('property', null);
+            this.set('hasColumn', false);
             return;
         }
 
@@ -50,7 +52,8 @@ var IndependantAxis = Axis.extend({
             property: column.get('property'),
             dataType: dataType,
             dateFormat: dateFormat,
-            units: units
+            units: units,
+            hasColumn: true
         });
     },
 
