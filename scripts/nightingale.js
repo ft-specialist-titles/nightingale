@@ -29679,8 +29679,11 @@ module.exports = {
 };
 
 },{"./../../../../bower_components/jquery/dist/jquery.js":5}],61:[function(require,module,exports){
+/* globals XMLHttpRequest, btoa, Uint8Array */
+
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
+
 
 module.exports = function download(name, svg, types, bgColor, callback) {
 
@@ -29700,7 +29703,35 @@ module.exports = function download(name, svg, types, bgColor, callback) {
                         console.error(err.message);
                         return;
                     }
-                    download.dataURI(datauri).start(callback);
+
+                    var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+                    xmlhttp.open("POST", "http://png-stamper.herokuapp.com/stamp");
+                    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    xmlhttp.responseType = "arraybuffer";
+                    xmlhttp.onload = function ( oEvent ) {
+                        var arr = new Uint8Array(this.response);
+                        var raw = String.fromCharCode.apply(null,arr);
+                        var b64=btoa(raw);
+                        var dataURL="data:image/png;base64,"+b64;
+                        download.dataURI(dataURL).start(callback);
+                    };
+                    xmlhttp.onerror = function (error) {
+                        console.error("couldn't stamp image");
+                        return download.dataURI(datauri).start(callback);
+                    };
+
+                    xmlhttp.send(JSON.stringify({
+                      file: datauri.replace("data:image/png;base64,", ""),
+                      filename: filename,
+                      stamp: {
+                        Software: 'Nightingale',
+                        Author: window.email
+                      }
+                    }));
+
+
+
+
                 });
             } else {
                 console.error('Unsupported format:', type);
@@ -31963,7 +31994,7 @@ Authentication.prototype.onsuccess = function (googleUser) {
     var email = profile.getEmail();
     if (email.match(regexp)) {
         tracking.user(this.loginContainer, email);
-        this.startApp();
+        this.startApp(email);
     } else {
         //if the user has multiple google accounts then calling disconnect() ensures the user will be shown the login preferences box
         //when re-signing in (otherwise login will automatically login with their previous selection).
@@ -31973,10 +32004,10 @@ Authentication.prototype.onsuccess = function (googleUser) {
     }
 };
 
-Authentication.prototype.startApp = function () {
+Authentication.prototype.startApp = function (email) {
     this.loginContainer.classList.remove('block');
     this.appConatiner.classList.add('block');
-    this.cb && typeof this.cb === 'function' && this.cb();
+    this.cb && typeof this.cb === 'function' && this.cb(email);
 };
 
 module.exports = Authentication;
@@ -33453,11 +33484,13 @@ var Authentication = require('./utils/authentication.js');
 var _ = require("./../../bower_components/underscore/underscore.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
-function init() {
+function init(email) {
 
     var graphic = new Graphic();
     var importData = new DataImport();
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
+
+    window.email = email || 'anonymous';
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
