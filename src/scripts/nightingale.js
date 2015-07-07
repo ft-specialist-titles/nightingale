@@ -19,11 +19,13 @@ var Authentication = require('./utils/authentication.js');
 var _ = require('underscore');
 var $ = require('jquery');
 
-function init() {
+function init(email) {
 
     var graphic = new Graphic();
     var importData = new DataImport();
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
+
+    window.email = email || 'anonymous';
 
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
