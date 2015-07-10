@@ -6203,9 +6203,9 @@ svg .chart-footnote:hover {
   width: 360px;
   right: 0;
   border-right: 1px solid #c0c0c0;
-  overflow-x: hidden;
+  overflow-x: visible;
   overflow-y: auto;
-  padding: 10px; }
+  padding: 15px; }
 
 #selection {
   position: absolute;
@@ -6244,9 +6244,9 @@ svg .chart-footnote:hover {
 
 .view-graphic-controls label {
   margin-bottom: 2px;
-  font-size: 12px;
-  font-weight: normal;
-  color: #777777; }
+  font-size: 14px;
+  font-weight: 600;
+  color: #333; }
 
 .view-graphic-controls .checkbox label {
   font-size: 14px; }
@@ -6355,6 +6355,11 @@ svg .chart-footnote:hover {
           border-color: #d43f3a; }
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container .graphic {
           background-color: #fff1e0; }
+      .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-type-errors--error {
+        font-size: 12px;
+        line-height: auto;
+        padding: 5px;
+        border: 1px solid; }
 
 .chart-name {
   border-bottom: 1px solid white;
