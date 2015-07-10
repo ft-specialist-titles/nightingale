@@ -33759,10 +33759,10 @@ function init(email) {
 
         types.forEach(function(t) {
             if (t.get('typeName') === chartStyle) {
-                t.set('suitabilityRanking', t.get('suitabilityRanking') - 100, {silent : true});
+                t.set('suitabilityRanking', - 100, {silent : true});
                 t.set('recommended', true);
             } else {
-                t.set('suitabilityRanking', t.get('suitabilityRanking') + 100, {silent : true});
+                t.set('suitabilityRanking', 100, {silent : true});
                 t.set('recommended', false);
             }
         });
