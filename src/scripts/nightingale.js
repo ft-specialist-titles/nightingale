@@ -217,27 +217,33 @@ function init(email) {
 
     // REFACTOR: move this into a separate application
     var fs = require('fs');
-    var samplePipeline;
+    var testSets = [
+        fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8'),
+        fs.readFileSync(__dirname + '/sampledata/intraday.txt', 'utf8'),
+        fs.readFileSync(__dirname + '/sampledata/categories.tsv', 'utf8'),
+        fs.readFileSync(__dirname + '/sampledata/monthly-ten-years.tsv', 'utf8')
+    ];
 
     if (document.location.hash === '#test') {
-        samplePipeline = fs.readFileSync(__dirname + '/sampledata/BigChinaSlowdown.txt', 'utf8');
-        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: testSets[0], type: 'text/plain'}, {validate: true});
     }
 
     if(document.location.hash === '#testType1') {
-        samplePipeline = fs.readFileSync(__dirname + '/sampledata/intraday.txt', 'utf8');
-        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: testSets[1], type: 'text/plain'}, {validate: true});
     }
 
     if(document.location.hash === '#testType2') {
-        samplePipeline = fs.readFileSync(__dirname + '/sampledata/categories.tsv', 'utf8');
-        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: testSets[2], type: 'text/plain'}, {validate: true});
     }
 
     if(document.location.hash === '#testType3') {
-        samplePipeline = fs.readFileSync(__dirname + '/sampledata/monthly-ten-years.tsv', 'utf8');
-        importData.set({dataAsString: samplePipeline, type: 'text/plain'}, {validate: true});
+        importData.set({dataAsString: testSets[3], type: 'text/plain'}, {validate: true});
     }
+
+    document.querySelector('button[name="demo-data"]').addEventListener('click', function() {
+        importData.set({dataAsString: testSets[0], type: 'text/plain'}, {validate: true});
+    });
+
 }
 
 function nightingale() {
