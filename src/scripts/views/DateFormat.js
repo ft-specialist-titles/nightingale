@@ -1,4 +1,5 @@
 var Backbone = require('./../core/backbone.js');
+var Errors = require('./../errors/index.js');
 
 var formats = new Backbone.Collection([
     {value: '', label: 'Pick a date format'},
@@ -34,10 +35,44 @@ var ViewDateFormat = Backbone.View.extend({
 
     initialize: function () {
         this.formats = formats;
+        this.listenTo(Backbone, 'changedData', this.showErrorPopover.bind(this));
+        this.listenTo(Backbone, 'dateFormat_visible', this.showErrorPopover.bind(this));
+        this.listenTo(Backbone, 'importVisible', this.hideErrorPopover.bind(this));
+        this.listenTo(this.model, 'change:dateFormat', this.showErrorPopover.bind(this));
     },
 
+    isVisible: function() {
+        var self = this;
+        var isVisible = self.$el.is(':visible');
+        var overlay = document.querySelector('.view-importdata');
+        var isCovered = overlay.style.display !== 'none';
+        return isVisible && !isCovered;
+    },
+
+    showErrorPopover: function() {
+        var self = this;
+        var select = self.$el.find('select');
+        if (self.tm) {
+            clearTimeout(self.tm);
+        }
+        self.tm = setTimeout(function() {
+            if (!self.model.get('dateFormat') && self.isVisible()) {
+                select.popover('show');
+            } else {
+                select.popover('hide');
+            }
+            self.tm = null;
+        }, 500);
+    },
+
+    hideErrorPopover: function() {
+        var select = this.$el.find('select');
+        select.popover('hide');
+    },
+
+
     template: function () {
-        return '<label>Date format</label><select name="dateFormat" class="form-control pull"></select>';
+        return '<label>Date format</label><select data-container="body" name="dateFormat" class="form-control pull"></select>';
     },
 
     bindings: {
@@ -63,6 +98,12 @@ var ViewDateFormat = Backbone.View.extend({
 
     render: function () {
         this.el.innerHTML = this.template();
+        this.$el.find('select').popover({
+            html: true,
+            trigger: 'manual',
+            template: Errors.error_template,
+            content: Errors.NO_DATE_FORMAT
+        });
         this.stickit();
         return this;
     }

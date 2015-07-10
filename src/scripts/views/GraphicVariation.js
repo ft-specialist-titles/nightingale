@@ -3,6 +3,8 @@ var $ = require('jquery');
 var oCharts = require('o-charts').chart;
 var d3 = require('d3');
 var _ = require('underscore');
+var ViewGraphicErrors = require('./GraphicErrors.js');
+
 
 var chartTypes = {
     'Line' : oCharts.line,
@@ -17,6 +19,9 @@ var ViewGraphicVariation = Backbone.View.extend({
         this.chart = chartTypes[this.model.graphicType.get('typeName')];
         var debounced = _.bind(_.debounce(this.render, 50), this);
         this.debouncedRender = debounced;
+        this.errorsView = new ViewGraphicErrors({
+            collection: this.model.errors
+            });
         this.listenTo(this.model.graphic, 'change', debounced);
         this.listenTo(this.model.graphic.chart.xAxis, 'change', debounced);
         this.listenTo(this.model.graphic.chart.yAxis, 'change', debounced);
@@ -56,10 +61,22 @@ var ViewGraphicVariation = Backbone.View.extend({
         } else {
             this.svg.classList.add('error');
         }
+
+        this.errorsEl = this.el.querySelector('.error-container');
+        this.errorsEl.appendChild(this.errorsView.render().el);
     },
 
     reportErrors: function (errors) {
-        this.model.errors.reset(Array.isArray(errors) ? errors : [errors]);
+        // lower the suitability Ranking -- errored charts aren't suitable
+        this.model.graphicType.set('suitabilityRanking', 1000);
+        // turn it into an array;
+        errors = Array.isArray(errors) ? errors : [errors];
+        // add the chart type to the errors
+        for (var i = 0; i < errors.length; i++) {
+            errors[i].graphicType = this.model.graphicType.get('typeName');
+        }
+        this.model.errors.reset(errors);
+        Backbone.trigger('chartErrors');
     },
 
     render: function () {
@@ -78,6 +95,9 @@ var ViewGraphicVariation = Backbone.View.extend({
 
         this.el.innerHTML = this.template();
         this.svg = this.el.querySelector('.graphic-container');
+
+
+
         var selectionBorderWidth = 3 * 2; // 3px on the left, 3px on the right
 
         this.el.style.width = (config.width + selectionBorderWidth) + 'px';

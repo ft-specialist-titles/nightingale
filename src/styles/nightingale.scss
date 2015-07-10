@@ -106,9 +106,9 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
     width: 360px;
     right: 0;
     border-right: 1px solid #c0c0c0;
-    overflow-x: hidden;
+    overflow-x: visible;
     overflow-y: auto;
-    padding: 10px;
+    padding: 15px;
 }
 
 #selection {
@@ -157,9 +157,9 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
 .view-graphic-controls {
     label {
         margin-bottom: 2px;
-        font-size: 12px;
-        font-weight: normal;
-        color: $text-muted;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
     }
 
     .checkbox {
@@ -286,9 +286,17 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
                     background-color: #fff1e0;
                 }
             }
+
+            .graphic-type-errors--error {
+                font-size: 12px;
+                line-height: auto;
+                padding: 5px;
+                border: 1px solid;
+            }
         }
     }
 }
+
 
 
 .chart-name {
@@ -564,7 +572,3 @@ $ui-grey-highlight: rgb(60%, 60%, 60%);
 html, body {
     height: 100%;
 }
-
-
-
-

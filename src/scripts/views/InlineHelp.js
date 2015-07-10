@@ -38,6 +38,3 @@ ViewInlineHelp.init = function () {
 };
 
 module.exports = ViewInlineHelp;
-
-
-

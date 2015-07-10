@@ -101,10 +101,10 @@ function init(email) {
 
         types.forEach(function(t) {
             if (t.get('typeName') === chartStyle) {
-                t.set('suitabilityRanking', -100, {silent : true});
+                t.set('suitabilityRanking', t.get('suitabilityRanking') - 100, {silent : true});
                 t.set('recommended', true);
             } else {
-                t.set('suitabilityRanking', 100, {silent : true});
+                t.set('suitabilityRanking', t.get('suitabilityRanking') + 100, {silent : true});
                 t.set('recommended', false);
             }
         });
@@ -119,6 +119,7 @@ function init(email) {
     importData.on('change:data', function (model, data) {
         // work out what style is recommended.
         reorderChartStyle(model);
+        Backbone.trigger('changedData');
         // then set the data which triggers rendering
         graphic.chart.dataset.set('rows', data);
     });
