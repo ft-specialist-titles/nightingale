@@ -7,7 +7,9 @@ var ColumnControls = Backbone.View.extend({
     template: require('./../templates/type-controls-column.hbs'),
 
     bindings: {
-        '[name="stack"]': 'stack' //make this into stack
+        '[name="stack"]': 'stack', //make this into stack
+        '[name="horizontalKey"]': 'horizontalKey',
+        '[name="hoverKey"]': 'hoverKey'
     },
 
     render: function () {

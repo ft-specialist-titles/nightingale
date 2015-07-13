@@ -1,27 +1,32 @@
-<div class="col-50">
-    <label class="radio control-label">Format:</label>
-    <div class="btn-group  btn-toggle" data-toggle="buttons">
-        <label class="btn btn-default active">
-            <input type="radio" name="save-format" value="png" checked>PNG
-        </label>
-        <label class="btn btn-default ">
-            <input type="radio" name="save-format" value="svg">SVG
-        </label>
-    </div>
-</div>
-
-{{#if hasMaster}}
+{{#if displayControls}}
     <div class="col-50">
-        <label class="radio control-label">Resolution: </label>
+        <label class="radio control-label">Format:</label>
         <div class="btn-group  btn-toggle" data-toggle="buttons">
             <label class="btn btn-default active">
-                <input type="radio" name="save-resolution" value="standard" checked>Standard
+                <input type="radio" name="save-format" value="png" checked>PNG
             </label>
             <label class="btn btn-default ">
-                <input type="radio" name="save-resolution" value="master" >Master
+                <input type="radio" name="save-format" value="svg">SVG
             </label>
         </div>
     </div>
+
+    {{#if hasMaster }}
+        <div class="col-50">
+            <label class="radio control-label">Resolution: </label>
+            <div class="btn-group  btn-toggle" data-toggle="buttons">
+                <label class="btn btn-default active">
+                    <input type="radio" name="save-resolution" value="standard" checked>Standard
+                </label>
+                <label class="btn btn-default ">
+                    <input type="radio" name="save-resolution" value="master" >Master
+                </label>
+            </div>
+        </div>
+    {{else}}
+        <input type="radio" name="save-resolution" value="standard" checked style="display:none">
+    {{/if}}
 {{else}}
+    <input type="radio" name="save-format" value="png" checked style="display:none">
     <input type="radio" name="save-resolution" value="standard" checked style="display:none">
 {{/if}}

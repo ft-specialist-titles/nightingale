@@ -9,6 +9,8 @@ var LineControls = Backbone.Model.extend({
         dependentAxisOrient: false,
         dependentAxisReversed: false,
         startFromZero: false,
+        horizontalKey: false,
+        hoverKey: false,
         nice: false,
         tickStyleX: TickStyle.AUTO,
         tickStyleY: TickStyle.AUTO
@@ -17,6 +19,8 @@ var LineControls = Backbone.Model.extend({
     overrideConfig: function (config) {
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
+        config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
+        config.keyHover = this.attributes.hoverKey;
         config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
         config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
