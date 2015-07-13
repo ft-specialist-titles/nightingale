@@ -60,7 +60,7 @@ var ViewSelectedVariation = RegionView.extend({
 
         var svg = this.model.get('svg');
         var el = event.target;
-        var format = document.querySelector('input[name=save-format]:checked').value;
+        var format = event.altKey ? 'svg' : document.querySelector('input[name=save-format]:checked').value;
         var resolution = document.querySelector('input[name=save-resolution]:checked').value;
 
         el.setAttribute('disabled', 'disabled');
