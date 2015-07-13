@@ -3,21 +3,33 @@
 var svgDataURI = require('./svgDataURI.js');
 var util = require('./utils.js');
 
+function _arrayBufferToBase64( buffer ) {
+    var binary = '';
+    var bytes = new Uint8Array( buffer );
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode( bytes[ i ] );
+    }
+    return window.btoa( binary );
+}
 
-module.exports = function download(name, svg, types, bgColor, callback) {
+module.exports = function download(name, svg, types, bgColor, resolution, callback) {
 
     window.requestAnimationFrame(function () {
         types = types instanceof Array ? types : [types];
         types.forEach(function (type) {
             var filename = util.createFilename(name, type);
             var download = util.fileDownloader(filename);
+            var opts = {
+                type: type,
+                encoding: 'base64',
+                bgColor: bgColor,
+                resolution: resolution
+            };
             if (type === 'svg') {
-                download.dataURI(svgDataURI.elementToDataURI(svg, {
-                    encoding: 'utf8',
-                    bgColor: bgColor
-                })).start(callback);
+                download.dataURI(svgDataURI.elementToDataURI(svg, opts)).start(callback);
             } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
-                svgDataURI.elementToImageDataURI(svg, {type: type, bgColor: bgColor}, function (err, datauri) {
+                svgDataURI.elementToImageDataURI(svg, opts, function (err, datauri) {
                     if (err) {
                         console.error(err.message);
                         return;
@@ -28,9 +40,8 @@ module.exports = function download(name, svg, types, bgColor, callback) {
                     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                     xmlhttp.responseType = "arraybuffer";
                     xmlhttp.onload = function ( oEvent ) {
-                        var arr = new Uint8Array(this.response);
-                        var raw = String.fromCharCode.apply(null,arr);
-                        var b64=btoa(raw);
+
+                        var b64 = _arrayBufferToBase64(this.response);
                         var dataURL="data:image/png;base64,"+b64;
                         download.dataURI(dataURL).start(callback);
                     };
@@ -47,9 +58,6 @@ module.exports = function download(name, svg, types, bgColor, callback) {
                         Author: window.email
                       }
                     }));
-
-
-
 
                 });
             } else {

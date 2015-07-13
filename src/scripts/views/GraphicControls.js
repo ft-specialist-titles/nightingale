@@ -20,8 +20,7 @@ var ViewGraphicControls = RegionView.extend({
         '[name="title"]': 'title',
         '[name="subtitle"]': 'subtitle',
         '[name="footnote"]': 'footnote',
-        '[name="source"]': 'source',
-        '[name="noSource"]': 'noSource',
+        '[name="source"]': 'source'
     },
 
     events: {

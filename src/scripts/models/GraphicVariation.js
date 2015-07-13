@@ -42,11 +42,10 @@ var GraphicVariation = Backbone.Model.extend({
 
             width: this.variation.get('width'),
             height: this.variation.get('height'),
-
+            theme: this.variation.get('theme'),
             title: g.title,
             subtitle: g.subtitle,
             source: g.source,
-            hideSource: g.noSource,
             footnote: g.footnote,
             dependentAxisOrient: (typeName === 'Bar') ? 'bottom' : 'left',
             independentAxisOrient: (typeName === 'Bar') ? 'left' : 'bottom',

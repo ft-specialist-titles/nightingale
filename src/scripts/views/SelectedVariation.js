@@ -1,10 +1,9 @@
 var _ = require('underscore');
 var util = require('util');
-var attributeStyler = require('o-charts').util.attributeStyler;
 var RegionView = require('./../core/RegionView.js');
-var ViewGraphicTypeControls = require('./GraphicTypeControls.js');
 var ViewLineControls = require('./LineControls.js');
 var ViewColumnControls = require('./ColumnControls.js');
+var SaveImageControls = require('./SaveImageControls.js');
 var ViewBarControls = require('./BarControls.js');
 var download = require('./../export/download.js');
 var tracking = require('./../utils/tracking.js');
@@ -48,6 +47,9 @@ var ViewSelectedVariation = RegionView.extend({
             var viewControls = controls[this.model.graphicType.attributes.typeName];
             return new viewControls({model: this.model.graphicType});
 
+        },
+        '[data-region="save-image-controls"]': function () {
+            return new SaveImageControls({model: this.model.variation});
         }
     },
 
@@ -58,7 +60,8 @@ var ViewSelectedVariation = RegionView.extend({
 
         var svg = this.model.get('svg');
         var el = event.target;
-        var format = event.altKey ? 'svg' : 'png';
+        var format = document.querySelector('input[name=save-format]:checked').value;
+        var resolution = document.querySelector('input[name=save-resolution]:checked').value;
 
         el.setAttribute('disabled', 'disabled');
 
@@ -84,10 +87,7 @@ var ViewSelectedVariation = RegionView.extend({
         // set this to null for transparent backgrounds
         var bgColor = '#fff1e0';
 
-         //FIXME: this is a hack, we shouldn't need this.
-        attributeStyler(undefined, true);
-
-        download(filename, svg, format, bgColor, function () {
+        download(filename, svg, format, bgColor, resolution, function () {
             // TODO: alert the user when there's an error creating the image
 
             // prevent doubleclick
@@ -112,14 +112,8 @@ var ViewSelectedVariation = RegionView.extend({
         this.renderRegions();
         return this;
 
-    },
+    }
 
 });
 
 module.exports = ViewSelectedVariation;
-
-// function closeDropdown(event) {
-//   $('[data-toggle="dropdown"]').parent().removeClass('open');
-// }
-// document.addEventListener('click', closeDropdown, true);
-

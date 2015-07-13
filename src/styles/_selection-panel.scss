@@ -1,0 +1,43 @@
+@import "variables";
+
+#selection {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: 360px;
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-left: 1px solid #c0c0c0;
+    transition: $transition-time right;
+
+    #charts.full + & {
+        right: -360px;
+    }
+
+}
+
+.view-selected-variation {
+    h1 {
+        margin-top: 0;
+    }
+    .property-name {
+        width: 100px;
+        font-weight: normal;
+    }
+    .property-value {
+        font-weight: bold;
+    }
+}
+
+.view-export-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 10px;
+    background-color: #fff;
+    border-top: #c0c0c0 1px solid;
+}
