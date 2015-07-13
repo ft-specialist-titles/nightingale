@@ -31761,14 +31761,20 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    return "    <div class=\"col-50\">\n        <label class=\"radio control-label\">Resolution: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked>Standard\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"save-resolution\" value=\"master\" >Master\n            </label>\n        </div>\n    </div>\n";
-},"3":function(depth0,helpers,partials,data) {
-    return "    <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked style=\"display:none\">\n";
+    var stack1;
+
+  return "    <div class=\"col-50\">\n        <label class=\"radio control-label\">Format:</label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"save-format\" value=\"png\" checked>PNG\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"save-format\" value=\"svg\">SVG\n            </label>\n        </div>\n    </div>\n\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.hasMaster : depth0),{"name":"if","hash":{},"fn":this.program(2, data, 0),"inverse":this.program(4, data, 0),"data":data})) != null ? stack1 : "");
+},"2":function(depth0,helpers,partials,data) {
+    return "        <div class=\"col-50\">\n            <label class=\"radio control-label\">Resolution: </label>\n            <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n                <label class=\"btn btn-default active\">\n                    <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked>Standard\n                </label>\n                <label class=\"btn btn-default \">\n                    <input type=\"radio\" name=\"save-resolution\" value=\"master\" >Master\n                </label>\n            </div>\n        </div>\n";
+},"4":function(depth0,helpers,partials,data) {
+    return "        <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked style=\"display:none\">\n";
+},"6":function(depth0,helpers,partials,data) {
+    return "    <input type=\"radio\" name=\"save-format\" value=\"png\" checked style=\"display:none\">\n    <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked style=\"display:none\">\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
-  return "<div class=\"col-50\">\n    <label class=\"radio control-label\">Format:</label>\n    <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n        <label class=\"btn btn-default active\">\n            <input type=\"radio\" name=\"save-format\" value=\"png\" checked>PNG\n        </label>\n        <label class=\"btn btn-default \">\n            <input type=\"radio\" name=\"save-format\" value=\"svg\">SVG\n        </label>\n    </div>\n</div>\n\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.hasMaster : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.program(3, data, 0),"data":data})) != null ? stack1 : "");
+  return ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.displayControls : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.program(6, data, 0),"data":data})) != null ? stack1 : "");
 },"useData":true});
 
 },{"hbsfy/runtime":49}],100:[function(require,module,exports){
@@ -33310,7 +33316,7 @@ var ViewSelectedVariation = RegionView.extend({
 
         var svg = this.model.get('svg');
         var el = event.target;
-        var format = document.querySelector('input[name=save-format]:checked').value;
+        var format = event.altKey ? 'svg' : document.querySelector('input[name=save-format]:checked').value;
         var resolution = document.querySelector('input[name=save-resolution]:checked').value;
 
         el.setAttribute('disabled', 'disabled');
