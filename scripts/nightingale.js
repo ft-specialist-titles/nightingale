@@ -23268,7 +23268,7 @@ return jQuery;
 }));
 
 },{}],6:[function(require,module,exports){
-module.exports={"version":"0.5.2"}
+module.exports={"version":"0.5.5"}
 
 },{}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
@@ -24294,7 +24294,9 @@ function barChart(g){
 	metadata.create(svg, model);
 
 	var dressing = new Dressing(svg, model);
-    dressing.addHeader();
+    dressing.addHeaderItem('title');
+    dressing.addHeaderItem('subtitle');
+    !model.keyHover && dressing.addSeriesKey();
     dressing.addFooter();
 
 	var chartSVG = svg.append('g').attr('class', 'chart');
@@ -24304,6 +24306,8 @@ function barChart(g){
     var independent = (model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time';
     var creator = new axes.Create(chartSVG, model);
     creator.createAxes({dependent:'number', independent: independent});
+
+    model.keyHover && dressing.addSeriesKey();
 
 	var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = 0;
@@ -24480,7 +24484,9 @@ function columnChart(g){
 	metadata.create(svg, model);
 
 	var dressing = new Dressing(svg, model);
-    dressing.addHeader();
+    dressing.addHeaderItem('title');
+    dressing.addHeaderItem('subtitle');
+    !model.keyHover && dressing.addSeriesKey();
     dressing.addFooter();
 
 	var chartSVG = svg.append('g').attr('class', 'chart');
@@ -24488,8 +24494,9 @@ function columnChart(g){
 
     var independent = (model.groupData || model.dataType === 'categorical') ? 'ordinal' : 'time';
 	var creator = new axes.Create(chartSVG, model);
-
     creator.createAxes({dependent:'number', independent: independent});
+
+    model.keyHover && dressing.addSeriesKey();
 
 	var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = 0;
@@ -24565,7 +24572,9 @@ function lineChart(g) {
     metadata.create(svg, model);
 
     var dressing = new Dressing(svg, model);
-    dressing.addHeader();
+    dressing.addHeaderItem('title');
+    dressing.addHeaderItem('subtitle');
+    !model.keyHover && dressing.addSeriesKey();
     dressing.addFooter();
 
     var chartSVG = svg.append('g').attr('class', 'chart');
@@ -24573,6 +24582,8 @@ function lineChart(g) {
 
     var creator = new axes.Create(chartSVG, model);
     creator.createAxes({dependent:'number', independent: 'time'});
+
+    model.keyHover && dressing.addSeriesKey();
 
     var plotSVG = chartSVG.append('g').attr('class', 'plot');
     var i = model.y.series.length;
@@ -24690,6 +24701,9 @@ function Dressing(svg, model) {
     this.halfLineStrokeWidth = Math.ceil(model.lineStrokeWidth / 2);
     this.headerHeight = 0;
     this.footerHeight = 0;
+    this.entries = model.y.series.map(function (d) {
+        return {key: d.label, value: d.className};
+    });
 }
 
 Dressing.prototype.addHeader = function () {
@@ -24726,34 +24740,46 @@ Dressing.prototype.addHeaderItem = function(item){
     var currentPosition = {top: this.headerHeight + this[item + 'FontSize'], left: 0};
     this.headerHeight += (getHeight(gText) + this.halfLineStrokeWidth);
     gText.attr('transform', model.translate(currentPosition));
-    this.setPosition();
+    this.setChartPosition();
 };
 
 Dressing.prototype.addSeriesKey = function () {
     if (!this.model.key) {        return;    }
-    var svg = this.svg;
     var model = this.model;
 
-    var chartKey = seriesKey({
-        lineThickness: model.lineStrokeWidth,
-        chartType: model.chartType,
-        theme: model.theme
-    })
+    model.keyPosition = model.keyPosition || {
+            top: this.headerHeight + this.blockPadding,
+            left: this.halfLineStrokeWidth
+        };
+
+    var labelWidth = model.yLabelWidth + this.blockPadding;
+    var labelHeight = model.xLabelHeight + this.blockPadding;
+    var hasTopAxis = [model.dependentAxisOrient,model.independentAxisOrient].indexOf('top')>-1;
+    var hasLeftAxis = [model.dependentAxisOrient,model.independentAxisOrient].indexOf('left')>-1;
+    if (hasLeftAxis && model.keyHover && model.keyPosition.left < labelWidth) {
+        model.keyPosition.left = labelWidth;
+        model.keyWidth = model.keyWidth || model.width - labelWidth;
+    }
+    if (hasTopAxis && model.keyHover && model.keyPosition.top < labelHeight) {
+        model.keyPosition.top = labelHeight;
+    }
+
+    var chartKey = seriesKey(model)
         .style(function (d) {
             return d.value;
         })
         .label(function (d) {
             return d.key;
-        });
-    var entries = model.y.series.map(function (d) {
-        return {key: d.label, value: d.className};
-    });
+        })
+        .width(model.keyWidth || model.width);
 
-    var gText = svg.append('g').attr('class', 'chart__key').datum(entries).call(chartKey);
-    var currentPosition = {top: this.headerHeight + this.blockPadding, left: this.halfLineStrokeWidth};
-    this.headerHeight += getHeight(gText) + this.blockPadding;
-    gText.attr('transform', model.translate(currentPosition));
-    this.setPosition();
+    var gText = this.svg.append('g').attr('class', 'chart__key').datum(this.entries).call(chartKey);
+    gText.attr('transform', model.translate(model.keyPosition));
+
+    if (!model.keyHover){
+        this.headerHeight += getHeight(gText) + this.blockPadding;
+    }
+    this.setChartPosition();
 };
 
 Dressing.prototype.addFooterItem = function(item, prefix){
@@ -24786,7 +24812,7 @@ Dressing.prototype.setHeight = function () {
     this.svg.attr('height', Math.ceil(model.height));
 };
 
-Dressing.prototype.setPosition = function () {
+Dressing.prototype.setChartPosition = function () {
     this.model.chartPosition = {
         top: this.headerHeight + this.halfLineStrokeWidth + this.blockPadding,
         left: (this.model.dependentAxisOrient === 'left' ? 0 : this.halfLineStrokeWidth)
@@ -24840,7 +24866,8 @@ function lineKey(options) {
     options = options || {};
 
     var theme = options.theme;
-    var width = 300;
+    var columns = options.keyColumns || 1;
+    var width = options.keyWidth || options.width || 300;
     var strokeLength = 15;
     var lineHeight = themes.check(options.theme, 'key-label').attributes['line-height'];
     var strokeWidth = lineThickness(options.lineThickness);
@@ -24863,7 +24890,7 @@ function lineKey(options) {
         return true;
     };
 
-    function addLineKeys(keyItems, label){
+    function addLineKeys(keyItems){
         keyItems.append('line').attr({
             'class': style,
             x1: 1,
@@ -24871,12 +24898,12 @@ function lineKey(options) {
             x2: strokeLength,
             y2: -5
         })
-            .attr('stroke-width', strokeWidth)
-            .classed('key__line', true);
+        .attr('stroke-width', strokeWidth)
+        .classed('key__line', true);
 
     }
 
-    function addColumnKeys(keyItems, label){
+    function addColumnKeys(keyItems){
         keyItems.append('rect').attr({
             'class': style,
             x: 1,
@@ -24888,25 +24915,42 @@ function lineKey(options) {
 
     }
 
-    function key(g) {
-        var addKey = charts[options.chartType];
-        g = g.append('g').attr('class', 'key');
-        var keyItems = g.selectAll('g').data(g.datum().filter(filter))
-            .enter()
-            .append('g').attr({
-                'class': 'key__item',
-                'transform': function (d, i) {
-                    return 'translate(0,' + (lineHeight + i * lineHeight) + ')';
-                }
-            });
-
-        addKey(keyItems, label);
-
+    function addKey(keyItems){
+        charts[options.chartType](keyItems);
         keyItems.append('text').attr({
             'class': 'key__label',
             x: strokeLength + 10
         }).text(label);
+    }
 
+    function positionKey(keyItems){
+        var columnWidth = 10;
+        keyItems.each(function(d, i){
+            if (i == keyItems[0].length-1) return;
+            columnWidth = Math.max(this.getBoundingClientRect().width, columnWidth) + 10;
+        });
+        while (columnWidth * columns > width && columns>1) columns --;
+
+        keyItems.attr({
+            'class': 'key__item',
+            'transform': function (d, i) {
+                var column = (i % columns);
+                var row = Math.ceil((i + 1) / columns);
+                var x = column * columnWidth;
+                var y = row * lineHeight;
+                return 'translate(' + x + ',' + y  + ')';
+            }
+        });
+    }
+
+    function key(g) {
+        g = g.append('g').attr('class', 'key');
+        var keyItems = g.selectAll('g').data(g.datum().filter(filter))
+            .enter()
+            .append('g').attr({ 'class': 'key__item' });
+
+        addKey(keyItems);
+        positionKey(keyItems);
         themes.applyTheme(g, theme);
     }
 
@@ -24937,6 +24981,12 @@ function lineKey(options) {
     key.lineHeight = function (x) {
         if (!arguments.length) return lineHeight;
         lineHeight = x;
+        return key;
+    };
+
+    key.columns = function (x) {
+        if (!arguments.length) return columns;
+        columns = x;
         return key;
     };
 
@@ -25622,6 +25672,8 @@ function Model(chartType, opts) {
         //layout stuff
         theme: 'ft',
         chartType: chartType,
+        keyColumns: (chartType == 'column' ? 5 : 1),
+        keyHover: false,
         height: undefined,
         tickSize: 5,
         width: 300,
@@ -30953,12 +31005,17 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 var BarControls = Backbone.Model.extend({
 
     defaults:{
-        flipXAxis: false,
+        dependentAxisOrient: false,
+        horizontalKey: false,
+        hoverKey: false,
         stack: false
     },
 
     overrideConfig: function(config){
-        config.dependentAxisOrient = this.attributes.flipXAxis ? 'bottom' : 'top';
+        config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'bottom' : 'top';
+        config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
+        config.keyHover = this.attributes.hoverKey;
+        //config.independentAxisOrient = this.attributes.independentAxisOrient ? 'left' : 'right';
         config.stack = this.attributes.stack;
         return config;
     }
@@ -31099,11 +31156,15 @@ var _ = require("./../../../bower_components/underscore/underscore.js");
 var ColumnControls = Backbone.Model.extend({
 
     defaults:{
-        stack: false
+        stack: false,
+        horizontalKey: true,
+        hoverKey: false
     },
 
     overrideConfig: function(config){
         config.stack = this.attributes.stack;
+        config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
+        config.keyHover = this.attributes.hoverKey;
         return config;
     }
 
@@ -31286,6 +31347,8 @@ var LineControls = Backbone.Model.extend({
         dependentAxisOrient: false,
         dependentAxisReversed: false,
         startFromZero: false,
+        horizontalKey: false,
+        hoverKey: false,
         nice: false,
         tickStyleX: TickStyle.AUTO,
         tickStyleY: TickStyle.AUTO
@@ -31294,6 +31357,8 @@ var LineControls = Backbone.Model.extend({
     overrideConfig: function (config) {
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
+        config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
+        config.keyHover = this.attributes.hoverKey;
         config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
         config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
@@ -31798,21 +31863,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"flipXAxis\">X axis on the bottom\n    </label>\n</div>\n";
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">X axis on the bottom\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display 'Key' Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display 'Key' over chart\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":49}],102:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n<!--</label>-->\n";
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\" checked>Display 'Key' Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display 'Key' over chart\n    </label>\n</div>\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"monthly\">Monthly-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"quarterly\"> Quarterly Dates-->\n<!--</label>-->\n<!--<label>-->\n    <!--<input type=\"radio\" name=\"groupDates\" value=\"yearly\">Yearly-->\n<!--</label>-->\n";
 },"useData":true});
 
 },{"hbsfy/runtime":49}],103:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisReversed\">Reverse Y Values\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
+    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisReversed\">Reverse Y Values\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display 'Key' Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display 'Key' over chart\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":49}],104:[function(require,module,exports){
@@ -32174,7 +32239,9 @@ var BarControls = Backbone.View.extend({
 
     bindings: {
         '[name="stack"]': 'stack', //make this into stack
-        '[name="flipXAxis"]': 'flipXAxis'
+        '[name="hoverKey"]': 'hoverKey',
+        '[name="horizontalKey"]': 'horizontalKey',
+        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
     },
 
     render: function () {
@@ -32197,7 +32264,9 @@ var ColumnControls = Backbone.View.extend({
     template: require('./../templates/type-controls-column.hbs'),
 
     bindings: {
-        '[name="stack"]': 'stack' //make this into stack
+        '[name="stack"]': 'stack', //make this into stack
+        '[name="horizontalKey"]': 'horizontalKey',
+        '[name="hoverKey"]': 'hoverKey'
     },
 
     render: function () {
@@ -33210,6 +33279,8 @@ var LineControls = Backbone.View.extend({
     bindings: {
         '[name="startFromZero"]': 'startFromZero',
         '[name="thinLines"]': 'thinLines',
+        '[name="horizontalKey"]': 'horizontalKey',
+        '[name="hoverKey"]': 'hoverKey',
         '[name="dependentAxisOrient"]': 'dependentAxisOrient',
         '[name="dependentAxisReversed"]': 'dependentAxisReversed',
         '[name="nice"]': 'nice'

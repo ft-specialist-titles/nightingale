@@ -6203,7 +6203,6 @@ svg .chart-footnote:hover {
     -webkit-flex-flow: row wrap;
         -ms-flex-flow: row wrap;
             flex-flow: row wrap;
-    font-size: 0;
     -webkit-box-align: end;
     -webkit-align-items: flex-end;
         -ms-flex-align: end;
@@ -6229,8 +6228,7 @@ svg .chart-footnote:hover {
         border: 3px solid transparent;
         background-color: transparent;
         display: block;
-        box-sizing: content-box;
-        line-height: 0; }
+        box-sizing: content-box; }
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container:hover {
           border-color: rgba(0, 0, 0, 0.7);
           cursor: pointer; }
@@ -6254,47 +6252,42 @@ svg .chart-footnote:hover {
   overflow-y: auto;
   padding: 10px; }
 
-.view-graphic-controls label {
-  margin-bottom: 2px;
-  font-size: 12px;
-  font-weight: normal;
-  color: #777777; }
-
-.view-graphic-controls .checkbox label {
-  font-size: 14px; }
-
-.view-graphic-controls .checkbox:first-child {
-  margin-top: 0px; }
-
-.view-graphic-controls .form-control {
-  padding: 6px;
-  font-family: 'BentonSans', sans-serif; }
-
-.view-graphic-controls .input-lg, .view-graphic-controls .input-group-lg > .form-control, .view-graphic-controls .input-group-lg > .input-group-addon, .view-graphic-controls .input-group-lg > .input-group-btn > .btn {
-  padding: 6px 5px; }
-
-.view-graphic-controls .input-sm, .view-graphic-controls .input-group-sm > .form-control, .view-graphic-controls .input-group-sm > .input-group-addon, .view-graphic-controls .input-group-sm > .input-group-btn > .btn {
-  height: 26px;
-  padding: 5px; }
-
-.view-graphic-controls [name="source"] {
-  font-size: 11px; }
-
-.view-graphic-controls .form-group {
-  margin-bottom: 10px; }
-
-.view-graphic-controls .help-block {
-  font-size: 11px;
-  margin-top: 3px;
-  color: #a6a6a6; }
-
-.view-graphic-controls .popular-source {
-  padding: 0;
-  font-size: 11px;
-  display: inline;
-  vertical-align: baseline;
-  border: 0 none;
-  outline: 0 none; }
+.view-graphic-controls {
+  padding-bottom: 245px;
+  position: relative;
+  min-height: 100vh; }
+  .view-graphic-controls label {
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: normal;
+    color: #777777; }
+  .view-graphic-controls .checkbox label {
+    font-size: 14px; }
+  .view-graphic-controls .checkbox:first-child {
+    margin-top: 0px; }
+  .view-graphic-controls .form-control {
+    padding: 6px;
+    font-family: 'BentonSans', sans-serif; }
+  .view-graphic-controls .input-lg, .view-graphic-controls .input-group-lg > .form-control, .view-graphic-controls .input-group-lg > .input-group-addon, .view-graphic-controls .input-group-lg > .input-group-btn > .btn {
+    padding: 6px 5px; }
+  .view-graphic-controls .input-sm, .view-graphic-controls .input-group-sm > .form-control, .view-graphic-controls .input-group-sm > .input-group-addon, .view-graphic-controls .input-group-sm > .input-group-btn > .btn {
+    height: 26px;
+    padding: 5px; }
+  .view-graphic-controls [name="source"] {
+    font-size: 11px; }
+  .view-graphic-controls .form-group {
+    margin-bottom: 10px; }
+  .view-graphic-controls .help-block {
+    font-size: 11px;
+    margin-top: 3px;
+    color: #a6a6a6; }
+  .view-graphic-controls .popular-source {
+    padding: 0;
+    font-size: 11px;
+    display: inline;
+    vertical-align: baseline;
+    border: 0 none;
+    outline: 0 none; }
 
 .view-series-list:empty {
   height: 38px;
