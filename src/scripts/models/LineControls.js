@@ -11,6 +11,7 @@ var LineControls = Backbone.Model.extend({
         startFromZero: false,
         horizontalKey: false,
         hoverKey: false,
+        intraDay: false,
         nice: false,
         tickStyleX: TickStyle.AUTO,
         tickStyleY: TickStyle.AUTO
@@ -21,6 +22,7 @@ var LineControls = Backbone.Model.extend({
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
         config.keyHover = this.attributes.hoverKey;
+        config.intraDay = this.attributes.intraDay;
         config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
         config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';

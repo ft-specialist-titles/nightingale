@@ -13,7 +13,8 @@ var LineControls = Backbone.View.extend({
         '[name="hoverKey"]': 'hoverKey',
         '[name="dependentAxisOrient"]': 'dependentAxisOrient',
         '[name="dependentAxisReversed"]': 'dependentAxisReversed',
-        '[name="nice"]': 'nice'
+        '[name="nice"]': 'nice',
+        '[name="intraDay"]' : 'intraDay'
     },
 
     render: function () {
