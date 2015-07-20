@@ -12,10 +12,10 @@
     "release": "npm test && caddy release",
     "report": "caddy serve test/coverage/chrome/",
     "start": "caddy clean && caddy copy && caddy build -dev && caddy serve",
-    "tdd": "caddy test tdd",
+    "tdd": "karma start test/karma.unit.js",
     "functional": "caddy serve & sleep 5 && node nightwatch.js --g test/functional",
     "smoke-test": "node nightwatch.js --g test/smoke",
-    "test": "jshint src && caddy clean && caddy copy && caddy build && caddy test && npm run functional"
+    "test": "jshint src && caddy clean && caddy copy && caddy build && karma start test/karma.unit.js --single-run && npm run functional"
   },
   "repository": {
     "type": "git",
@@ -28,11 +28,19 @@
     "browserify-istanbul": "^0.2.1",
     "browserify-shim": "^3.8.3",
     "debowerify": "^1.2.0",
+      "karma": "^0.13.1",
+      "karma-browserify": "^4.2.1",
+      "karma-chrome-launcher": "^0.2.0",
+      "karma-coverage": "^0.4.2",
+      "karma-html2js-preprocessor": "^0.1.0",
+      "karma-jasmine": "^0.3.3",
+      "karma-mocha-reporter": "^1.0.2",
+      "karma-phantomjs-launcher": "^0.2.0",
     "handlebars": "^3.0.0",
     "hbsfy": "^2.2.1",
     "jshint": "^2.6.3",
     "nightwatch": "^0.7.0",
-    "web-caddy": "^2.0.0"
+    "web-caddy": "^2.1.1"
   },
   "browserify": {
     "transform": [
