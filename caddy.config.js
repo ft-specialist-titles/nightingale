@@ -8,7 +8,6 @@ module.exports = {
     tasks: {
         copy: ['{images,CNAME}'],
         build: ['sass', 'mustache', 'browserify'],
-        test: 'karma',
         release: ['gh-pages'],
         serve: 'staticApp'
     },
@@ -32,6 +31,5 @@ module.exports = {
         //{ file :'./bower_components/jquery/dist/jquery.js', expose: 'jquery'},
         //{ file :'./node_modules/handlebars/runtime.js', expose: 'handlebars'}
         //]
-    },
-    karma: ['./test/karma.unit.js']
+    }
 };
