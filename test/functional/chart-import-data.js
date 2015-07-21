@@ -6,26 +6,18 @@ function assertElementInChart (browser, type, expectedText){
     browser.pause(1750); //todo: add 'waitFor' rather than arbitrary pause
     for (var i = 0; i <3; i++) {
         for (var j in chartNames) {
-            browser.assert.containsText('#charts > div > div:nth-child(' + (i+1) + ') > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-' + type + ' > g > text', expectedText)
+            browser.assert.containsText('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-' + type + ' > g > text', expectedText)
         }
     }
 }
 
-function assertElementInChartDebug (browser, type, expectedText){
-    browser.pause(1750); //todo: add 'waitFor' rather than arbitrary pause
-    for (var i = 0; i <3; i++) {
-        for (var j in chartNames) {
-            browser.getText('#charts > div > div:nth-child(' + (i+1) + ') > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-' + type + ' > g > text', function(result){
-                browser.assert.equal(result.value.replace(/ /g, ''), 'Source:' + expectedText.replace(/ /g, ''))
-            });
-        }
-    }
-}
 
 function assertLineThicknessInChart (browser, expectedThickness){
     browser.pause(500);
     for (var j in chartNames) {
-        browser.expect.element('#charts > div > div:nth-child(1) > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g.plot > path').attribute('stroke-width').equals(expectedThickness)
+        browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g.plot > path')
+            .attribute('stroke-width')
+            .equals(expectedThickness);
     }
 }
 
@@ -33,9 +25,13 @@ function assertAxisFlipped (browser, expectedX){
     browser.pause(500);
     for (var j in chartNames) {
         if (chartNames[j] == 'small'){
-            browser.expect.element('#charts > div > div:nth-child(1) > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(4) > text').attribute('x').equals(expectedX)
+            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(4) > text')
+                .attribute('x')
+                .equals(expectedX);
         } else {
-            browser.expect.element('#charts > div > div:nth-child(1) > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(6) > text').attribute('x').equals(expectedX)
+            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g:nth-child(6) > text')
+                .attribute('x')
+                .equals(expectedX)
         }
     }
 }
@@ -44,7 +40,8 @@ function assertValuesRounded (browser, expectedBaseline){
     browser.pause(500);
     for (var j in chartNames) {
         if (chartNames[j] != 'small'){
-            browser.expect.element('#charts > div > div:nth-child(1) > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g.tick.origin').text.equals(expectedBaseline);
+            browser.expect.element('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart > g:nth-child(2) > g > g > g.tick.origin')
+                .text.equals(expectedBaseline);
         }
     }
 }
@@ -69,30 +66,36 @@ module.exports = {
     },
 
     'Import Data, Subtitle': function (browser) {
-        //todo: flakey
         expectedText = 'My VERY OWN chart 11$9.9';
         browser.setValue('#controls input[name="subtitle"]', expectedText);
-        //assertElementInChart(browser, 'subtitle', expectedText);
+        assertElementInChart(browser, 'subtitle', expectedText);
     },
 
     'Import Data, Footnote': function (browser) {
-        //todo: flakey
         expectedText = 'Not sure what it shows?';
         browser.setValue('#controls input[name="footnote"]', expectedText);
-        //assertElementInChart(browser, 'footnote', expectedText);
+        assertElementInChart(browser, 'footnote', expectedText);
     },
 
     'Import Data, Source': function (browser) {
-        //todo: flakey
-        expectedText = '£30 Financial Times';
+        expectedText = '£30FinancialTimes';
         browser.setValue('#controls input[name="source"]', expectedText);
-        //assertElementInChart(browser, 'source', expectedText);
+        assertElementInChart(browser, 'source', expectedText);
 
         expectedText = '£30 Financial Times, Thomson Reuters Datastream, Bloomberg, World Bank, IMF, ONS, Eurostat, US Census Bureau, US Bureau of Labor Statistics';
         for (var i = 0; i < 8; i++) {
-            browser.click('#controls > div.view-graphic-controls > div.axis-panel.panel.panel-default > div.panel-body > form > div:nth-child(4) > p > button:nth-child(' + (i + 1) + ')')
+            browser
+                .click('#controls > div.view-graphic-controls > div.axis-panel.panel.panel-default > div.panel-body > form > div:nth-child(4) > p > button:nth-child(' + (i + 1) + ')');
+
         }
-        //assertElementInChartDebug(browser, 'source', expectedText);
+        browser.pause(1750);
+        for (var i = 0; i <3; i++) {
+            for (var j in chartNames) {
+                browser.getText('div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg > g.chart-source > g > text', function(result){
+                    browser.assert.equal(result.value.replace(/ /g, ''), 'Source:' + expectedText.replace(/ /g, ''));
+                });
+            }
+        }
     },
 
     'Opening Right Panel': function (browser) {
