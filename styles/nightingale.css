@@ -6010,12 +6010,6 @@ button.close {
   .hidden-print {
     display: none !important; } }
 
-.axis {
-  font-family: "BentonSans", sans-serif; }
-
-.primary .tick text {
-  font-size: 12px; }
-
 .accent {
   stroke: #b8b1a9; }
 
@@ -6220,10 +6214,6 @@ svg .chart-footnote:hover {
         width: 60%; }
       .view-graphic-variation-collection div.variations-container .view-graphic-variation.large {
         width: 100%; }
-      .view-graphic-variation-collection div.variations-container .view-graphic-variation.video-ratio {
-        width: 0 !important;
-        height: 0 !important;
-        overflow: hidden; }
       .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container {
         border: 3px solid transparent;
         background-color: transparent;
@@ -6239,6 +6229,16 @@ svg .chart-footnote:hover {
           border-color: #d43f3a; }
         .view-graphic-variation-collection div.variations-container .view-graphic-variation .graphic-container .graphic {
           background-color: #fff1e0; }
+
+.theme--print .ft-theme,
+.theme--print .video-theme,
+.theme--video .ft-theme,
+.theme--video .print-theme,
+.theme--ft .print-theme,
+.theme--ft .video-theme {
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden; }
 
 #controls {
   position: absolute;
@@ -6492,9 +6492,22 @@ html, body {
     border-radius: 0; }
   .panel .panel-body {
     padding: 10px 0 20px 0; }
-  .panel .col-50 {
+  .panel .col-50, .panel .col-40, .panel .col-60 {
     width: 50%;
     float: left; }
+  .panel .col-40 {
+    width: 40%; }
+  .panel .col-60 {
+    width: 60%; }
 
 .view-export-controls .panel-body {
   padding-top: 0; }
+
+[data-help="MASTER"] {
+  background-color: #4781aa;
+  border-radius: 16px;
+  color: white;
+  padding: 1px 6px;
+  font-family: serif;
+  font-weight: bold;
+  margin-left: 3px; }
