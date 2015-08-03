@@ -12,38 +12,24 @@ function assertElementInChart (browser, type, expectedText){
 }
 
 
-function assertLineThicknessInChart (browser, expectedThickness){
+function assertLineThicknessInChart (browser, expect){
     browser.pause(500);
-    for (var j in chartNames) {
-        browser.expect.element('.' + chartNames[j] + ' svg g.plot path')
-            .attribute('stroke-width')
-            .equals(expectedThickness);
-    }
+    browser.expect.element('.small svg g.plot path').attribute('stroke-width').equals(expect);
+    browser.expect.element('.regular svg g.plot path').attribute('stroke-width').equals(expect);
+    browser.expect.element('.large svg g.plot path').attribute('stroke-width').equals(expect);
 }
 
-function assertAxisFlipped (browser, expectedX){
+function assertAxisFlipped (browser, expect){
     browser.pause(500);
-    for (var j in chartNames) {
-        if (chartNames[j] == 'small'){
-            browser.expect.element('.' + chartNames[j] + ' svg g.axis.y .tick:nth-child(4) text')
-                .attribute('x')
-                .equals(expectedX);
-        } else {
-            browser.expect.element('.' + chartNames[j] + ' svg g.axis.y .tick:nth-child(6) text')
-                .attribute('x')
-                .equals(expectedX)
-        }
-    }
+    browser.expect.element('.small svg .axis.y .tick:nth-child(4) text').attribute('x').equals(expect);
+    browser.expect.element('.regular svg .axis.y .tick:nth-child(6) text').attribute('x').equals(expect);
+    browser.expect.element('.large svg .axis.y .tick:nth-child(6) text').attribute('x').equals(expect);
 }
 
-function assertValuesRounded (browser, expectedBaseline){
+function assertValuesRounded (browser, expect){
     browser.pause(500);
-    for (var j in chartNames) {
-        if (chartNames[j] != 'small'){
-            browser.expect.element('.' + chartNames[j] + ' svg .axis.x .tick.origin')
-                .text.equals(expectedBaseline);
-        }
-    }
+    browser.expect.element('.regular svg.line-chart .tick.origin text').text.equals(expect);
+    browser.expect.element('.large svg.line-chart .tick.origin text').text.equals(expect);
 }
 
 module.exports = {
@@ -113,9 +99,9 @@ module.exports = {
 
     'Right Panel, Round Y Values' : function (browser) {
         assertValuesRounded(browser, 0.5);
-        browser.click('#selection input[name=nice]');
+        browser.click('#selection input[name="nice"]');
         assertValuesRounded(browser, 0);
-        browser.click('#selection input[name=nice]');
+        browser.click('#selection input[name="nice"]');
     },
 
     'Right Panel, Start Y Axis from 0' : function (browser) {
