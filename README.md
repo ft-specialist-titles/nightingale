@@ -16,13 +16,12 @@ For help and suport send the team an [email](mailto:help.nightingale@ft.com) or 
 
 ## Limitiations
 
-* PNG is the main image format for now as that's the best our publishing systems offer. SVG is a hidden feature at the moment (alt+click the blue download button) because it's only useful to a small handful of people -- it's better to keep the UI simple and obvious, rather than offering lots of download options.
 * The background colour is fixed as pink. This is a forced limitation for now and we'll remove it once other things improve. It 's mainly due to this pink being the best preference for *all* use cases. 
 * Requires the latest version of Chrome, Firefox or IE. We are never going to support older browsers.
 
 ## Contribute to Nightingale
 
-[See the contributing docs >](CONTRIBUTING.md).
+[See the contributing docs](CONTRIBUTING.md).
 
 ## Things we've used to make this
 
