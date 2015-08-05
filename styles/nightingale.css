@@ -6413,6 +6413,22 @@ svg .chart-footnote:hover {
   position: relative;
   opacity: .5; }
 
+#controls {
+  padding: 15px; }
+
+.view-graphic-controls label {
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333; }
+
+.checkbox label,
+label.btn {
+  font-weight: 300; }
+
+.view-graphic-controls .form-group {
+  margin-bottom: 15px; }
+
 #selection {
   position: absolute;
   top: 0;
@@ -6443,10 +6459,7 @@ svg .chart-footnote:hover {
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 20px 10px;
-  background-color: #fff;
-  border-top: #c0c0c0 1px solid; }
+  right: 0; }
 
 @font-face {
   font-family: "BentonSans";
@@ -6510,4 +6523,8 @@ html, body {
   padding: 1px 6px;
   font-family: serif;
   font-weight: bold;
-  margin-left: 3px; }
+  margin-left: 3px;
+  font-size: 0.9em; }
+
+.table {
+  margin-bottom: 0; }

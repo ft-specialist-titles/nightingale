@@ -23268,7 +23268,7 @@ return jQuery;
 }));
 
 },{}],6:[function(require,module,exports){
-module.exports={"version":"0.6.1"}
+module.exports={"version":"0.6.2"}
 
 },{}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
@@ -23279,11 +23279,9 @@ var timeDiff = dates.timeDiff;
 function categoryAxis() {
 
     var config = {
-        theme: false,
         axes: [d3.svg.axis().orient('bottom')],
         scale: false,
         lineHeight: 20,
-        stack: false,
         tickSize: 5,
         simple: false,//axis has only first and last points as ticks, i.e. the scale's domain extent
         nice: false,
@@ -23295,8 +23293,19 @@ function categoryAxis() {
         labelWidth: 0,
         showDomain: false,
         dataType: 'categorical',
-        keepD3Style: true,
-        attr: {}
+        attr: {
+            ticks: {
+                'stroke-dasharray': 'none',
+                'stroke': 'rgba(0, 0, 0, 0.3)',
+                'shape-rendering': 'crispEdges'
+            },
+            primary: {
+                fill:'#757470',
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12
+            },
+            secondary:{}
+        }
     };
 
     function isVertical(){
@@ -23305,22 +23314,20 @@ function categoryAxis() {
 
     function render(g) {
         var orientOffset = (isVertical()) ? -config.axes[0].tickSize() : 0;
-        g = g.append('g').attr('transform', 'translate(' + (config.xOffset + orientOffset) + ',' + config.yOffset + ')');
-        g.append('g').attr('class', isVertical() ? 'y axis axis--independent axis--category' : 'x axis axis--independent axis--category').each(function () {
-            var g = d3.select(this);
-            labels.add(g, config);
-        });
+        var className = isVertical() ? 'y' : 'x';
+        config.attr.primary['text-anchor'] = isVertical() ? 'end' : 'middle';
+        config.attr.secondary['text-anchor'] = isVertical() ? 'end' : 'middle';
+
+        g = g.append('g')
+            .attr('transform', 'translate(' + (config.xOffset + orientOffset) + ',' + config.yOffset + ')')
+            .attr('class', className + ' axis axis--independent axis--category').each(function () {
+                labels.add(d3.select(this), config);
+            });
 
         if (!config.showDomain) {
             g.select('path.domain').remove();
         }
     }
-
-    render.theme = function (themeUpdate) {
-        if (!arguments.length) return config.theme;
-        config.theme = themeUpdate;
-        return render;
-    };
 
     render.simple = function (bool) {
         if (!arguments.length) return config.simple;
@@ -23376,9 +23383,12 @@ function categoryAxis() {
         return render;
     };
 
-    render.stack = function (bool) {
-        if (!arguments.length) return config.stack;
-        config.stack = bool;
+    render.attrs = function (obj, target) {
+        if (!arguments.length) return config.attr[target || 'primary'];
+        if (typeof obj !== "undefined") config.attr[target || 'primary'] = obj;
+        //for (var prop in config.attr){
+        //    if (render[prop]) render[prop](obj[prop]);
+        //}
         return render;
     };
 
@@ -23405,15 +23415,6 @@ function categoryAxis() {
         }
 
         config.axes = axes;
-        return render;
-    };
-
-    render.attrs = function (obj) {
-        if (!arguments.length) return config.attr;
-        if (typeof obj !== "undefined") config.attr = obj;
-        //for (var prop in config.attr){
-        //    if (render[prop]) render[prop](obj[prop]);
-        //}
         return render;
     };
 
@@ -23535,11 +23536,12 @@ Create.prototype.hideTicks = function () {
 Create.prototype.configureDependentScale = function (model) {
     this.dependentAxis
         .tickFormat(model.numberAxisFormatter)
-        .theme(model.theme)
         .simple(model.simpleValue)
         .orient(model.dependentAxisOrient)
         .reverse(model.y.reverse)
-        .attrs(this.getAttr('axis-text'));
+        .attrs(this.getAttr('dependent-ticks'), 'ticks')
+        .attrs(this.getAttr('origin-ticks'), 'origin')
+        .attrs(this.getAttr('axis-text'), 'primary');
 
     if (isVertical(model.dependentAxisOrient)) {
         this.dependentAxis.tickSize(model.plotWidth)
@@ -23559,11 +23561,13 @@ Create.prototype.configureDependentScale = function (model) {
 
 Create.prototype.configureIndependentScale = function (model) {
     this.independentAxis
-        .theme(model.theme)
         .simple(model.simpleDate)
         .tickSize(model.tickSize)
         .orient(model.independentAxisOrient)
-        .attrs(this.getAttr('axis-text'));
+        .attrs(this.getAttr('independent-ticks'), 'ticks')
+        .attrs(this.getAttr('origin-ticks'), 'origin')
+        .attrs(this.getAttr('axis-text'), 'primary')
+        .attrs(this.getAttr('axis-secondary-text'), 'secondary');
     if (!isVertical(model.independentAxisOrient)) {
         this.independentAxis.yOffset(model.plotHeight);	//position the axis at the bottom of the chart
     }
@@ -23653,11 +23657,9 @@ var timeDiff = dates.timeDiff;
 
 function dateAxis() {
     var config = {
-        theme: false,
         axes: [d3.svg.axis().orient('bottom')],
         scale: false,
         lineHeight: 20,
-        stack: false,
         tickSize: 5,
         simple: false,//axis has only first and last points as ticks, i.e. the scale's domain extent
         nice: false,
@@ -23668,14 +23670,29 @@ function dateAxis() {
         xOffset: 0,
         labelWidth: 0,
         showDomain: false,
-        keepD3Style: false,
-        attr: {}
+        attr: {
+            ticks: {
+                'stroke': 'rgba(0, 0, 0, 0.3)',
+                'shape-rendering': 'crispEdges'
+            },
+            primary: {
+                fill:'#757470',
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12
+            },
+            secondary:{}
+        }
     };
 
+    function isVertical(){
+        return ['right','left'].indexOf(config.axes[0].orient())>-1;
+    }
+
     function render(g) {
+        config.attr.primary['text-anchor'] = isVertical() ? 'end' : 'start';
+        config.attr.secondary['text-anchor'] = isVertical() ? 'end' : 'start';
 
         g = g.append('g').attr('transform', 'translate(' + config.xOffset + ',' + config.yOffset + ')');
-
         g.append('g').attr('class', 'x axis axis--independent axis--date').each(function () {
             labels.add(d3.select(this), config);
         });
@@ -23684,12 +23701,6 @@ function dateAxis() {
             g.select('path.domain').remove();
         }
     }
-
-    render.theme = function (themeUpdate) {
-        if (!arguments.length) return config.theme;
-        config.theme = themeUpdate;
-        return render;
-    };
 
     render.simple = function (bool) {
         if (!arguments.length) return config.simple;
@@ -23740,15 +23751,9 @@ function dateAxis() {
         return render;
     };
 
-    render.stack = function (bool) {
-        if (!arguments.length) return config.stack;
-        config.stack = bool;
-        return render;
-    };
-
-    render.attrs = function (obj) {
-        if (!arguments.length) return config.attr;
-        if (typeof obj !== "undefined") config.attr = obj;
+    render.attrs = function (obj, target) {
+        if (!arguments.length) return config.attr[target || 'primary'];
+        if (typeof obj !== "undefined") config.attr[target || 'primary'] = obj;
         //for (var prop in config.attr){
         //    if (render[prop]) render[prop](obj[prop]);
         //}
@@ -23875,13 +23880,11 @@ module.exports = {
 var d3 = require("./../../../../d3/d3.js");
 var numberLabels = require('./number.labels');
 var numberScales = require('./number.scale');
-var themes = require('../themes');
 
 function numericAxis() {
     'use strict';
 
     var config = {
-        theme: undefined,
         axes: d3.svg.axis().orient('left').tickSize(5, 0),
         tickSize: 5,
         lineHeight: 16,
@@ -23894,25 +23897,39 @@ function numericAxis() {
         noLabels: false,
         pixelsPerTick: 100,
         tickExtension: 0,
-        attr: {}
+        attr: {
+            ticks: {
+                'stroke': 'rgba(0, 0, 0, 0.1)',
+                'shape-rendering': 'crispEdges'
+            },
+            origin: {
+                'stroke': 'rgba(0, 0, 0, 0.3)',
+                'stroke-dasharray': 'none'
+            },
+            primary:{
+                fill:'#757470',
+                'font-family': 'BentonSans, sans-serif',
+                'font-size': 12
+            },
+            secondary:{}
+        }
     };
+
+    function isVertical(){
+        return ['right','left'].indexOf(config.axes.orient())>-1;
+    }
 
     function axis(g) {
         var orientOffset = (config.axes.orient() === 'right') ? -config.axes.tickSize() : 0;
+        config.attr.primary['text-anchor'] = isVertical() ? 'end' : 'start';
+        config.attr.secondary['text-anchor'] = isVertical() ? 'end' : 'start';
 
         g = g.append('g').attr('transform', 'translate(' + (config.xOffset + orientOffset) + ',' + config.yOffset + ')');
         numberLabels.render(g, config);
         if (config.noLabels) {
             g.selectAll('text').remove();
         }
-        themes.applyTheme(g, config.theme);
     }
-
-    axis.theme = function (themeUpdate) {
-        if (!arguments.length) return config.theme;
-        config.theme = themeUpdate;
-        return axis;
-    };
 
     axis.tickExtension = function (int) { // extend the axis ticks to the right/ left a specified distance
         if (!arguments.length) return config.tickExtension;
@@ -24007,9 +24024,9 @@ function numericAxis() {
         return axis;
     };
 
-    axis.attrs = function (obj) {
-        if (!arguments.length) return config.attr;
-        if (typeof obj !== "undefined") config.attr = obj;
+    axis.attrs = function (obj, target) {
+        if (!arguments.length) return config.attr[target || 'primary'];
+        if (typeof obj !== "undefined") config.attr[target || 'primary'] = obj;
         //for (var prop in config.attr){
         //    if (axis[prop]) axis[prop](obj[prop]);
         //}
@@ -24021,19 +24038,22 @@ function numericAxis() {
 
 module.exports = numericAxis;
 
-},{"../themes":34,"./../../../../d3/d3.js":4,"./number.labels":13,"./number.scale":14}],13:[function(require,module,exports){
+},{"./../../../../d3/d3.js":4,"./number.labels":13,"./number.scale":14}],13:[function(require,module,exports){
 module.exports = {
 
     isVertical: function (axis) {
         return axis.orient() === 'left' || axis.orient() === 'right';
     },
-    arrangeTicks: function (g, axes, lineHeight, hardRules) {
-        var textWidth = this.textWidth(g, axes.orient());
-        g.selectAll('.tick').classed('origin', function (d, i) {
-            return hardRules.indexOf(d) > -1;
-        });
-        if (this.isVertical(axes)) {
-            g.selectAll('text').attr('transform', 'translate( ' + textWidth + ', ' + -(lineHeight / 2) + ' )');
+    arrangeTicks: function (g, config) {
+        var textWidth = this.textWidth(g, config.axes.orient());
+        g.selectAll('.tick')
+            .classed('origin', function (d, i) {
+                return config.hardRules.indexOf(d) > -1;
+            });
+        g.selectAll('line').attr(config.attr.ticks);
+        g.selectAll('.origin line').attr(config.attr.origin);
+        if (this.isVertical(config.axes)) {
+            g.selectAll('text').attr('transform', 'translate( ' + textWidth + ', ' + -(config.lineHeight / 2) + ' )');
         }
     },
     extendAxis: function (g, axes, tickExtension) {
@@ -24070,14 +24090,18 @@ module.exports = {
         }
     },
     render: function (g, config) {
+        var xOrY = (this.isVertical(config.axes)) ? 'y' : 'x';
+        var orient = config.axes.orient();
         g.append('g')
-            .attr('class', (this.isVertical(config.axes)) ? 'axis axis--dependent axis--number y left' : 'axis axis--dependent axis--number  x')
+            .attr('class', 'axis axis--dependent axis--number ' + xOrY + ' ' + orient)
             .append('g')
             .attr('class', 'primary')
             .call(config.axes);
-        g.selectAll('text').attr(config.attr);
+
+        g.selectAll('text').attr('style','').attr(config.attr.primary);
+
         this.removeDecimals(g);
-        this.arrangeTicks(g, config.axes, config.lineHeight, config.hardRules);
+        this.arrangeTicks(g, config);
         if (this.isVertical(config.axes)) {
             this.extendAxis(g, config.axes, config.tickExtension);
         }
@@ -24386,6 +24410,7 @@ function barChart(g){
 	for(i; i < model.y.series.length; i++){
 		plotSeries(plotSVG, model, creator, model.y.series[i], i);
 	}
+    chartSVG.selectAll('path.domain').attr('fill', 'none');
 }
 
 module.exports = barChart;
@@ -24575,6 +24600,7 @@ function columnChart(g){
     for(i; i < model.y.series.length; i++){
         plotSeries(plotSVG, model, creator, model.y.series[i], i);
     }
+    chartSVG.selectAll('path.domain').attr('fill', 'none');
 }
 
 module.exports = columnChart;
@@ -24677,6 +24703,7 @@ function lineChart(g) {
     while (i--) {
         plotSeries(plotSVG, model, creator, model.y.series[i], lineAttr, borderAttrs);
     }
+    chartSVG.selectAll('path.domain').attr('fill', 'none');
 }
 
 module.exports = lineChart;
@@ -24825,9 +24852,9 @@ Dressing.prototype.addFooter = function () {
     this.addBackground(this.svg, [0,0, this.model.width, this.model.height]);
 };
 
-
 Dressing.prototype.addLogo = function () {
     var model = this.model;
+    if (!model.logoSize) return;
     var logo = this.svg.append('g').attr('class', 'chart-logo').call(ftLogo, model.logoSize);
     logo.attr('transform', model.translate({
         left: model.width - model.logoSize - 3,
@@ -25908,82 +25935,26 @@ var colours = {
     accent: '#9e2f50'
 };
 
+// SPECIAL 'non-svg' ATTRIBUTES:
+// padding-x: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
+// padding-y: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
+// padding:   applied to 'text' elements (dressing/index.js does this)
+// align:     applied to 'text' elements (dressing/index.js does this)
+// background:applied to 'text' elements (dressing/index.js does this)
+// border:    applied to 'line' and 'path' elements (dressing/index.js does this)
+
 module.exports.theme = [
-    //general
+    {
+        'selector': 'path.accent, line.accent, rect.accent',
+        'attributes': {
+            'stroke': colours.accent
+        }
+    },
     {
         'id': 'svg',
         'selector': 'svg',
         'attributes': {
             'background': '#fff1e0'
-        }
-    },
-    {
-        'selector': 'svg text',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'stroke': 'none'
-        }
-    },
-    //axes
-    {
-        'selector': '.axis path, .axis line, .axis .tick',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'fill': 'none'
-        }
-    }, {
-        'selector': '.axis--dependent path.domain, .secondary path.domain, .secondary .tick line',
-        'attributes': {
-            'stroke': 'none'
-        }
-    },
-    {
-        'selector': '.axis--dependent .tick line',
-        'attributes': {
-            'stroke-dasharray': '2 2',
-            'stroke': 'rgba(0, 0, 0, 0.1)'
-        }
-    },
-    {
-        'selector': '.primary .origin line, .axis--independent .primary .tick line',
-        'attributes': {
-            'stroke': 'rgba(0, 0, 0, 0.3)',
-            'stroke-dasharray': 'none'
-        }
-    }, {
-        'id': 'axis-text',
-        'selector': '.axis text',
-        'attributes': {
-            'font-size': 12,
-            'font-family': 'BentonSans, sans-serif',
-            'stroke': 'none',
-            'fill': '#757470'
-        }
-    }, {
-        'selector': '.x.axis.axis--category text',
-        'attributes': {
-            'text-anchor': 'middle'
-        }
-    }, {
-        'selector': '.y.axis text',
-        'attributes': {
-            'text-anchor': 'end'
-        }
-    }, {
-        'selector': '.x.axis.axis--number text, .x.axis.axis--date text, .y.axis.right text',
-        'attributes': {
-            'text-anchor': 'start'
-        }
-    }, {
-        'selector': '.axis--independent .primary path.domain',
-        'attributes': {
-            'stroke': '#757470'
-        }
-    }, {
-        'selector': '.axis .secondary text',
-        'attributes': {
-            'font-size': 10,
-            'fill': '#757470'
         }
     },
     //lines
@@ -25998,26 +25969,18 @@ module.exports.theme = [
     },
     ////Columns
     //{   'id': 'columns',
-    //    'selector': '.column, .key__column',
     //    'attributes': {
     //        'stroke': 'none'
     //    }
     //},
     ////Bars
     //{   'id': 'bars',
-    //    'selector': '.column, .key__column',
     //    'attributes': {
     //        'stroke': 'none'
     //    }
     //},
     {
-        'selector': 'path.accent, line.accent, rect.accent',
-        'attributes': {
-            'stroke': colours.accent
-        }
-    }, {
         'id': 'null-label',
-        'selector': '.series text.null-label',
         'attributes': {
             'text-anchor': 'middle',
             'font-size': 10,
@@ -26027,7 +25990,6 @@ module.exports.theme = [
 
     //text
     {   'id': 'chart-title',
-        'selector': '.chart-title text',
         'attributes': {
             'font-family': 'BentonSans, sans-serif',
             'font-size': 18,
@@ -26035,7 +25997,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-subtitle',
-        'selector': '.chart-subtitle text',
         'attributes': {
             'font-family': 'BentonSans, sans-serif',
             'font-size': 12,
@@ -26043,7 +26004,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-source',
-        'selector': '.chart-source text',
         'attributes': {
             'font-family': 'BentonSans, sans-serif',
             'font-size': 10,
@@ -26052,7 +26012,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-footnote',
-        'selector': '.chart-footnote text',
         'attributes': {
             'font-family': 'BentonSans, sans-serif',
             'font-size': 12,
@@ -26061,13 +26020,48 @@ module.exports.theme = [
         }
     },
     {   'id': 'key',
-        'selector': '.key',
         'attributes': {
             'font-family': 'BentonSans, sans-serif',
             'font-size': 12,
             'line-height': 16,
             'fill': 'rgba(0, 0, 0, 0.5)',
             'padding-y': 8
+        }
+    },
+    {   'id': 'independent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.3)',
+            'stroke-dasharray': 'none'
+        }
+    },
+    {   'id': 'dependent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.1)',
+            'stroke-dasharray': '2 2'
+        }
+    },
+    {   'id': 'origin-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.3)',
+            'stroke-dasharray': 'none'
+        }
+    },
+    {   'id': 'axis-text',
+        'attributes': {
+            'font-size': 12,
+            'font-family': 'BentonSans, sans-serif',
+            'stroke': 'none',
+            'fill': '#757470'
+        }
+    },
+    {   'id': 'axis-secondary-text',
+        'selector': '.axis .secondary text',
+        'attributes': {
+            'font-size': 10,
+            'fill': '#757470'
         }
     }
 ];
@@ -26086,7 +26080,6 @@ var themes = {
     ft: ft.theme,
     video: video.theme,
     print: print.theme,
-    applyTheme: applyAttributes,
     check: checkAttributes,
     createDefinitions: createDefinitions
 };
@@ -26111,20 +26104,8 @@ function createDefinitions(g, model) {
     elDefs.node().innerHTML += defs.join('');
 }
 
-function applyAttributes(g, theme, keepD3Styles) {
-    theme = theme || 'ft';
-    if (!keepD3Styles) {
-        (g || d3).selectAll('*').attr('style', null);
-    }
-    themes[theme].forEach(function (style, i){
-        var els = (g || d3).selectAll(style.selector);
-        els.attr(style.attributes);
-    });
-}
-
 function checkAttributes(theme, selector) {
-    theme = theme || 'ft';
-    return themes[theme].filter(function (style, i) {
+    return themes[theme || 'ft'].filter(function (style, i) {
         return (style.id == selector);
     })[0] || {attributes:{}};//return only a single object by id
 }
@@ -26154,82 +26135,19 @@ var colours = {
 // background:applied to 'text' elements (dressing/index.js does this)
 // border:    applied to 'line' and 'path' elements (dressing/index.js does this)
 
-module.exports.colours = colours;
 module.exports.theme = [
-    //general
+    {
+        'selector': 'path.accent, line.accent, rect.accent',
+        'attributes': {
+            'stroke': colours.accent
+        }
+    },
     {
         'id': 'svg',
-        'selector': 'svg',
         'attributes': {
             'padding-x': 8,
             'padding-y': 10,
             background: 'rgba(255,255,255,1)'
-        }
-    },
-    {
-        'selector': 'svg text',
-        'attributes': {
-            'font-family': 'MetricWeb, sans-serif',
-            'font-weight': '600',
-            'fill': 'rgba(0, 0, 0, 0.8)',
-            'stroke': 'none'
-        }
-    },
-    {   'id': 'chart-logo',
-        'selector': '.chart-logo',
-        'attributes': {
-            'display': 'none'
-        }
-    },
-    //axes
-    {
-        'selector': '.axis path, .axis line, .axis .tick',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'fill': 'none'
-        }
-    }, {
-        'selector': '.axis--dependent path.domain, .secondary path.domain, .secondary .tick line',
-        'attributes': {
-            'stroke': 'none'
-        }
-    },
-    {
-        'id': 'axis-tick',
-        'selector': '.axis--dependent .tick line, .primary .origin line, .axis--independent .primary .tick line',
-        'attributes': {
-            'stroke-dasharray': 'none',
-            'stroke': 'rgba(54, 51, 52, 1)',
-            'stroke-width': 1
-        }
-    }, {
-        'id': 'axis-text',
-        'selector': '.axis text',
-        'attributes': {
-            'font-size': 12,
-            'font-family': 'MetricWeb, sans-serif',
-            'stroke': 'none',
-            'fill': 'rgba(0, 0, 0, 0.8)'
-        }
-    }, {
-        'selector': '.x.axis.axis--category text',
-        'attributes': {
-            'text-anchor': 'middle'
-        }
-    }, {
-        'selector': '.y.axis text',
-        'attributes': {
-            'text-anchor': 'end'
-        }
-    }, {
-        'selector': '.x.axis.axis--number text, .x.axis.axis--date text, .y.axis.right text',
-        'attributes': {
-            'text-anchor': 'start'
-        }
-    }, {
-        'selector': '.axis--independent .primary path.domain',
-        'attributes': {
-            'stroke': '#757470'
         }
     },
     //lines
@@ -26244,7 +26162,6 @@ module.exports.theme = [
     },
     //Columns
     {   'id': 'columns',
-        'selector': '.column, .key__column',
         'attributes': {
             stroke: 'rgb(243, 236, 228)',
             'stroke-width': 1
@@ -26252,20 +26169,13 @@ module.exports.theme = [
     },
     //bars
     {   'id': 'bars',
-        'selector': '.bar, .key__bar',
         'attributes': {
             stroke: 'rgb(243, 236, 228)',
             'stroke-width': 1
         }
     },
     {
-        'selector': 'path.accent, line.accent, rect.accent',
-        'attributes': {
-            'stroke': colours.accent
-        }
-    }, {
         'id': 'null-label',
-        'selector': '.series text.null-label',
         'attributes': {
             'text-anchor': 'middle',
             'font-size': 10,
@@ -26275,7 +26185,6 @@ module.exports.theme = [
 
     //text
     {   'id': 'chart-title',
-        'selector': '.chart-title text',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
             'font-size': 12,
@@ -26285,7 +26194,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-subtitle',
-        'selector': '.chart-subtitle text',
         'attributes': {
             'font-family': 'MetricWeb, sans-serif',
             'font-size': 10,
@@ -26295,7 +26203,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'key',
-        'selector': '.key',
         'attributes': {
             'font-family': 'MetricWeb, sans-serif',
             'font-size': 12,
@@ -26307,7 +26214,6 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-source',
-        'selector': '.chart-source text',
         'attributes': {
             'font-family': 'MetricWeb, sans-serif',
             'font-size': 8,
@@ -26315,25 +26221,52 @@ module.exports.theme = [
         }
     }, {
         'id': 'chart-footnote',
-        'selector': '.chart-footnote text',
         'attributes': {
             'font-family': 'MetricWeb, sans-serif',
             'font-size': 12,
             'line-height': 16
         }
-    }, {
-        'selector': '.primary .tick text',
+    },
+    {   'id': 'dependent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(54, 51, 52, 1)',
+            'stroke-width': 1
+        }
+    },
+    {   'id': 'independent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(54, 51, 52, 1)',
+            'stroke-width': 1
+        }
+    },
+    {   'id': 'origin-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(54, 51, 52, 1)',
+            'stroke-width': 1
+        }
+    },
+    {   'id': 'axis-text',
         'attributes': {
             'font-size': 12,
+            'font-family': 'MetricWeb, sans-serif',
+            'stroke': 'none',
             'font-weight': '600',
             'fill': 'rgba(0, 0, 0, 0.8)'
         }
-    }, {
-        'selector': '.secondary .tick text',
+    },
+    {   'id': 'axis-secondary-text',
         'attributes': {
             'font-size': 10,
             'font-weight': '600',
             'fill': 'rgba(0, 0, 0, 0.8)'
+        }
+    },
+    {   'id': 'chart-logo',
+        'attributes': {
+            'display': 'none'
         }
     }
 ];
@@ -26407,90 +26340,33 @@ module.exports.defs = {
 module.exports.theme = [
     //general
     {
+        'selector': 'path.accent, line.accent, rect.accent',
+        'attributes': {
+            'stroke': colours.accent
+        }
+    },
+    {
         'id': 'svg',
-        'selector': 'svg',
         'attributes': {
             'padding-x': 52,
             'padding-y': 25,
             'background': 'rgb(229,216,196)'
         }
     },
-    {
-        'selector': 'svg text',
-        'attributes': {
-            'font-family': 'MetricWebSemiBold, sans-serif',
-            'font-weight': '600',
-            'fill': 'rgba(0, 0, 0, 0.8)',
-            'stroke': 'none'
-        }
-    },
     {   'id': 'chart',
-        'selector': '.chart',
         'attributes': {
             'padding': PADDING
         }
     },
     {   'id': 'chart-logo',
-        'selector': '.chart-logo',
         'attributes': {
             'display': 'none'
         }
     },
-    //axes
-    {
-        'selector': '.axis path, .axis line, .axis .tick',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'fill': 'none'
-        }
-    }, {
-        'selector': '.axis--dependent path.domain, .secondary path.domain, .secondary .tick line',
-        'attributes': {
-            'stroke': 'none'
-        }
-    },
-    {
-        'id': 'axis-tick',
-        'selector': '.axis--dependent .tick line, .primary .origin line, .axis--independent .primary .tick line',
-        'attributes': {
-            'stroke-dasharray': 'none',
-            'stroke': 'rgba(255, 255, 255, 1)',
-            'stroke-width': 2
-        }
-    }, {
-        'id': 'axis-text',
-        'selector': '.axis text',
-        'attributes': {
-            'font-size': 12,
-            'font-family': 'MetricWebSemiBold, sans-serif',
-            'stroke': 'none',
-            'fill': 'rgba(0, 0, 0, 0.8)'
-        }
-    }, {
-        'selector': '.x.axis.axis--category text',
-        'attributes': {
-            'text-anchor': 'middle'
-        }
-    }, {
-        'selector': '.y.axis text',
-        'attributes': {
-            'text-anchor': 'end'
-        }
-    }, {
-        'selector': '.x.axis.axis--number text, .x.axis.axis--date text, .y.axis.right text',
-        'attributes': {
-            'text-anchor': 'start'
-        }
-    }, {
-        'selector': '.axis--independent .primary path.domain',
-        'attributes': {
-            'stroke': '#757470'
-        }
-    },
+
     //lines
     {
         'id': 'lines',
-        'selector': 'path.line, line.key__line',
         'attributes': {
             'border': colours.border,
             'fill': 'none',
@@ -26500,7 +26376,6 @@ module.exports.theme = [
     },
     //Columns
     {   'id': 'columns',
-        'selector': '.column, .key__column',
         'attributes': {
             stroke: 'rgb(243, 236, 228)',
             'stroke-width': 2
@@ -26508,20 +26383,13 @@ module.exports.theme = [
     },
     //bars
     {   'id': 'bars',
-        'selector': '.bar, .key__bar',
         'attributes': {
             stroke: 'rgb(243, 236, 228)',
             'stroke-width': 2
         }
     },
     {
-        'selector': 'path.accent, line.accent, rect.accent',
-        'attributes': {
-            'stroke': colours.accent
-        }
-    }, {
         'id': 'null-label',
-        'selector': '.series text.null-label',
         'attributes': {
             'text-anchor': 'middle',
             'font-size': 10,
@@ -26531,7 +26399,6 @@ module.exports.theme = [
 
     //text
     {   'id': 'chart-title',
-        'selector': '.chart-title text',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
             'font-size': 20,
@@ -26542,57 +26409,81 @@ module.exports.theme = [
         }
     },
     {   'id': 'chart-subtitle',
-        'selector': '.chart-subtitle text',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
             'font-size': 14,
             'line-height': 14,
+            'fill': '#43423e',
             'padding': PADDING
         }
     },
     {   'id': 'key',
-        'selector': '.key',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
-            'font-size': 12,
+            'font-size': 14,
             'line-height': 16,
             'font-weight': '600',
-            'fill': 'rgba(0, 0, 0, 0.8)',
+            'fill': '#43423e',
             'padding': PADDING
         }
     },
     {   'id': 'chart-source',
-        'selector': '.chart-source text',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
             'font-size': 12,
             'line-height': 14,
+            'fill': '#43423e',
             float: 'right',
             'padding-x': PADDING
         }
     },
     {   'id': 'chart-footnote',
-        'selector': '.chart-footnote text',
         'attributes': {
             'font-family': 'MetricWebSemiBold, sans-serif',
             'font-size': 12,
             'line-height': 16,
+            'fill': '#43423e',
             align: 'left',
             'padding-x': PADDING
         }
-    }, {
-        'selector': '.primary .tick text',
+    },
+    {   'id': 'dependent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(255, 255, 255, 1)',
+            'stroke-width': 2
+        }
+    },
+    {   'id': 'independent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(255, 255, 255, 1)',
+            'stroke-width': 2
+        }
+    },
+    {   'id': 'origin-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(255, 255, 255, 1)',
+            'stroke-width': 2
+        }
+    },
+    {
+        'id': 'axis-text',
+        'attributes': {
+            'font-size': 14,
+            'font-family': 'MetricWebSemiBold, sans-serif',
+            'stroke': 'none',
+            'font-weight': '600',
+            'fill': '#43423e'
+        }
+    },
+    {
+        'id': 'axis-secondary-text',
         'attributes': {
             'font-size': 12,
             'font-weight': '600',
-            'fill': 'rgba(0, 0, 0, 0.8)'
-        }
-    }, {
-        'selector': '.secondary .tick text',
-        'attributes': {
-            'font-size': 10,
-            'font-weight': '600',
-            'fill': 'rgba(0, 0, 0, 0.8)'
+            'fill': '#43423e'
         }
     }
 ];
@@ -27134,7 +27025,6 @@ module.exports = {
 },{"./../../../../d3/d3.js":4}],40:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var dates = require('../util/dates');
-var themes = require('../themes');
 var dateFormatter = dates.formatter;
 
 module.exports = {
@@ -27164,26 +27054,26 @@ module.exports = {
             self.addRow(g, axis, options, config);
             options.row ++;
         });
+        g.selectAll('.axis .primary line').attr(config.attr.ticks);
 
         //remove text-anchor attribute from year positions
-        g.selectAll('.x.axis .primary text').attr({
-            x: null,
-            y: null,
-            dy: 15 + config.tickSize
-        });
-
+        g.selectAll('.x.axis .primary text')
+            .attr({
+                x: null,
+                y: null,
+                dy: 15 + config.tickSize
+            });
     },
 
     addRow: function(g, axis, options, config){
         var rowClass = (options.row) ? 'secondary': 'primary';
-        g.append('g').attr(config.attr)
+        var attr = config.attr[rowClass] || config.attr.primary;
+        g.append('g')
             .attr('class', rowClass)
             .attr('transform', 'translate(0,' + (options.row * config.lineHeight) + ')')
             .call(axis);
 
-        // style the row before we do any removing, to ensure that
-        // collision detection is done correctly
-        themes.applyTheme(g, config.theme, config.keepD3Style);
+        g.selectAll('.axis .' + rowClass + ' text').attr('style','').attr(attr);
 
         if (config.dataType === 'categorical') {
             return;
@@ -27326,7 +27216,7 @@ module.exports = {
     }
 };
 
-},{"../themes":34,"../util/dates":39,"./../../../../d3/d3.js":4}],41:[function(require,module,exports){
+},{"../util/dates":39,"./../../../../d3/d3.js":4}],41:[function(require,module,exports){
 //a place to define custom line interpolators
 
 var d3 = require("./../../../../d3/d3.js");
@@ -30608,11 +30498,11 @@ module.exports = IndependantAxis;
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
-        {width: 600, height: null, variationName: 'ft-theme large web inline'},
-        {width: 300, height: null, variationName: 'ft-theme regular web inline'},
-        {width: 186, height: null, variationName: 'ft-theme small web inline'},
-        {width: 200, height: 245,  variationName: 'print-theme video small web inline'},
-        {width: 600, height: 338,  variationName: 'video-theme video large web inline'}
+        {width: 600, height: null, variationName: 'ft-theme large', hasMaster: true},
+        {width: 300, height: null, variationName: 'ft-theme regular'},
+        {width: 186, height: null, variationName: 'ft-theme small'},
+        {width: 200, height: 245,  variationName: 'print-theme small'},
+        {width: 600, height: 338,  variationName: 'video-theme large', hasMaster: true, selectMaster: true}
     ])
 ;
 
@@ -32079,7 +31969,6 @@ var BarControls = Backbone.Model.extend({
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'bottom' : 'top';
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
         config.keyHover = this.attributes.hoverKey;
-        //config.independentAxisOrient = this.attributes.independentAxisOrient ? 'left' : 'right';
         config.stack = this.attributes.stack;
         return config;
     }
@@ -32221,11 +32110,13 @@ var ColumnControls = Backbone.Model.extend({
 
     defaults:{
         stack: false,
+        dependentAxisOrient: false,
         horizontalKey: true,
         hoverKey: false
     },
 
     overrideConfig: function(config){
+        config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.stack = this.attributes.stack;
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
         config.keyHover = this.attributes.hoverKey;
@@ -32258,6 +32149,7 @@ var Graphic = Backbone.Model.extend({
     },
 
     defaults: {
+        theme: 'ft',
         title: 'Untitled chart',
         subtitle: '',
         source: '',
@@ -32288,7 +32180,6 @@ var Backbone = require('./../core/backbone');
 var GraphicType = Backbone.Model.extend({
 
     initialize: function (attributes, options) {
-        this.theme = options.theme;
         this.graphic = options.graphic;
         this.variations = options.variations;
         this.controls = options.controls;
@@ -32347,7 +32238,7 @@ var GraphicVariation = Backbone.Model.extend({
 
             width: this.variation.get('width'),
             height: this.variation.get('height'),
-            theme: g.theme || 'ft',
+            theme: g.theme,
             title: g.title,
             subtitle: g.subtitle,
             source: g.source,
@@ -32428,6 +32319,7 @@ var LineControls = Backbone.Model.extend({
     },
 
     overrideConfig: function (config) {
+        var lineThicknessDefault = config.theme === 'video' ? 3 : 'medium';
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
@@ -32435,7 +32327,7 @@ var LineControls = Backbone.Model.extend({
         config.intraDay = this.attributes.intraDay;
         config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
-        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
+        config.lineThickness = this.attributes.thinLines ? 'small' : lineThicknessDefault;
         return config;
     }
 
@@ -32778,7 +32670,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n\n\n    <div class=\"panel-heading\">Appearance\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <label class=\"radio control-label\">Theme: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"theme\" value=\"ft\" checked>FT\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"theme\" value=\"video\" >Video\n            </label>\n            <label class=\"btn btn-default \" data-feature=\"print\">\n                <input type=\"radio\" name=\"theme\" value=\"print\" >Print\n            </label>\n        </div>\n    </div>\n\n    <div class=\"panel-heading\">Description</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
+    return "<div class=\"axis-panel panel panel-default\">\n\n\n    <div class=\"panel-heading\">Appearance\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <label class=\"radio control-label\">Theme: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"theme\" value=\"ft\" checked>Web\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"theme\" value=\"video\" >Video\n            </label>\n            <label class=\"btn btn-default \" data-feature=\"print\">\n                <input type=\"radio\" name=\"theme\" value=\"print\" >Print\n            </label>\n        </div>\n    </div>\n\n    <div class=\"panel-heading\">Description</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":55}],95:[function(require,module,exports){
@@ -32900,14 +32792,28 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partials,data) {
-    return "    <div class=\"col-60\">\n        <label class=\"radio control-label\">Resolution: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked>Standard\n            </label>\n            <label class=\"btn btn-default \" >\n                <input type=\"radio\" name=\"save-resolution\" value=\"master\" >Master\n                <span data-placement=\"top\" data-help=\"MASTER\">i</span>\n            </label>\n        </div>\n    </div>\n";
-},"3":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "    <div class=\"col-60\">\n        <label class=\"radio control-label\">Resolution: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default "
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.selectMaster : depth0),{"name":"unless","hash":{},"fn":this.program(2, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "\">\n                <input type=\"radio\" name=\"save-resolution\" value=\"standard\" "
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.selectMaster : depth0),{"name":"unless","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ">Standard\n            </label>\n            <label class=\"btn btn-default"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.selectMaster : depth0),{"name":"if","hash":{},"fn":this.program(2, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + " \" >\n                <input type=\"radio\" name=\"save-resolution\" value=\"master\""
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.selectMaster : depth0),{"name":"if","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + " >Master\n                <span data-placement=\"top\" data-help=\"MASTER\">i</span>\n            </label>\n        </div>\n    </div>\n";
+},"2":function(depth0,helpers,partials,data) {
+    return " active ";
+},"4":function(depth0,helpers,partials,data) {
+    return " checked ";
+},"6":function(depth0,helpers,partials,data) {
     return "    <input type=\"radio\" name=\"save-resolution\" value=\"standard\" checked style=\"display:none\">\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "<div class=\"col-40\">\n    <label class=\"radio control-label\">Format:</label>\n    <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n        <label class=\"btn btn-default active\">\n            <input type=\"radio\" name=\"save-format\" value=\"png\" checked>PNG\n        </label>\n        <label class=\"btn btn-default \">\n            <input type=\"radio\" name=\"save-format\" value=\"svg\">SVG\n        </label>\n    </div>\n</div>\n\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.hasMaster : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.program(3, data, 0),"data":data})) != null ? stack1 : "");
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.hasMaster : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.program(6, data, 0),"data":data})) != null ? stack1 : "");
 },"useData":true});
 
 },{"hbsfy/runtime":55}],104:[function(require,module,exports){
@@ -32931,21 +32837,21 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">X axis on the bottom\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n";
+    return "<h5>X-Axis</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Bottom align the X axis\n    </label>\n</div>\n\n<h5>Key</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n\n\n<h5>Plot</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked bars\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":55}],106:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\" checked>Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n";
+    return "<h5>Y-Axis</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Left align the Y axis\n    </label>\n</div>\n\n<h5>Key</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\" checked>Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n\n<h5>Plot</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"stack\" value=\"stack\">Stacked columns\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":55}],107:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"intraDay\">\n        <a data-placement=\"bottom\" data-container=\"body\" data-help=\"INTRADAY\" target=\"_blank\">Intra-Day</a> scale\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisReversed\">Reverse Y Values\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n";
+    return "<h5>Y-Axis</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"startFromZero\">Y axis starts from zero\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisOrient\">Left align the Y axis\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"dependentAxisReversed\">Reverse Y Values\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"nice\">Round values for Y axis\n    </label>\n</div>\n\n<h5>Key</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"horizontalKey\">Display Key Horizontally\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"hoverKey\">Display Key over chart\n    </label>\n</div>\n\n<h5>Plot</h5>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"intraDay\">\n        <a data-placement=\"bottom\" data-container=\"body\" data-help=\"INTRADAY\" target=\"_blank\">Intra-Day</a> scale\n    </label>\n</div>\n<div class=\"checkbox\">\n    <label>\n        <input type=\"checkbox\" name=\"thinLines\">Thin lines\n    </label>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":55}],108:[function(require,module,exports){
@@ -33308,8 +33214,7 @@ var BarControls = Backbone.View.extend({
     bindings: {
         '[name="stack"]': 'stack', //make this into stack
         '[name="hoverKey"]': 'hoverKey',
-        '[name="horizontalKey"]': 'horizontalKey',
-        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
+        '[name="horizontalKey"]': 'horizontalKey'
     },
 
     render: function () {
@@ -33334,7 +33239,8 @@ var ColumnControls = Backbone.View.extend({
     bindings: {
         '[name="stack"]': 'stack', //make this into stack
         '[name="horizontalKey"]': 'horizontalKey',
-        '[name="hoverKey"]': 'hoverKey'
+        '[name="hoverKey"]': 'hoverKey',
+        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
     },
 
     render: function () {
@@ -33637,6 +33543,7 @@ var ViewGraphicControls = RegionView.extend({
         this.model.set('theme', theme);
         document.documentElement.classList.remove('theme--ft','theme--video','theme--print');
         document.documentElement.classList.add('theme--' + theme);
+        document.querySelector('#charts').classList.add('full');//todo: call selectedVariation.hide()
     },
 
     usePopularSource: function (event) {
@@ -34381,7 +34288,8 @@ var RegionView = require('./../core/RegionView.js');
 var ViewSaveImageControls = RegionView.extend({
 
     initialize: function (options) {
-        this.hasMaster = options.model.get('variationName').split(' ').indexOf('large')>-1;
+        this.hasMaster = options.model.get('hasMaster');
+        this.selectMaster = options.model.get('selectMaster');
     },
 
     className: 'view-save-image-controls',
@@ -34394,7 +34302,10 @@ var ViewSaveImageControls = RegionView.extend({
     },
 
     render: function () {
-        this.el.innerHTML = this.template({ hasMaster:this.hasMaster });
+        this.el.innerHTML = this.template({
+            hasMaster:this.hasMaster,
+            selectMaster: this.selectMaster
+        });
         this.stickit(this.model);
         return this;
     }
@@ -34892,13 +34803,12 @@ function enableFeatures(){
 
 function init(email) {
 
-    var theme = 'ft';
     var graphic = new Graphic();
     var importData = new DataImport();
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     window.email = email || 'anonymous';
-    document.documentElement.classList.add('theme--' + theme);
+    document.documentElement.classList.add('theme--ft');
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
     // REFACTOR THIS into it's own custom collection
@@ -34906,7 +34816,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Line'
         }, {
-            theme: theme,
             graphic: graphic,
             // GraphicType should internally decide which type
             // of controls suits it
@@ -34916,7 +34825,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Column'
         }, {
-            theme: theme,
             graphic: graphic,
             controls: new ColumnControls(),
             variations: Variations
@@ -34924,7 +34832,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Bar'
         }, {
-            theme: theme,
             graphic: graphic,
             controls: new BarControls(),
             variations: Variations
