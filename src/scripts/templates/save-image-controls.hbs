@@ -14,11 +14,11 @@
     <div class="col-60">
         <label class="radio control-label">Resolution: </label>
         <div class="btn-group  btn-toggle" data-toggle="buttons">
-            <label class="btn btn-default active">
-                <input type="radio" name="save-resolution" value="standard" checked>Standard
+            <label class="btn btn-default {{#unless selectMaster }} active {{/unless}}">
+                <input type="radio" name="save-resolution" value="standard" {{#unless selectMaster }} checked {{/unless}}>Standard
             </label>
-            <label class="btn btn-default " >
-                <input type="radio" name="save-resolution" value="master" >Master
+            <label class="btn btn-default{{#if selectMaster }} active {{/if}} " >
+                <input type="radio" name="save-resolution" value="master"{{#if selectMaster }} checked {{/if}} >Master
                 <span data-placement="top" data-help="MASTER">i</span>
             </label>
         </div>

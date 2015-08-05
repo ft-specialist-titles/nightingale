@@ -9,8 +9,7 @@ var BarControls = Backbone.View.extend({
     bindings: {
         '[name="stack"]': 'stack', //make this into stack
         '[name="hoverKey"]': 'hoverKey',
-        '[name="horizontalKey"]': 'horizontalKey',
-        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
+        '[name="horizontalKey"]': 'horizontalKey'
     },
 
     render: function () {

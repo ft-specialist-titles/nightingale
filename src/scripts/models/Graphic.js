@@ -9,6 +9,7 @@ var Graphic = Backbone.Model.extend({
     },
 
     defaults: {
+        theme: 'ft',
         title: 'Untitled chart',
         subtitle: '',
         source: '',

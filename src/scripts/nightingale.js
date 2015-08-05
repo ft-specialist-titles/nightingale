@@ -37,13 +37,12 @@ function enableFeatures(){
 
 function init(email) {
 
-    var theme = 'ft';
     var graphic = new Graphic();
     var importData = new DataImport();
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     window.email = email || 'anonymous';
-    document.documentElement.classList.add('theme--' + theme);
+    document.documentElement.classList.add('theme--ft');
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
     // REFACTOR THIS into it's own custom collection
@@ -51,7 +50,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Line'
         }, {
-            theme: theme,
             graphic: graphic,
             // GraphicType should internally decide which type
             // of controls suits it
@@ -61,7 +59,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Column'
         }, {
-            theme: theme,
             graphic: graphic,
             controls: new ColumnControls(),
             variations: Variations
@@ -69,7 +66,6 @@ function init(email) {
         new GraphicType({
             typeName: 'Bar'
         }, {
-            theme: theme,
             graphic: graphic,
             controls: new BarControls(),
             variations: Variations

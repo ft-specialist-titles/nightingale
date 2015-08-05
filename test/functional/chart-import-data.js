@@ -86,7 +86,7 @@ module.exports = {
 
     'Opening Right Panel': function (browser) {
         browser.pause(1000)
-            .click('#charts div.view-graphic-variation.large.web.inline svg[class="graphic line-chart"]')
+            .click('#charts div.view-graphic-variation.large svg[class="graphic line-chart"]')
             .expect.element('#selection div:nth-child(1) > div.panel-heading').visible.before(3000);
     },
 

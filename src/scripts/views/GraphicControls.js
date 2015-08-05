@@ -57,6 +57,7 @@ var ViewGraphicControls = RegionView.extend({
         this.model.set('theme', theme);
         document.documentElement.classList.remove('theme--ft','theme--video','theme--print');
         document.documentElement.classList.add('theme--' + theme);
+        document.querySelector('#charts').classList.add('full');//todo: call selectedVariation.hide()
     },
 
     usePopularSource: function (event) {

@@ -3,7 +3,7 @@ var pkg = require('./package.json');
 module.exports = {
     pkg: pkg,
     buildPaths: [
-        { source: "./src",  "target": './_site' , minify:true}
+        { source: "./src",  "target": './_site' , minify:false}
     ],
     tasks: {
         copy: ['{images,CNAME}'],

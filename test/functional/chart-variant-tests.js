@@ -2,14 +2,14 @@ var urlRequired = 'http://localhost:3000/';
 
 function assertTitleOfChart (browser, charts) {
     var chartNames = ['large', 'regular', 'small'];
-    browser.waitForElementVisible('#charts div.view-graphic-variation.large.web.inline svg', 5000);
+    browser.waitForElementVisible('#charts div.view-graphic-variation.large svg', 5000);
 
 
 
 
     for (i = 0; i <3; i++) {
         for (j in chartNames) {
-            browser.assert.attributeContains('#charts > div > div:nth-child(' + (i + 1) + ') > div > div.view-graphic-variation.' + chartNames[j] + '.web.inline > div > svg', 'class', charts[i])
+            browser.assert.attributeContains('#charts > div > div:nth-child(' + (i + 1) + ') .view-graphic-variation.' + chartNames[j] + ' svg', 'class', charts[i])
         }
     }
 }

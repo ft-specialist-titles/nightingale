@@ -14,7 +14,6 @@ var BarControls = Backbone.Model.extend({
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'bottom' : 'top';
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
         config.keyHover = this.attributes.hoverKey;
-        //config.independentAxisOrient = this.attributes.independentAxisOrient ? 'left' : 'right';
         config.stack = this.attributes.stack;
         return config;
     }

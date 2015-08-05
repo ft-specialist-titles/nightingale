@@ -233,3 +233,26 @@
     //border-color: yellow;
     opacity: .5;
 }
+#controls {
+    padding: 15px;
+}
+
+.view-graphic-controls label {
+    margin-bottom: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.checkbox label,
+label.btn{
+    font-weight: 300;
+}
+
+.view-graphic-controls .form-group {
+    margin-bottom: 15px;
+}
+
+.view-graphic-controls .panel .panel-body {
+    //padding: 10px 0 0;
+}

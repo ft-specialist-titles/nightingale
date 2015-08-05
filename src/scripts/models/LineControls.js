@@ -25,6 +25,7 @@ var LineControls = Backbone.Model.extend({
     },
 
     overrideConfig: function (config) {
+        var lineThicknessDefault = config.theme === 'video' ? 3 : 'medium';
         config.dependentAxisOrient = this.attributes.dependentAxisOrient ? 'left' : 'right';
         config.y.zeroOrigin = config.falseOrigin = !this.attributes.startFromZero;
         config.keyColumns = this.attributes.horizontalKey ? 10 : 1;
@@ -32,7 +33,7 @@ var LineControls = Backbone.Model.extend({
         config.intraDay = this.attributes.intraDay;
         config.y.reverse = this.attributes.dependentAxisReversed;
         config.niceValue = this.attributes.nice;
-        config.lineThickness = this.attributes.thinLines ? 'small' : 'medium';
+        config.lineThickness = this.attributes.thinLines ? 'small' : lineThicknessDefault;
         return config;
     }
 

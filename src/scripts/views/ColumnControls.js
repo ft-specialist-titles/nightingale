@@ -9,7 +9,8 @@ var ColumnControls = Backbone.View.extend({
     bindings: {
         '[name="stack"]': 'stack', //make this into stack
         '[name="horizontalKey"]': 'horizontalKey',
-        '[name="hoverKey"]': 'hoverKey'
+        '[name="hoverKey"]': 'hoverKey',
+        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
     },
 
     render: function () {
