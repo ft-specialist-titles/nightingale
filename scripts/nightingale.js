@@ -33212,9 +33212,10 @@ var BarControls = Backbone.View.extend({
     template: require('./../templates/type-controls-bar.hbs'),
 
     bindings: {
-        '[name="stack"]': 'stack', //make this into stack
+        '[name="stack"]': 'stack',
         '[name="hoverKey"]': 'hoverKey',
-        '[name="horizontalKey"]': 'horizontalKey'
+        '[name="horizontalKey"]': 'horizontalKey',
+        '[name="dependentAxisOrient"]': 'dependentAxisOrient'
     },
 
     render: function () {
