@@ -30859,7 +30859,6 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
         var selector = 'svg.' + svg.getAttribute('class').replace(/ /g,'.');
         var videoRatioSVG = document.querySelector('.video-theme ' + selector);
         svg = videoRatioSVG.cloneNode(true);
-        viewBox = [-8, -8, 616, 354];
         svg.setAttribute('width', 2048);
         svg.setAttribute('height', 1152);
     } else {
