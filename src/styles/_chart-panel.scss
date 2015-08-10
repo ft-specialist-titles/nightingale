@@ -105,12 +105,12 @@ svg {
     }
 }
 
-.theme--print .ft-theme ,
-.theme--print .video-theme ,
-.theme--video .ft-theme ,
-.theme--video .print-theme ,
-.theme--ft .print-theme ,
-.theme--ft .video-theme {
+.theme--ft-print .ft-web-theme ,
+.theme--ft-print .ft-video-theme ,
+.theme--ft-video .ft-web-theme ,
+.theme--ft-video .ft-print-theme ,
+.theme--ft-web .ft-print-theme ,
+.theme--ft-web .ft-video-theme {
     width:0!important; height: 0!important;
     overflow: hidden;
 }

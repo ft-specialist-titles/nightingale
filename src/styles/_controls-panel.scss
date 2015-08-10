@@ -17,7 +17,7 @@
 
     padding-bottom: 245px;
     position: relative;
-    min-height: 100vh;
+    min-height: calc(100vh - 20px);
 
     label {
         margin-bottom: 2px;

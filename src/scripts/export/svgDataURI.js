@@ -10,7 +10,7 @@ var elementToDataURI = exports.elementToDataURI = function elementToDataURI(svg,
     var viewBox = [0, 0, svg.getAttribute('width'), svg.getAttribute('height')];
     if (opts.resolution === 'master'){
         var selector = 'svg.' + svg.getAttribute('class').replace(/ /g,'.');
-        var videoRatioSVG = document.querySelector('.video-theme ' + selector);
+        var videoRatioSVG = document.querySelector('.ft-video-theme ' + selector);
         svg = videoRatioSVG.cloneNode(true);
         svg.setAttribute('width', 2048);
         svg.setAttribute('height', 1152);

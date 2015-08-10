@@ -55,7 +55,7 @@ var ViewGraphicControls = RegionView.extend({
     updateTheme: function(event){
         var theme = event.target.value;
         this.model.set('theme', theme);
-        document.documentElement.classList.remove('theme--ft','theme--video','theme--print');
+        document.documentElement.classList.remove('theme--ft-web','theme--ft-video','theme--ft-print');
         document.documentElement.classList.add('theme--' + theme);
         document.querySelector('#charts').classList.add('full');//todo: call selectedVariation.hide()
     },
