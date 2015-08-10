@@ -23268,7 +23268,7 @@ return jQuery;
 }));
 
 },{}],6:[function(require,module,exports){
-module.exports={"version":"0.6.2"}
+module.exports={"version":"0.6.3"}
 
 },{}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
@@ -23648,7 +23648,7 @@ Create.prototype.createAxes = function (axesSpec) {
 
 module.exports = Create;
 
-},{"../scales/intra-day":32,"../themes":34,"./../../../../d3/d3.js":4,"./category.js":7,"./date.js":9,"./number.js":12}],9:[function(require,module,exports){
+},{"../scales/intra-day":32,"../themes":36,"./../../../../d3/d3.js":4,"./category.js":7,"./date.js":9,"./number.js":12}],9:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var labels = require('../util/labels.js');
 var dates = require('../util/dates.js');
@@ -23685,6 +23685,7 @@ function dateAxis() {
     };
 
     function isVertical(){
+        if (!config.axes.length) return true; //todo: log error. no axis
         return ['right','left'].indexOf(config.axes[0].orient())>-1;
     }
 
@@ -24415,7 +24416,7 @@ function barChart(g){
 
 module.exports = barChart;
 
-},{"../axis":11,"../dressing":22,"../themes":34,"../util/data.model.js":38,"../util/metadata.js":43}],17:[function(require,module,exports){
+},{"../axis":11,"../dressing":22,"../themes":36,"../util/data.model.js":38,"../util/metadata.js":43}],17:[function(require,module,exports){
 //var d3 = require('d3');
 
 function blankChart() {
@@ -24605,7 +24606,7 @@ function columnChart(g){
 
 module.exports = columnChart;
 
-},{"../axis":11,"../dressing":22,"../themes":34,"../util/data.model.js":38,"../util/metadata.js":43}],19:[function(require,module,exports){
+},{"../axis":11,"../dressing":22,"../themes":36,"../util/data.model.js":38,"../util/metadata.js":43}],19:[function(require,module,exports){
 module.exports = {
     line: require('./line.js'),
     blank: require('./blank.js'),
@@ -24708,7 +24709,7 @@ function lineChart(g) {
 
 module.exports = lineChart;
 
-},{"../axis":11,"../dressing":22,"../themes":34,"../util/data.model.js":38,"../util/line-interpolators.js":41,"../util/metadata.js":43,"./../../../../d3/d3.js":4,"util":58}],21:[function(require,module,exports){
+},{"../axis":11,"../dressing":22,"../themes":36,"../util/data.model.js":38,"../util/line-interpolators.js":41,"../util/metadata.js":43,"./../../../../d3/d3.js":4,"util":58}],21:[function(require,module,exports){
 //var d3 = require('d3');
 
 function pieChart() {
@@ -24983,7 +24984,7 @@ Dressing.prototype.setChartPosition = function () {
 
 module.exports = Dressing;
 
-},{"../themes":34,"./logo.js":23,"./series-key.js":24,"./text-area.js":25}],23:[function(require,module,exports){
+},{"../themes":36,"./logo.js":23,"./series-key.js":24,"./text-area.js":25}],23:[function(require,module,exports){
 //the ft logo there's probably an easier ay to do this...
 //var d3 = require('d3');
 
@@ -25237,7 +25238,7 @@ function seriesKey(options) {
 
 module.exports = seriesKey;
 
-},{"../themes":34,"../util/line-thickness.js":42,"./../../../../d3/d3.js":4}],25:[function(require,module,exports){
+},{"../themes":36,"../util/line-thickness.js":42,"./../../../../d3/d3.js":4}],25:[function(require,module,exports){
 /*jshint -W084 */
 //text area provides a wrapping text block of a given type
 var d3 = require("./../../../../d3/d3.js");
@@ -25490,7 +25491,7 @@ module.exports = {
 
 };
 
-},{"./axis/index.js":11,"./chart/index.js":19,"./dressing/logo.js":23,"./dressing/series-key.js":24,"./dressing/text-area.js":25,"./fonts":26,"./scales/index.js":31,"./themes":34,"./util/dates.js":39,"./util/version":45}],28:[function(require,module,exports){
+},{"./axis/index.js":11,"./chart/index.js":19,"./dressing/logo.js":23,"./dressing/series-key.js":24,"./dressing/text-area.js":25,"./fonts":26,"./scales/index.js":31,"./themes":36,"./util/dates.js":39,"./util/version":45}],28:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 var identity = require('./discontinuityProviders/identity');
 
@@ -25922,197 +25923,6 @@ module.exports = function(open, close) {
 };
 
 },{"./discontinuableDateTime":28,"./discontinuityProviders/intra-day":30}],33:[function(require,module,exports){
-var colours = {
-    line: [
-        '#af516c', '#ecafaf', '#d7706c', '#76acb8', '#7fd8f5', '#3d7ab3', '#b8b1a9'
-    ],
-    column: [
-        '#bb6d82', '#ecafaf', '#d7706c', '#cb9f8c', '#b07979', '#ccc2c2', '#8f7d95', '#b8b1a9'
-    ],
-    bar: [
-        '#bb6d82', '#ecafaf', '#d7706c', '#cb9f8c', '#b07979', '#ccc2c2', '#8f7d95', '#b8b1a9'
-    ],
-    accent: '#9e2f50'
-};
-
-// SPECIAL 'non-svg' ATTRIBUTES:
-// padding-x: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
-// padding-y: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
-// padding:   applied to 'text' elements (dressing/index.js does this)
-// align:     applied to 'text' elements (dressing/index.js does this)
-// background:applied to 'text' elements (dressing/index.js does this)
-// border:    applied to 'line' and 'path' elements (dressing/index.js does this)
-
-module.exports.theme = [
-    {
-        'selector': 'path.accent, line.accent, rect.accent',
-        'attributes': {
-            'stroke': colours.accent
-        }
-    },
-    {
-        'id': 'svg',
-        'selector': 'svg',
-        'attributes': {
-            'background': '#fff1e0'
-        }
-    },
-    //lines
-    {
-        'id': 'lines',
-        'selector': 'path.line, line.key__line',
-        'attributes': {
-            'fill': 'none',
-            'stroke-linejoin': 'round',
-            'stroke-linecap': 'round'
-        }
-    },
-    ////Columns
-    //{   'id': 'columns',
-    //    'attributes': {
-    //        'stroke': 'none'
-    //    }
-    //},
-    ////Bars
-    //{   'id': 'bars',
-    //    'attributes': {
-    //        'stroke': 'none'
-    //    }
-    //},
-    {
-        'id': 'null-label',
-        'attributes': {
-            'text-anchor': 'middle',
-            'font-size': 10,
-            'fill': 'rgba(0, 0, 0, 0.4)'
-        }
-    },
-
-    //text
-    {   'id': 'chart-title',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'font-size': 18,
-            'fill': 'rgba(0, 0, 0, 0.8)'
-        }
-    },
-    {   'id': 'chart-subtitle',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'font-size': 12,
-            'fill': 'rgba(0, 0, 0, 0.5)'
-        }
-    },
-    {   'id': 'chart-source',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'font-size': 10,
-            'line-height': 12,
-            'fill': 'rgba(0, 0, 0, 0.5)'
-        }
-    },
-    {   'id': 'chart-footnote',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'font-size': 12,
-            'line-height': 15,
-            'fill': 'rgba(0, 0, 0, 0.5)'
-        }
-    },
-    {   'id': 'key',
-        'attributes': {
-            'font-family': 'BentonSans, sans-serif',
-            'font-size': 12,
-            'line-height': 16,
-            'fill': 'rgba(0, 0, 0, 0.5)',
-            'padding-y': 8
-        }
-    },
-    {   'id': 'independent-ticks',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'stroke': 'rgba(0, 0, 0, 0.3)',
-            'stroke-dasharray': 'none'
-        }
-    },
-    {   'id': 'dependent-ticks',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'stroke': 'rgba(0, 0, 0, 0.1)',
-            'stroke-dasharray': '2 2'
-        }
-    },
-    {   'id': 'origin-ticks',
-        'attributes': {
-            'shape-rendering': 'crispEdges',
-            'stroke': 'rgba(0, 0, 0, 0.3)',
-            'stroke-dasharray': 'none'
-        }
-    },
-    {   'id': 'axis-text',
-        'attributes': {
-            'font-size': 12,
-            'font-family': 'BentonSans, sans-serif',
-            'stroke': 'none',
-            'fill': '#757470'
-        }
-    },
-    {   'id': 'axis-secondary-text',
-        'selector': '.axis .secondary text',
-        'attributes': {
-            'font-size': 10,
-            'fill': '#757470'
-        }
-    }
-];
-module.exports.theme.colours = colours;
-
-},{}],34:[function(require,module,exports){
-// because of the need to export and convert browser rendered SVGs
-// we need a simple way to attach styles as attributes if necessary,
-// so, heres a list of attributes and the selectors to which they should be applied
-var d3 = require("./../../../../d3/d3.js");
-var ft = require('./ft');
-var video = require('./video');
-var print = require('./print');
-
-var themes = {
-    ft: ft.theme,
-    video: video.theme,
-    print: print.theme,
-    check: checkAttributes,
-    createDefinitions: createDefinitions
-};
-var definitions = {
-    ft: ft.defs,
-    video: video.defs,
-    print: print.defs
-};
-
-function createDefinitions(g, model) {
-    if (!model.gradients) return;
-
-    var theme = model.theme;
-    var series = model.y.series.length;
-    var defs = model.gradients.map(function(grad, i){
-        if (i >= series) return;
-        var id = grad.match(/url\(#(.*)\)/)[1];
-        return definitions[theme][id];
-    });
-    var elDefs = g.select('.chart-definitions');
-    if (!elDefs.size()) elDefs = g.append('g').attr('class', 'chart-definitions');
-    elDefs.node().innerHTML += defs.join('');
-}
-
-function checkAttributes(theme, selector) {
-    return themes[theme || 'ft'].filter(function (style, i) {
-        return (style.id == selector);
-    })[0] || {attributes:{}};//return only a single object by id
-}
-
-module.exports = themes;
-
-},{"./../../../../d3/d3.js":4,"./ft":33,"./print":35,"./video":36}],35:[function(require,module,exports){
 var PADDING = 0;
 var colours = {
     line: [
@@ -26272,7 +26082,7 @@ module.exports.theme = [
 ];
 module.exports.theme.colours = colours;
 
-},{}],36:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var PADDING = 8;
 var colours = {
     line: [
@@ -26491,7 +26301,198 @@ module.exports.theme = [
 module.exports.theme.colours = colours;
 module.exports.theme.gradients = gradients;
 
-},{}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
+var colours = {
+    line: [
+        '#af516c', '#ecafaf', '#d7706c', '#76acb8', '#7fd8f5', '#3d7ab3', '#b8b1a9'
+    ],
+    column: [
+        '#bb6d82', '#ecafaf', '#d7706c', '#cb9f8c', '#b07979', '#ccc2c2', '#8f7d95', '#b8b1a9'
+    ],
+    bar: [
+        '#bb6d82', '#ecafaf', '#d7706c', '#cb9f8c', '#b07979', '#ccc2c2', '#8f7d95', '#b8b1a9'
+    ],
+    accent: '#9e2f50'
+};
+
+// SPECIAL 'non-svg' ATTRIBUTES:
+// padding-x: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
+// padding-y: applied to the SVG (affects svg > child) and 'text' elements (dressing/index.js does this)
+// padding:   applied to 'text' elements (dressing/index.js does this)
+// align:     applied to 'text' elements (dressing/index.js does this)
+// background:applied to 'text' elements (dressing/index.js does this)
+// border:    applied to 'line' and 'path' elements (dressing/index.js does this)
+
+module.exports.theme = [
+    {
+        'selector': 'path.accent, line.accent, rect.accent',
+        'attributes': {
+            'stroke': colours.accent
+        }
+    },
+    {
+        'id': 'svg',
+        'selector': 'svg',
+        'attributes': {
+            'background': '#fff1e0'
+        }
+    },
+    //lines
+    {
+        'id': 'lines',
+        'selector': 'path.line, line.key__line',
+        'attributes': {
+            'fill': 'none',
+            'stroke-linejoin': 'round',
+            'stroke-linecap': 'round'
+        }
+    },
+    ////Columns
+    //{   'id': 'columns',
+    //    'attributes': {
+    //        'stroke': 'none'
+    //    }
+    //},
+    ////Bars
+    //{   'id': 'bars',
+    //    'attributes': {
+    //        'stroke': 'none'
+    //    }
+    //},
+    {
+        'id': 'null-label',
+        'attributes': {
+            'text-anchor': 'middle',
+            'font-size': 10,
+            'fill': 'rgba(0, 0, 0, 0.4)'
+        }
+    },
+
+    //text
+    {   'id': 'chart-title',
+        'attributes': {
+            'font-family': 'BentonSans, sans-serif',
+            'font-size': 18,
+            'fill': 'rgba(0, 0, 0, 0.8)'
+        }
+    },
+    {   'id': 'chart-subtitle',
+        'attributes': {
+            'font-family': 'BentonSans, sans-serif',
+            'font-size': 12,
+            'fill': 'rgba(0, 0, 0, 0.5)'
+        }
+    },
+    {   'id': 'chart-source',
+        'attributes': {
+            'font-family': 'BentonSans, sans-serif',
+            'font-size': 10,
+            'line-height': 12,
+            'fill': 'rgba(0, 0, 0, 0.5)'
+        }
+    },
+    {   'id': 'chart-footnote',
+        'attributes': {
+            'font-family': 'BentonSans, sans-serif',
+            'font-size': 12,
+            'line-height': 15,
+            'fill': 'rgba(0, 0, 0, 0.5)'
+        }
+    },
+    {   'id': 'key',
+        'attributes': {
+            'font-family': 'BentonSans, sans-serif',
+            'font-size': 12,
+            'line-height': 16,
+            'fill': 'rgba(0, 0, 0, 0.5)',
+            'padding-y': 8
+        }
+    },
+    {   'id': 'independent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.3)',
+            'stroke-dasharray': 'none'
+        }
+    },
+    {   'id': 'dependent-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.1)',
+            'stroke-dasharray': '2 2'
+        }
+    },
+    {   'id': 'origin-ticks',
+        'attributes': {
+            'shape-rendering': 'crispEdges',
+            'stroke': 'rgba(0, 0, 0, 0.3)',
+            'stroke-dasharray': 'none'
+        }
+    },
+    {   'id': 'axis-text',
+        'attributes': {
+            'font-size': 12,
+            'font-family': 'BentonSans, sans-serif',
+            'stroke': 'none',
+            'fill': '#757470'
+        }
+    },
+    {   'id': 'axis-secondary-text',
+        'selector': '.axis .secondary text',
+        'attributes': {
+            'font-size': 10,
+            'fill': '#757470'
+        }
+    }
+];
+module.exports.theme.colours = colours;
+
+},{}],36:[function(require,module,exports){
+// because of the need to export and convert browser rendered SVGs
+// we need a simple way to attach styles as attributes if necessary,
+// so, heres a list of attributes and the selectors to which they should be applied
+var d3 = require("./../../../../d3/d3.js");
+var web = require('./ft-web');
+var video = require('./ft-video');
+var print = require('./ft-print');
+
+var themes = {
+    'ft-web': web.theme,
+    'ft-video': video.theme,
+    'ft-print': print.theme,
+    check: checkAttributes,
+    createDefinitions: createDefinitions
+};
+var definitions = {
+    'ft-web': web.defs,
+    'ft-video': video.defs,
+    'ft-print': print.defs
+};
+
+function createDefinitions(g, model) {
+    if (!model.gradients) return;
+
+    var theme = model.theme;
+    var series = model.y.series.length;
+    var defs = model.gradients.map(function(grad, i){
+        if (i >= series) return;
+        var id = grad.match(/url\(#(.*)\)/)[1];
+        return definitions[theme][id];
+    });
+    var elDefs = g.select('.chart-definitions');
+    if (!elDefs.size()) elDefs = g.append('g').attr('class', 'chart-definitions');
+    elDefs.node().innerHTML += defs.join('');
+}
+
+function checkAttributes(theme, selector) {
+    return themes[theme || 'ft-web'].filter(function (style, i) {
+        return (style.id == selector);
+    })[0] || {attributes:{}};//return only a single object by id
+}
+
+module.exports = themes;
+
+},{"./../../../../d3/d3.js":4,"./ft-print":33,"./ft-video":34,"./ft-web":35}],37:[function(require,module,exports){
 // More info:
 // http://en.wikipedia.org/wiki/Aspect_ratio_%28image%29
 
@@ -26783,7 +26784,7 @@ function Model(chartType, opts) {
     };
     var m = {
         //layout stuff
-        theme: 'ft',
+        theme: 'ft-web',
         chartType: chartType,
         keyColumns: (chartType == 'column' ? 5 : 1),
         keyHover: false,
@@ -26863,7 +26864,7 @@ Model.prototype.error = function (err) {
 };
 module.exports = Model;
 
-},{"../themes":34,"../util/aspect-ratios.js":37,"../util/dates.js":39,"../util/line-thickness.js":42,"../util/series-options.js":44,"./../../../../d3/d3.js":4}],39:[function(require,module,exports){
+},{"../themes":36,"../util/aspect-ratios.js":37,"../util/dates.js":39,"../util/line-thickness.js":42,"../util/series-options.js":44,"./../../../../d3/d3.js":4}],39:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
 
 var formatter = {
@@ -30498,11 +30499,11 @@ module.exports = IndependantAxis;
 var Backbone = require('./../core/backbone.js');
 
 module.exports = new Backbone.Collection([
-        {width: 600, height: null, variationName: 'ft-theme large', hasMaster: true},
-        {width: 300, height: null, variationName: 'ft-theme regular'},
-        {width: 186, height: null, variationName: 'ft-theme small'},
-        {width: 200, height: 245,  variationName: 'print-theme small'},
-        {width: 600, height: 338,  variationName: 'video-theme large', hasMaster: true, selectMaster: true}
+        {width: 600, height: null, variationName: 'ft-web-theme large', hasMaster: true},
+        {width: 300, height: null, variationName: 'ft-web-theme regular'},
+        {width: 186, height: null, variationName: 'ft-web-theme small'},
+        {width: 200, height: 245,  variationName: 'ft-print-theme small'},
+        {width: 600, height: 338,  variationName: 'ft-video-theme large', hasMaster: true, selectMaster: true}
     ])
 ;
 
@@ -32148,7 +32149,7 @@ var Graphic = Backbone.Model.extend({
     },
 
     defaults: {
-        theme: 'ft',
+        theme: 'ft-web',
         title: 'Untitled chart',
         subtitle: '',
         source: '',
@@ -32669,7 +32670,7 @@ module.exports = HandlebarsCompiler.template({"1":function(depth0,helpers,partia
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"axis-panel panel panel-default\">\n\n\n    <div class=\"panel-heading\">Appearance\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <label class=\"radio control-label\">Theme: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"theme\" value=\"ft\" checked>Web\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"theme\" value=\"video\" >Video\n            </label>\n            <label class=\"btn btn-default \" data-feature=\"print\">\n                <input type=\"radio\" name=\"theme\" value=\"print\" >Print\n            </label>\n        </div>\n    </div>\n\n    <div class=\"panel-heading\">Description</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
+    return "<div class=\"axis-panel panel panel-default\">\n\n\n    <div class=\"panel-heading\">Appearance\n        <button type=\"button\" class=\"pull-right btn btn-xs btn-danger\" name=\"discard\">\n            Discard data\n        </button>\n    </div>\n    <div class=\"panel-body\">\n        <label class=\"radio control-label\">Theme: </label>\n        <div class=\"btn-group  btn-toggle\" data-toggle=\"buttons\">\n            <label class=\"btn btn-default active\">\n                <input type=\"radio\" name=\"theme\" value=\"ft-web\" checked>Web\n            </label>\n            <label class=\"btn btn-default \">\n                <input type=\"radio\" name=\"theme\" value=\"ft-video\" >Video\n            </label>\n            <label class=\"btn btn-default \" data-feature=\"print\">\n                <input type=\"radio\" name=\"theme\" value=\"ft-print\" >Print\n            </label>\n        </div>\n    </div>\n\n    <div class=\"panel-heading\">Description</div>\n    <div class=\"panel-body\">\n        <form role=\"form\">\n            <div class=\"form-group\">\n                <label>Title</label>\n                <input type=\"text\" name=\"title\" class=\"form-control input-lg\" spellcheck=\"true\" required/>\n\n                <p class=\"help-block\">What question does the chart answer?</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Subtitle</label>\n                <input type=\"text\" name=\"subtitle\" class=\"form-control\" style=\"height:33px;\" required=\"required\"\n                       spellcheck=\"true\"/>\n                <p class=\"help-block\">Always describe the Y axis. A note about the range of data used in the X axis also\n                    helps.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Footnote</label>\n                <input type=\"text\" name=\"footnote\" class=\"form-control input-sm\" spellcheck=\"true\"/>\n\n                <p class=\"help-block\">Notes about data transformations, missing data or special cases.</p>\n            </div>\n            <div class=\"form-group\">\n                <label>Source</label>\n                <input type=\"text\" name=\"source\" class=\"form-control input-sm\" spellcheck=\"true\"\n                       list=\"common-sources-list\"/>\n                <datalist id=\"common-sources-list\">\n                    <option value=\"Thomson Reuters Datastream\"></option>\n                    <option value=\"Bloomberg\"></option>\n                    <option value=\"World Bank\"></option>\n                    <option value=\"IMF\"></option>\n                    <option value=\"ONS\"></option>\n                    <option value=\"Eurostat\"></option>\n                    <option value=\"US Census Bureau\"></option>\n                    <option value=\"US Bureau of Labor Statistics\"></option>\n                </datalist>\n                <p class=\"help-block popular-sources\">Popular sources:\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Thomson Reuters Datastream</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Bloomberg</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">World Bank</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">IMF</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">ONS</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">Eurostat</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Census Bureau</button>\n                    ,\n                    <button type=\"button\" class=\"popular-source btn btn-link btn-xs\">US Bureau of Labor Statistics\n                    </button>\n                    .\n                </p>\n            </div>\n        </form>\n    </div>\n</div>\n<div data-region=\"xAxis\"></div>\n<div data-region=\"yAxis\"></div>\n<br/>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":55}],95:[function(require,module,exports){
@@ -33541,7 +33542,7 @@ var ViewGraphicControls = RegionView.extend({
     updateTheme: function(event){
         var theme = event.target.value;
         this.model.set('theme', theme);
-        document.documentElement.classList.remove('theme--ft','theme--video','theme--print');
+        document.documentElement.classList.remove('theme--ft-web','theme--ft-video','theme--ft-print');
         document.documentElement.classList.add('theme--' + theme);
         document.querySelector('#charts').classList.add('full');//todo: call selectedVariation.hide()
     },
@@ -34411,7 +34412,7 @@ var ViewSelectedVariation = RegionView.extend({
             // prevent doubleclick
             setTimeout(removeDisabledState, 200);
         });
-        tracking.trackEvent(d.graphicType.typeName + ' ' + d.theme + ' Chart', width + 'x' + height, 'saveImage-' + format);
+        tracking.trackEvent(d.graphicType.typeName + ' ' + d.graphic.theme + ' Chart', width + 'x' + height, 'saveImage-' + format);
     },
 
     hide: function() {
@@ -34808,7 +34809,7 @@ function init(email) {
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     window.email = email || 'anonymous';
-    document.documentElement.classList.add('theme--ft');
+    document.documentElement.classList.add('theme--ft-web');
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
     // REFACTOR THIS into it's own custom collection
