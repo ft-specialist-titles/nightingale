@@ -32465,11 +32465,6 @@ var Threshold = function (numRows) {
     return this;
 };
 
-function mapDates(label, file){
-    return file.data
-        .map(function getColumn(d){   return d[label]; });
-}
-
 function parseDate(dateString, format) {
     return format.parse(dateString.split(/[\:\/\-\ ]+/).join('/'));
 }
@@ -32481,11 +32476,11 @@ function dateGroupings(typeInfo, dateFormat){
     var weeks = [];
     var months = [];
     var years = [];
-    typeInfo.data.forEach(function(end,i){
+    var d3Formatter = d3.time.format(dateFormat);
+    typeInfo.dateValues.forEach(function(date,i){
         if (i===0) return;
-        var start = typeInfo.data[i-1];
-        var reverse = start > end, t;
-        if (reverse) t = end, end = start, start = t;
+        var start = parseDate(typeInfo.dateValues[i-1], d3Formatter);
+        var end = parseDate(date,d3Formatter);
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -32520,6 +32515,7 @@ function getDateRange(typeInfo) {
 
 function findRecommendedChartStyle(typeInfo) {
 
+    // what's the maximum acceptable number of columns
     var MAX_ACCEPTABLE_NUMBER_OF_COLUMNS = 15;
 
     // if it isn't a discrete period, we can return early and assume
@@ -32529,7 +32525,10 @@ function findRecommendedChartStyle(typeInfo) {
     }
 
     var range = getDateRange(typeInfo);
+
     var density = 0;
+
+    var rangeFunction;
 
     switch (typeInfo.units[0]) {
         case "daily":
@@ -32555,11 +32554,13 @@ function findRecommendedChartStyle(typeInfo) {
     // we now check that the time span of the data provided doesn't
     // excede a set number of 'periods'
     var isTooDense = density > MAX_ACCEPTABLE_NUMBER_OF_COLUMNS;
+
     if (isTooDense) {
         return 'Line';
     }
 
     return 'Column';
+
 }
 
 var DataImport = Backbone.Model.extend({
@@ -32623,19 +32624,20 @@ var DataImport = Backbone.Model.extend({
         var newColumns = describeColumns(file);
         var threshold = new Threshold(file.numRows);
         var originalData = JSON.parse(JSON.stringify(file.data));
-        var typeInfo, label, recommendedChartStyle;
+        var typeInfo;
+        var recommendedChartStyle;
 
-        newColumns.forEach(function(column, i){
-            label = column.get('label');
-            typeInfo = column.get('typeInfo');
+        for (var i = 0, x = newColumns.length; i < x; i++) {
+
+            typeInfo = newColumns[i].get('typeInfo');
             if (typeInfo.dataType === DataTypes.TIME) {
 
                 setPopularDateFormat(file, typeInfo);
+                dateGroupings(typeInfo);
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
-                    typeInfo.data = mapDates(label, file);
-                    dateGroupings(typeInfo);
+
                     // here we find a suggestion for what the most likely chart
                     // the user will want to see is. Currently, our rules are only time-based
                     // therefore we do the check in hire (where we're sure it's a TIME column)
@@ -32643,10 +32645,12 @@ var DataImport = Backbone.Model.extend({
 
                 } else if (threshold.isAbove(typeInfo.numbers + typeInfo.nulls)) {
                     typeInfo.dataType = DataTypes.NUMERIC;
-                    column.set('axis', typeInfo.predictedAxis = Axis.Y);
+                    newColumns[i].set('axis', typeInfo.predictedAxis = Axis.Y);
                 }
+
+
             }
-        });
+        }
 
         transform.table(file.data, newColumns, transform.number, DataTypes.NUMERIC);
 
