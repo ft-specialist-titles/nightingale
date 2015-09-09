@@ -17,9 +17,8 @@ var Threshold = function (numRows) {
     return this;
 };
 
-function sortDates(label, file){
+function mapDates(label, file){
     return file.data
-        .sort(function sortDate(a,b){ return a[label] - b[label]; })
         .map(function getColumn(d){   return d[label]; });
 }
 
@@ -37,6 +36,8 @@ function dateGroupings(typeInfo, dateFormat){
     typeInfo.data.forEach(function(end,i){
         if (i===0) return;
         var start = typeInfo.data[i-1];
+        var reverse = start > end, t;
+        if (reverse) t = end, end = start, start = t;
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -185,7 +186,7 @@ var DataImport = Backbone.Model.extend({
 
                 if (typeInfo.mostPopularDateFormat && typeInfo.predictedAxis === Axis.X) {
                     transform.series(file.data, typeInfo.colName, transform.time(typeInfo.mostPopularDateFormat));
-                    typeInfo.data = sortDates(label, file);
+                    typeInfo.data = mapDates(label, file);
                     dateGroupings(typeInfo);
                     // here we find a suggestion for what the most likely chart
                     // the user will want to see is. Currently, our rules are only time-based
