@@ -86,5 +86,16 @@
     a {
         color: #7C8A96;
     }
+    .youtube-link {
+        color: rgb(204, 0, 51);
+      padding: 10px;
+      border-radius: 2px;
+      margin: 20px 0;
+      border: 1px solid rgb(204, 0, 51);
+      &:hover {
+        background-color: rgba(204, 0, 51, 0.8);
+          color: white
+      }
+    }
 }
 
