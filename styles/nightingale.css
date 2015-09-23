@@ -6144,6 +6144,15 @@ button.close {
   right: 20px; }
   .feedback-details a {
     color: #7C8A96; }
+  .feedback-details .youtube-link {
+    color: #cc0033;
+    padding: 10px;
+    border-radius: 2px;
+    margin: 20px 0;
+    border: 1px solid #cc0033; }
+    .feedback-details .youtube-link:hover {
+      background-color: rgba(204, 0, 51, 0.8);
+      color: white; }
 
 svg .chart-title:hover,
 svg .chart-subtitle:hover,
