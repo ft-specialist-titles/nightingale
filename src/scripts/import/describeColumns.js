@@ -20,7 +20,33 @@ function describeColumns(file){
 
     dataTypeCounters.forEach(function (typeCounter) {
         if (threshold.isAbove(typeCounter.nulls)) {
-            typeCounter.dataType = DataTypes.NONE;
+            // typeCounter.dataType = DataTypes.NONE;
+
+            // Check whether or not there is a clear runner up
+            // of dataType and assign that as the data type
+            // If all null, then it's NONE
+            // if, of the remaining values, there is a percentage (over 60(?)) of 
+            // aanother data type assign that as the data type
+            // Otherwise, disregard and keep dataType as NONE
+
+            var remainingData = typeCounter.numbers + typeCounter.strings,
+                acceptanceValue = 0.6;
+
+            // acceptanceValue is an aribitrary value. If one of datatypes takes up over 60% of the remaining data values that
+            // aren't null ("-") then it's reasonable to assume that the column just has a lot of blanks
+            // but that the user intends for that column to be be displayed as data with N/A in place
+            // of the empty values
+
+            if(remainingData === 0){
+                typeCounter.dataType = DataTypes.NONE;
+            } else if(typeCounter.numbers > typeCounter.strings && (typeCounter.numbers / remainingData) >= acceptanceValue){
+                typeCounter.dataType = DataTypes.NUMERIC;
+            } else if(typeCounter.numbers < typeCounter.strings && (typeCounter.strings / remainingData) >= acceptanceValue){
+                typeCounter.dataType = DataTypes.CATEGORICAL;
+            } else {
+                typeCounter.dataType = DataTypes.NONE;
+            }
+
         } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
             typeCounter.dataType = DataTypes.NUMERIC;
         } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
