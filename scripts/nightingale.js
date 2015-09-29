@@ -32845,7 +32845,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-    return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n            You can also have a look at some <button name=\"demo-data\" class=\"btn btn-link\">demo data</button>\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n                    <a target=\"_blank\" href=\"https://www.youtube.com/playlist?list=PL-51sODZEKJopwFKcr31r50U0Qlc4WP7K\"><div class=\"youtube-link\"><strong>NEW!\nVideo Tutorials</strong>\n       </div></a>\n\n    </div>\n</div>\n";
+    return "<div class=\"view-importdata__content\">\n    <h1 class=\"text-center import-data-title\">Import data</h1>\n\n    <div class=\"warning-message\"></div>\n    <div class=\"fake-field\" contenteditable=\"true\">\n        <p class=\"fake-field__placeholder\">Copy and paste a range of cells from Excel...</p>\n    </div>\n    <div class=\"form-group\">\n        <input type=\"file\" style=\"display:none\" name=\"file\"\n               accept=\"text/plain,text/csv,text/tsv,text/tab-separated-values\"/>\n\n        <p class=\"text-center help-block\">You may also drag and drop or\n            <button name=\"select-file\" class=\"btn btn-link\">pick a file</button>\n            too. Files must be <a data-placement=\"bottom\" data-help=\"WHAT_IS_CSV\" target=\"_blank\"\n                                  href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a> or <a\n                    target=\"_blank\" data-placement=\"bottom\" data-help=\"WHAT_IS_TSV\"\n                    href=\"http://en.wikipedia.org/wiki/Tab-separated_values\">TSV</a> format.\n            You can also have a look at some <button name=\"demo-data\" class=\"btn btn-link\">demo data</button>\n        </p>\n    </div>\n    <div class=\"form-group\">\n        <div class=\"alert text-center alert-danger error-message\" role=\"alert\">&nbsp;</div>\n    </div>\n    <div class=\"feedback-details\">\n        <a target=\"_blank\" href=\"mailto:help.nightingale@ft.com\" title=\"Report issues or get help\">help.nightingale@ft.com</a>\n                    <a target=\"_blank\" href=\"https://www.youtube.com/playlist?list=PL-51sODZEKJopwFKcr31r50U0Qlc4WP7K\"><div class=\"youtube-link\"><strong>NEW!\nVideo Tutorials</strong>\n       </div></a>\n\n    </div>\n</div>\n";
 },"useData":true});
 
 },{"hbsfy/runtime":56}],102:[function(require,module,exports){
@@ -34000,6 +34000,7 @@ var ViewImportData = Backbone.View.extend({
         }).bind(this);
         this.__paste = (function (event) {
             var clipboardData = event.clipboardData;
+            event.preventDefault();
             if (!clipboardData) return;
             var types = clipboardData.types;
             var data;
@@ -34008,7 +34009,9 @@ var ViewImportData = Backbone.View.extend({
                 if (data) {
                     this.model.set({dataAsString: data}, {validate: true});
                 }
+
             }
+
         }).bind(this);
         window.addEventListener('dragover', this.__dragover, false);
         var self = this;
