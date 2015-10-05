@@ -35,6 +35,7 @@ var ViewImportData = Backbone.View.extend({
         }).bind(this);
         this.__paste = (function (event) {
             var clipboardData = event.clipboardData;
+            event.preventDefault();
             if (!clipboardData) return;
             var types = clipboardData.types;
             var data;
@@ -43,7 +44,9 @@ var ViewImportData = Backbone.View.extend({
                 if (data) {
                     this.model.set({dataAsString: data}, {validate: true});
                 }
+
             }
+
         }).bind(this);
         window.addEventListener('dragover', this.__dragover, false);
         var self = this;

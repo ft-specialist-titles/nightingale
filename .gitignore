@@ -13,3 +13,4 @@ test/smoke/**/*.png
 test/screenshots/*.png
 test/functional/screenshots/*.png
 test/bin/*.jar
+.DS_Store
