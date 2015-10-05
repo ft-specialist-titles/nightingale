@@ -22,6 +22,7 @@ function parseDate(dateString, format) {
 }
 
 function dateGroupings(typeInfo, dateFormat){
+
     if (!typeInfo.mostPopularDateFormat && !dateFormat) return;
     dateFormat = dateFormat || typeInfo.mostPopularDateFormat;
     var days = [];
@@ -33,6 +34,19 @@ function dateGroupings(typeInfo, dateFormat){
         if (i===0) return;
         var start = parseDate(typeInfo.dateValues[i-1], d3Formatter);
         var end = parseDate(date,d3Formatter);
+
+        // If the date range is in descending order, D3 returns 0,
+        // instead of the length that it shoud
+        // By reversing the values here, we can check that there
+        // is in fact a gap, but still render the data is descending
+        // order where applicable
+
+        if((end > start) === false){
+            var tS = start;
+            start = end;
+            end = tS;
+        }
+
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -53,6 +67,7 @@ function dateGroupings(typeInfo, dateFormat){
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
     typeInfo.units = (weekly) ? ['weekly', 'monthly', 'yearly'] : typeInfo.units;
     typeInfo.units = (daily) ? ['daily', 'monthly', 'yearly'] : typeInfo.units;
+
 }
 
 function getDateRange(typeInfo) {
