@@ -23268,7 +23268,7 @@ return jQuery;
 }));
 
 },{}],6:[function(require,module,exports){
-module.exports={"version":"0.6.4"}
+module.exports={"version":"0.6.5"}
 
 },{}],7:[function(require,module,exports){
 var d3 = require("./../../../../d3/d3.js");
@@ -24515,6 +24515,7 @@ function plotSeries(plotSVG, model, createdAxes, series, seriesNumber){
         .attr(attr);
 
     if (!model.stack) {
+
         // add N/As for null values
         s.selectAll('text.null-label')
             .data(data._nulls)
@@ -24524,7 +24525,10 @@ function plotSeries(plotSVG, model, createdAxes, series, seriesNumber){
             .attr('x',  function (d, i) { return plot.x(d.key, seriesNumber); })
             .attr('y',  function (d, i) { return plot.y(d.value, i); })
             .attr('dy', '-0.5em')
-            .attr('dx', function (d, i) { return plot.columnWidth(d, i) / 2;})
+            .attr('dx', function (d, i) { return plot.columnWidth(d, i) / 4; })
+            .attr('font-family', "BentonSans, sans-serif")
+            .attr('font-size', '10')
+            .attr('fill', "rgba(0,0,0,0.4)")
             .text('n/a');
     }
 
@@ -25458,7 +25462,20 @@ function addOne(fontName) {
     svg.insertAdjacentHTML('afterbegin', '<defs>' + style + '</defs>');
 
     document.body.appendChild(svg);
-    return document.fonts.load('1em ' + fontName);
+    var dF = document.fonts;
+
+    if(document.fonts === undefined) {
+        var ffTrigger = document.createElement('div');
+
+        ffTrigger.setAttribute("style", "font-family: 1em " + fontName + ";");
+
+        document.body.appendChild(ffTrigger);
+
+        return true;
+    } else {
+        return dF.load('1em ' + fontName);
+    }
+
 }
 
 module.exports = function addMultiple(fontNames){
@@ -31208,7 +31225,33 @@ function describeColumns(file){
 
     dataTypeCounters.forEach(function (typeCounter) {
         if (threshold.isAbove(typeCounter.nulls)) {
-            typeCounter.dataType = DataTypes.NONE;
+            // typeCounter.dataType = DataTypes.NONE;
+
+            // Check whether or not there is a clear runner up
+            // of dataType and assign that as the data type
+            // If all null, then it's NONE
+            // if, of the remaining values, there is a percentage (over 60(?)) of 
+            // aanother data type assign that as the data type
+            // Otherwise, disregard and keep dataType as NONE
+
+            var remainingData = typeCounter.numbers + typeCounter.strings,
+                acceptanceValue = 0.6;
+
+            // acceptanceValue is an aribitrary value. If one of datatypes takes up over 60% of the remaining data values that
+            // aren't null ("-") then it's reasonable to assume that the column just has a lot of blanks
+            // but that the user intends for that column to be be displayed as data with N/A in place
+            // of the empty values
+
+            if(remainingData === 0){
+                typeCounter.dataType = DataTypes.NONE;
+            } else if(typeCounter.numbers > typeCounter.strings && (typeCounter.numbers / remainingData) >= acceptanceValue){
+                typeCounter.dataType = DataTypes.NUMERIC;
+            } else if(typeCounter.numbers < typeCounter.strings && (typeCounter.strings / remainingData) >= acceptanceValue){
+                typeCounter.dataType = DataTypes.CATEGORICAL;
+            } else {
+                typeCounter.dataType = DataTypes.NONE;
+            }
+
         } else if (typeCounter.numbers > typeCounter.dates && threshold.isAbove(typeCounter.numbers + typeCounter.nulls)) {
             typeCounter.dataType = DataTypes.NUMERIC;
         } else if (threshold.isAbove(typeCounter.dates + typeCounter.nulls)) {
@@ -32470,6 +32513,7 @@ function parseDate(dateString, format) {
 }
 
 function dateGroupings(typeInfo, dateFormat){
+
     if (!typeInfo.mostPopularDateFormat && !dateFormat) return;
     dateFormat = dateFormat || typeInfo.mostPopularDateFormat;
     var days = [];
@@ -32481,6 +32525,19 @@ function dateGroupings(typeInfo, dateFormat){
         if (i===0) return;
         var start = parseDate(typeInfo.dateValues[i-1], d3Formatter);
         var end = parseDate(date,d3Formatter);
+
+        // If the date range is in descending order, D3 returns 0,
+        // instead of the length that it shoud
+        // By reversing the values here, we can check that there
+        // is in fact a gap, but still render the data is descending
+        // order where applicable
+
+        if((end > start) === false){
+            var tS = start;
+            start = end;
+            end = tS;
+        }
+
         days.push((d3.time.days(start, end)).length);
         weeks.push((d3.time.weeks(start, end)).length);
         months.push((d3.time.months(start, end)).length);
@@ -32501,6 +32558,7 @@ function dateGroupings(typeInfo, dateFormat){
     typeInfo.units = (monthly) ? ['monthly', 'yearly'] : typeInfo.units;
     typeInfo.units = (weekly) ? ['weekly', 'monthly', 'yearly'] : typeInfo.units;
     typeInfo.units = (daily) ? ['daily', 'monthly', 'yearly'] : typeInfo.units;
+
 }
 
 function getDateRange(typeInfo) {
