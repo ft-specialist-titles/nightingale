@@ -105,12 +105,26 @@ svg {
     }
 }
 
-.theme--ft-print .ft-web-theme ,
 .theme--ft-print .ft-video-theme ,
-.theme--ft-video .ft-web-theme ,
+.theme--ft-print .ft-web-theme ,
+.theme--ft-print .ic-theme ,
+.theme--ft-print .fta-theme ,
 .theme--ft-video .ft-print-theme ,
+.theme--ft-video .ft-web-theme ,
+.theme--ft-video .ic-theme ,
+.theme--ft-video .fta-theme ,
 .theme--ft-web .ft-print-theme ,
-.theme--ft-web .ft-video-theme {
+.theme--ft-web .ft-video-theme ,
+.theme--ft-web .ic-theme ,
+.theme--ft-web .fta-theme ,
+.theme--ic .ft-print-theme ,
+.theme--ic .ft-video-theme ,
+.theme--ic .ft-web-theme ,
+.theme--ic .fta-theme ,
+.theme--fta .ft-print-theme ,
+.theme--fta .ft-video-theme ,
+.theme--fta .ft-web-theme ,
+.theme--fta .ic-theme {
     width:0!important; height: 0!important;
     overflow: hidden;
 }
