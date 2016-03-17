@@ -98,19 +98,16 @@ svg {
                     border-color: $btn-danger-border;
                 }
                 .graphic {
-                    background-color: #fff1e0;
+                    background-color: #ffffff;
                 }
             }
         }
     }
 }
 
-.theme--ft-print .ft-web-theme ,
-.theme--ft-print .ft-video-theme ,
-.theme--ft-video .ft-web-theme ,
-.theme--ft-video .ft-print-theme ,
-.theme--ft-web .ft-print-theme ,
-.theme--ft-web .ft-video-theme {
+.theme--ic .fta-theme ,
+.theme--fta .ic-theme {
     width:0!important; height: 0!important;
+    margin: 0 !important;
     overflow: hidden;
 }

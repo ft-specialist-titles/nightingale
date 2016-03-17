@@ -86,7 +86,7 @@ var ViewSelectedVariation = RegionView.extend({
 
         // TODO: allow transparent and specified colour backgrounds
         // set this to null for transparent backgrounds
-        var bgColor = '#fff1e0';
+        var bgColor = '#ffffff';
 
         download(filename, svg, format, bgColor, resolution, function () {
             // TODO: alert the user when there's an error creating the image

@@ -42,7 +42,7 @@ function init(email) {
     var graphicControls = new ViewGraphicControls({model: graphic, dataImport: importData});
 
     window.email = email || 'anonymous';
-    document.documentElement.classList.add('theme--ft-web');
+    document.documentElement.classList.add('theme--ic');
     document.getElementById('controls').appendChild(graphicControls.render().el);
 
     // REFACTOR THIS into it's own custom collection
